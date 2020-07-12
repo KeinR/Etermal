@@ -19,7 +19,7 @@ etm::Resources::Resources(Terminal &terminal):
     terminal(&terminal),
     rectangle(initRectangle),
     texRectangle(initTexRectangle),
-    font(fontLib.get(), "C:\\Windows\\Fonts\\lucon.ttf")
+    font(fontLib, "C:\\Windows\\Fonts\\lucon.ttf")
 {
 
     genRectangle();

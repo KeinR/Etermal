@@ -4,9 +4,11 @@
 #include <memory>
 
 #include "util/enums.h"
-#include "gui/TextInput.h"
-#include "gui/ScrollBox.h"
+// #include "gui/TextInput.h"
+// #include "gui/ScrollBox.h"
 #include "Resources.h"
+#include "TextBuffer.h"
+#include "gui/Rectangle.h"
 
 // ../shell/Shell
 class Shell;
@@ -27,9 +29,11 @@ namespace etm {
         // Text testText; // TEMP
         // Image testImage; // TEMP
         // std::vector<Text> lines;
-        std::string textBuffer;
-        Text text; // temporary measure
-        ScrollBox output;
+        // std::string textBuffer;
+        // Text text; // temporary measure
+        // std::vector<Character> buffer;
+        // ScrollBox output;
+        TextBuffer display;
         Rectangle background;
 
         std::string inputBuffer;
