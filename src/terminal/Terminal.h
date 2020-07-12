@@ -10,8 +10,6 @@
 
 // ../shell/Shell
 class Shell;
-// ../render/glfw
-class GLFWwindow;
 
 /*
 * Frontend for the shell
@@ -22,15 +20,21 @@ namespace etm {
         std::unique_ptr<Resources> resources;
 
         Model viewport;
+        int maxWidth;
+        int maxHeight;
 
-        std::string line1text; // TEMP
-        Text testText; // TEMP
-        Image testImage; // TEMP
-        std::vector<Text> lines;
+        // std::string line1text; // TEMP
+        // Text testText; // TEMP
+        // Image testImage; // TEMP
+        // std::vector<Text> lines;
+        std::string textBuffer;
+        Text text; // temporary measure
         ScrollBox output;
-        TextInput input;
-        Rectangle outputBG;
-        Rectangle inputBG;
+        Rectangle background;
+
+        std::string inputBuffer;
+
+        bool focused;
 
         Shell *shell;
     public:
@@ -54,8 +58,14 @@ namespace etm {
 
         void setX(float x);
         void setY(float y);
-        void setWidth(float width);
-        void setHeight(float height);
+        void setMaxWidth(float width);
+        void setMaxHeight(float height);
+
+        // Set font pixel size.
+        // Note that this will resize the terminal,
+        // however it will not become larger than the set
+        // max width and height
+        // void setFontSize(int size);
 
         // Position elemnts according to coords
         void updatePosition();

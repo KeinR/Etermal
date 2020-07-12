@@ -1,39 +1,39 @@
 #include "Terminal.h"
 
+#include <iostream>
+
 #include "render/glfw.h"
 #include "util/util.h" // TEMP
 
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
     viewport(0, 0, 400, 400),
-    testText(resources.get()),
-    testImage(resources.get()),
+    text(resources.get()),
     output(resources.get()),
-    input(resources.get()),
-    outputBG(resources.get()),
-    inputBG(resources.get()),
+    background(resources.get()),
+    focused(false),
     shell(nullptr)
 {
     updatePosition();
+    output.getElements().push_back(&text);
+    output.update();
 
-    testImage.loadImage("C:\\Users\\orion\\Pictures\\1477927 (1).jpg");
-    // testImage.loadImage("renderLines.png");
-    testImage.setX(0);
-    testImage.setY(300);
-    testImage.setWidth(75);
-    testImage.setHeight(93);
+    text.setColor(0xffffff);
 
     // TEMP
-    lines.emplace_back(resources.get());
-    output.getElements().push_back(&lines[0]);
     dispText("fell like a rain");
     flush();
-    testText.setX(40);
-    testText.setY(100);
-    testText.setString("DOes this work?");
-    testText.setWrappingWidth(100);
-    testText.setFontSize(30);
-    testText.generate();
+
+    FT_Face f = resources->getFont().getFace();
+
+    int height = (f->ascender - f->descender) / 64;
+    int width = (f->max_advance_width) / 64;
+    std::cout << "height = " << height << std::endl;
+    std::cout << "width = " << width << std::endl;
+    std::cout << "f->max_advance_width = " << f->max_advance_width << std::endl;
+
+    // std::cout << "bounds = " << (resources->getFont().getFace()->bbox.xMax -
+    //                             resources->getFont().getFace()->bbox.xMin) / resources->getFont().getFace()->units_per_EM << std::endl;
 }
 
 // The shell is where user input will be directed
@@ -42,16 +42,17 @@ void etm::Terminal::setShell(Shell &shell) {
 }
 
 void etm::Terminal::dispText(const std::string &str) {
-    line1text += str;
+    textBuffer += str;
 }
 
 void etm::Terminal::flush() {
-    lines[0].setString(line1text);
-    lines[0].generate();
+    text.setString(textBuffer);
+    text.generate();
 }
 
 void etm::Terminal::inputText(const std::string &str) {
     // Send info to shell
+    std::cout << "input ------->> " << str << std::endl;
 }
 
 void etm::Terminal::setX(float x) {
@@ -60,10 +61,10 @@ void etm::Terminal::setX(float x) {
 void etm::Terminal::setY(float y) {
     viewport.y = y;
 }
-void etm::Terminal::setWidth(float width) {
+void etm::Terminal::setMaxWidth(float width) {
     viewport.width = width;
 }
-void etm::Terminal::setHeight(float height) {
+void etm::Terminal::setMaxHeight(float height) {
     viewport.height = height;
 }
 
@@ -72,59 +73,53 @@ void etm::Terminal::updatePosition() {
     output.setY(viewport.y);
     output.setWidth(viewport.width);
     output.setHeight(viewport.height - 30);
-    outputBG.setX(viewport.x);
-    outputBG.setY(viewport.y);
-    outputBG.setWidth(viewport.width);
-    outputBG.setHeight(viewport.height - 30);
-    outputBG.setColor(0x29b340);
-
-    input.setX(viewport.x);
-    input.setY(viewport.y + viewport.height - 30);
-    input.setWidth(viewport.width);
-    input.setHeight(30);
-    inputBG.setX(viewport.x);
-    inputBG.setY(viewport.y + viewport.height - 30);
-    inputBG.setWidth(viewport.width);
-    inputBG.setHeight(30);
-    inputBG.setColor(0x3279a8);
+    background.setX(viewport.x);
+    background.setY(viewport.y);
+    background.setWidth(viewport.width);
+    background.setHeight(viewport.height - 30);
+    background.setColor(0x0f0f0f);
 }
 
 void etm::Terminal::userKeyPress(char c) {
-    input.insertChar(c);
+    // input.insertChar(c);
+    std::cout << "key press: " << c << std::endl;
+    dispText(std::string() + c);
+    // std::cout << "string'd = " << std::to_string(c) << std::endl;
+    flush();
 }
 void etm::Terminal::userPaste(const std::string &text) {
-    input.insertString(text);
+    // input.insertString(text);
 }
 void etm::Terminal::userActionKey(actionKey key) {
-    input.action(key);
+    // input.action(key);
 }
 void etm::Terminal::userScroll(float yOffset) {
     output.mouseScroll(yOffset);
 }
 void etm::Terminal::userClick(bool isPressed, float mouseX, float mouseY) {
     output.mouseClick(isPressed, mouseX, mouseY);
-    input.mouseClick(mouseX, mouseY);
+    focused = viewport.hasPoint(mouseX, mouseY);
 }
 void etm::Terminal::userMove(float mouseX, float mouseY) {
     output.mouseMoved(mouseX, mouseY);
 }
 
 void etm::Terminal::render() {
-    glEnable(GL_BLEND);
     glEnable(GL_SCISSOR_TEST);
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     assertGLErr("Terminal.cpp:91");
     resources->bindPrimitiveShader();
     assertGLErr("Terminal.cpp:92");
-    outputBG.render();
+    background.render();
     assertGLErr("Terminal.cpp:94");
-    inputBG.render();
+    output.render();
     assertGLErr("Terminal.cpp:96");
     // output.render();
     // input.render();
-    resources->bindTextureShader();
-    lines[0].render();
-    testText.render();
-    testImage.render();
+    // resources->bindTextureShader();
+    // lines[0].render();
+    // testText.render();
+    // testImage.render();
 }
