@@ -5,7 +5,6 @@
 
 static void initRectangle(etm::Buffer &buffer);
 static void initTexRectangle(etm::Buffer &buffer);
-static FT_Library makeLib();
 
 void initRectangle(etm::Buffer &buffer) {
     buffer.setParam(0, 2, 2, 0);
@@ -16,28 +15,16 @@ void initTexRectangle(etm::Buffer &buffer) {
     buffer.setParam(1, 2, 4, 2);
 }
 
-FT_Library makeLib() {
-    FT_Library lib;
-    FT_Error error = FT_Init_FreeType(&lib);
-    if (error != FT_Err_Ok) {
-        throw etm::fe_error("Resources::Resources(Terminal&): Failed to create freetype library: " + std::to_string(error));
-    }
-    return lib;
-}
-
 etm::Resources::Resources(Terminal &terminal):
     terminal(&terminal),
     rectangle(initRectangle),
     texRectangle(initTexRectangle),
-    fontLib(makeLib()),
-    font(fontLib, "c:\\windows\\fonts\\arial.ttf")
+    font(fontLib.get(), "C:\\Windows\\Fonts\\calibri.ttf")
 {
+
     genRectangle();
     genTexRectangle();
     bindPrimitiveShader(); // Default setting to avoid unfortunate events
-}
-etm::Resources::~Resources() {
-    FT_Done_FreeType(fontLib);
 }
 
 void etm::Resources::genRectangle() {
@@ -90,9 +77,11 @@ void etm::Resources::renderTexRectangle() {
 
 void etm::Resources::bindTextureShader() {
     currentShader = &textureShader;
+    currentShader->use();
 }
 void etm::Resources::bindPrimitiveShader() {
     currentShader = &primitiveShader;
+    currentShader->use();
 }
 etm::shader::Shader &etm::Resources::getShader() {
     return *currentShader;

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "../src/terminal/Terminal.h"
+#include "../src/terminal/util/util.h"
 
 #define GLFW_DLL
 #include <glad/glad.h>
@@ -12,7 +13,6 @@ static void mouseScroll(GLFWwindow* window, double xoffset, double yoffset);
 static void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouseClick(GLFWwindow* window, int button, int action, int mods);
 static void mouseMove(GLFWwindow* window, double xpos, double ypos);
-static const char *getGLErrorStr(GLenum error);
 
 int main() {
     try {
@@ -22,7 +22,7 @@ int main() {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_SAMPLES, 0);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        GLFWwindow *window = glfwCreateWindow(300, 300, "Terminal test", NULL, NULL);
+        GLFWwindow *window = glfwCreateWindow(700, 700, "Terminal test", NULL, NULL);
         if (window == NULL) {
             std::cerr << "Failed to make GLFW window" << std::endl;
             return 1;
@@ -45,27 +45,18 @@ int main() {
 
         std::cout << "created" << std::endl;
 
-        GLenum error = glGetError();
-        if (error != GL_NO_ERROR) {
-            std::cerr << "INIT ERROR: " << getGLErrorStr(error) << std::endl;
-            return 1;
-        }
+        etm::assertGLErr("Initialization proc");
 
         std::cout << "loop" << std::endl;
 
         while (!glfwWindowShouldClose(window)) {
 
-            std::cout << "run loop" << std::endl;
-
             glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
 
             terminal->render();
 
-            GLenum error = glGetError();
-            if (error != GL_NO_ERROR) {
-                std::cerr << "RENDER ERROR: " << getGLErrorStr(error) << std::endl;
-                return 1;
-            }
+            etm::assertGLErr("Render loop");
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -100,16 +91,4 @@ void mouseClick(GLFWwindow* window, int button, int action, int mods) {
 
 void mouseMove(GLFWwindow* window, double xpos, double ypos) {
     terminal->userMove(static_cast<float>(xpos), static_cast<float>(ypos));
-}
-
-const char *getGLErrorStr(GLenum error) {
-    switch (error) {
-        case GL_NO_ERROR: return "GL_NO_ERROR";
-        case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-        case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-        case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-        case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-        case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
-        default: return "-Unknown error-";
-    }
 }

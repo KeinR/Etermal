@@ -308,10 +308,11 @@ void etm::Font::renderGlyphTo(glyph_type glyph, glyph_type next, const renderCon
         // or above the pen
         const int ix = rto32(pen.x) + face->glyph->bitmap_left;
         const int iy = rto32(pen.y) - face->glyph->bitmap_top;
+        // unsigned char *debugmap = new unsigned char[face->glyph->bitmap.rows * face->glyph->bitmap.width];
         for (unsigned int y = 0; y < face->glyph->bitmap.rows; y++) {
             for (unsigned int x = 0; x < face->glyph->bitmap.width; x++) {
                 // The source index
-                const int srcIndex = x + y * face->glyph->bitmap.width;
+                const int srcIndex = static_cast<int>(x) + static_cast<int>(y) * face->glyph->bitmap.width;
                 // Only render into `render`'s bitmap if it's got content.
                 // Note that the Freetype bitmaps only have one channel,
                 // hence why there's only one check.
@@ -336,7 +337,7 @@ void etm::Font::renderGlyphTo(glyph_type glyph, glyph_type next, const renderCon
                     // * // Multply by desired channels
                     // render.channels // Number of channels
                     // 
-                    const int insIndex = ((ix + x) + (render.lineHeight - 1 - (iy + y)) * render.verticalStride) * render.channels;
+                    const int insIndex = ((ix + static_cast<int>(x)) + (render.lineHeight - 1 - (iy + static_cast<int>(y))) * render.verticalStride) * render.channels;
                     // Apply the bitmap value to every channel in the insertion bitmap in `render`
                     for (int c = 0; c < render.channels; c++) {
                         // Modify the channel value by the corresponding 0-1 float value in cMod 

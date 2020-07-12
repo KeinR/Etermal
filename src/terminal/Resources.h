@@ -3,6 +3,7 @@
 
 #include "render/Buffer.h"
 #include "render/Font.h"
+#include "render/FontLibrary.h"
 #include "shader/Primitive.h"
 #include "shader/Texture.h"
 
@@ -22,14 +23,13 @@ namespace etm {
         shader::Primitive primitiveShader;
         shader::Shader *currentShader;
 
-        Font::FT_Library_for fontLib;
+        FontLibrary fontLib;
         Font font;
 
         void genRectangle();
         void genTexRectangle();
     public:
         Resources(Terminal &terminal);
-        ~Resources();
 
         void setTerminal(Terminal &terminal);
         Terminal &getTerminal();

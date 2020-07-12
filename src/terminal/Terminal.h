@@ -24,6 +24,8 @@ namespace etm {
         Model viewport;
 
         std::string line1text; // TEMP
+        Text testText; // TEMP
+        Image testImage; // TEMP
         std::vector<Text> lines;
         ScrollBox output;
         TextInput input;
@@ -45,6 +47,8 @@ namespace etm {
 
         // Display text in output
         void dispText(const std::string &str);
+        // Flush buffer
+        void flush();
         // Send text to shell
         void inputText(const std::string &str);
 

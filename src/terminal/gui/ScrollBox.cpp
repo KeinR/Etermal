@@ -133,9 +133,9 @@ void etm::ScrollBox::updateScroll() {
 }
 
 void etm::ScrollBox::render() {
-    res->bindTextureShader();
 
     setScissor(model.x, model.y, model.width, model.height);
+    res->bindTextureShader();
 
     for (Text *&e : elements) {
         e->render();

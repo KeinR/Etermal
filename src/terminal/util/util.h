@@ -8,6 +8,7 @@ namespace etm {
     // Set the scissor coords to match the window
     // TEMPORTARY MEASURE
     void resetScissor();
+    void assertGLErr(const char *location);
 }
 
 #endif

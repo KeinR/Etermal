@@ -165,6 +165,5 @@ void etm::Buffer::render() {
     bind();
     // Draw the verticies in the array buffer according to the
     // indices in the element buffer
-    // glDrawElements(GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0);
-    glDrawElements(GL_LINES, countIndices, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0);
 }
