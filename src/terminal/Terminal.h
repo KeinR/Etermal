@@ -1,6 +1,7 @@
 #ifndef ETERMAL_TERMINAL_H_INCLUDED
 #define ETERMAL_TERMINAL_H_INCLUDED
 
+#include <deque>
 #include <memory>
 
 #include "util/enums.h"
@@ -10,8 +11,12 @@
 #include "TextBuffer.h"
 #include "gui/Rectangle.h"
 
-// ../shell/Shell
-class Shell;
+namespace etm { 
+    // ../shell/Shell
+    class Shell;
+    // TermInput
+    class TermInput;
+}
 
 /*
 * Frontend for the shell
@@ -19,6 +24,10 @@ class Shell;
 
 namespace etm {
     class Terminal {
+    public:
+        typedef std::deque<TermInput*> inputRequests_t;
+        typedef bool(*flushFunc_t)(char);
+    private:
         std::unique_ptr<Resources> resources;
 
         Model viewport;
@@ -36,11 +45,27 @@ namespace etm {
         TextBuffer display;
         Rectangle background;
 
-        std::string inputBuffer;
+        std::string displayBuffer; // Display
+        std::string inputBuffer; // User input
+
+        inputRequests_t inputRequests;
 
         bool focused;
+        // Should the terminal take user input?
+        bool takeInput;
+
+        // Should the next char be escaped?
+        bool escapeNext;
 
         Shell *shell;
+
+        void displayWelcome();
+        void displayPrompt();
+
+        void flushInputBuffer();
+        void prepareInput();
+        void doInputChar(char c);
+        void deleteLastChar();
     public:
 
         // Initializes with the current context.
@@ -53,12 +78,32 @@ namespace etm {
         // The shell is where user input will be directed
         void setShell(Shell &shell);
 
-        // Display text in output
+        // Sets whether the terminal will process user input.
+        // If this is set to false, all user input is discarded.
+        // If it's true, user input will be shown as it's typed.
+        // If true, calls to `flush()` will be denied.
+        void setTakeInput(bool value);
+
+        // Each call adds `callback` to the input queue.
+        // Each time input is entered, the callback is called
+        // and removed.
+        // Be careful of multible calls to this,
+        // for you could become locked in.
+        void requestInput(TermInput &callback);
+        // Removes all instances of `callback` from queue
+        void cancelInputRequest(TermInput *callback);
+        // Deletes all input requests.
+        // Only call if you know what you're doing.
+        void clearInputRequests();
+
+        // Inputs text to the display buffer.
+        // Will not actually display until flushed.
         void dispText(const std::string &str);
-        // Flush buffer
+        // Manually pushes (flushes) the display buffer to the display
         void flush();
-        // Send text to shell
-        void inputText(const std::string &str);
+        // // Sets whether the terminal should automatically flush
+        // // the dispaly buffer
+        // void setAutoFlush(bool val);
 
         void setX(float x);
         void setY(float y);
@@ -77,18 +122,21 @@ namespace etm {
         // Input events
 
         // All printable keys
-        void userKeyPress(char c);
-        void userPaste(const std::string &text);
+        // inputChar/String aren't buffered.
+        // Pushes data to input func upon encountering a newline.
+        void inputChar(char c);
+        void inputString(const std::string &text);
+
         // Backspace, enter, up, down, left, right keys
-        void userActionKey(actionKey key);
+        void inputActionKey(actionKey key);
         // Only the y offset is relevent.
         // Value is difference from the last scroll
         // position
-        void userScroll(float yOffset);
+        void inputMouseScroll(float yOffset);
         // Viewport coordinates of the mouse
         // (model coords are used to calculate if mouse clicked)
-        void userClick(bool isPressed, float mouseX, float mouseY);
-        void userMove(float mouseX, float mouseY);
+        void inputMouseClick(bool isPressed, float mouseX, float mouseY);
+        void inputMouseMove(float mouseX, float mouseY);
 
         // Renders to the current context
         void render();

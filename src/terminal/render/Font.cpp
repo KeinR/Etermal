@@ -39,9 +39,9 @@ void etm::Font::renderChar(int x, int y, char c, Image &out) {
     constexpr int channels = 4;
     // TEMP
     float channelMod[channels] = {
-        1,
-        1,
-        1,
+        191.0f / 255.0f,
+        191.0f / 255.0f,
+        191.0f / 255.0f,
         1
     };
 
@@ -50,21 +50,10 @@ void etm::Font::renderChar(int x, int y, char c, Image &out) {
 
     FT_Error error = FT_Load_Char(face, c, FT_LOAD_RENDER);
     if (error == FT_Err_Ok) {
-        // Round the current pen positions,
-        // make space for the left side bound (x),
-        // and do the same for the ascent (y).
-        // This makes the pen go deeper into the bitmap, preventing
-        // buffer underflow from the bitmap being rendered too far left
-        // or above the pen
-        // const int ix = x + face->glyph->bitmap_left;
-        // const int iy = y - face->glyph->bitmap_top;
-
-        if (c == 'a') {
-            std::cout << "break" << std::endl;
-        }
 
         std::vector<unsigned char> data(lineHeight * uWidth * channels);
-        const int yDiff = lineHeight - face->glyph->bitmap.rows;
+        const int yShift = lineHeight - face->glyph->bitmap.rows;
+        const int xShift = (uWidth - face->glyph->bitmap.width) / 2;
         // std::cout << "face->glyph->bitmap.rows = " << face->glyph->bitmap.rows << std::endl;
         // std::cout << "face->glyph->bitmap.width = " << face->glyph->bitmap.width << std::endl;
         // std::cout << "lineHeight = " << lineHeight << std::endl;
@@ -98,7 +87,7 @@ void etm::Font::renderChar(int x, int y, char c, Image &out) {
                     // * // Multply by desired channels
                     // render.channels // Number of channels
                     // 
-                    const int insIndex = (static_cast<int>(sx) + (lineHeight - 1 - (yDiff + static_cast<int>(sy))) * uWidth) * channels;
+                    const int insIndex = ((xShift + static_cast<int>(sx)) + (lineHeight - 1 - (yShift + static_cast<int>(sy))) * uWidth) * channels;
                     // Apply the bitmap value to every channel in the insertion bitmap in `render`
                     for (int c = 0; c < channels; c++) {
                         // Modify the channel value by the corresponding 0-1 float value in channelMod

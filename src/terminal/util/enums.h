@@ -3,12 +3,12 @@
 
 namespace etm {
     enum actionKey {
+        ENTER,
+        BACKSPACE,
         UP,
         DOWN,
         LEFT,
-        RIGHT,
-        ENTER,
-        BACKSPACE
+        RIGHT
     };
     struct charStyle {
         typedef int type;

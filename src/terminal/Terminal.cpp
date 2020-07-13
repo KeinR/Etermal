@@ -4,13 +4,16 @@
 
 #include "render/glfw.h"
 #include "util/util.h" // TEMP
+#include "TermInput.h"
 
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
     viewport(0, 0, 400, 400),
-    display(resources->getFont(), 10),
+    display(resources->getFont(), 30),
     background(resources.get()),
-    focused(false),
+    focused(true),
+    takeInput(true),
+    escapeNext(false),
     shell(nullptr)
 {
     updatePosition();
@@ -31,7 +34,7 @@ etm::Terminal::Terminal():
     );
     flush();
 
-    resources->getFont().setSize(20);
+    resources->getFont().setSize(18);
     // FT_Face f = resources->getFont().getFace();
 
     // // float height = (f->ascender - f->descender) / 64.0f;
@@ -46,6 +49,36 @@ etm::Terminal::Terminal():
 
     // std::cout << "bounds = " << (resources->getFont().getFace()->bbox.xMax -
     //                             resources->getFont().getFace()->bbox.xMin) / resources->getFont().getFace()->units_per_EM << std::endl;
+
+    displayWelcome();
+    displayPrompt();
+}
+
+void etm::Terminal::displayWelcome() {
+    dispText("Welcome to terminal!\n");
+    flush();
+}
+void etm::Terminal::displayPrompt() {
+    dispText("\nuser@terminal ~\n$ ");
+    flush();
+}
+
+void etm::Terminal::flushInputBuffer() {
+    if (inputBuffer.size()) {
+        if (inputRequests.size()) {
+            inputRequests.front()->terminalInput(inputBuffer);
+            inputRequests.pop_front();
+        } else {
+            // Print the default prompt, etc.
+            std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
+        }
+        inputBuffer.clear();
+        displayPrompt();
+    }
+}
+
+void etm::Terminal::deleteLastChar() {
+    // TODO
 }
 
 // The shell is where user input will be directed
@@ -53,21 +86,35 @@ void etm::Terminal::setShell(Shell &shell) {
     this->shell = &shell;
 }
 
-void etm::Terminal::dispText(const std::string &str) {
-    // textBuffer += str;
-    for (char c : str) {
-        display.append(c);
+void etm::Terminal::setTakeInput(bool value) {
+    takeInput = value;
+}
+
+void etm::Terminal::requestInput(TermInput &callback) {
+    inputRequests.push_back(&callback);
+}
+void etm::Terminal::cancelInputRequest(TermInput *callback) {
+    typedef inputRequests_t::iterator it_t;
+    for (it_t it = inputRequests.begin(); it < inputRequests.end();) {
+        if (*it == callback) {
+            it = inputRequests.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
-
-void etm::Terminal::flush() {
-    // text.setString(textBuffer);
-    // text.generate();
+void etm::Terminal::clearInputRequests() {
+    inputRequests.clear();
 }
 
-void etm::Terminal::inputText(const std::string &str) {
-    // Send info to shell
-    std::cout << "input ------->> " << str << std::endl;
+void etm::Terminal::dispText(const std::string &str) {
+    displayBuffer += str;
+}
+void etm::Terminal::flush() {
+    for (char c : displayBuffer) {
+        display.append(c);
+    }
+    displayBuffer.clear();
 }
 
 void etm::Terminal::setX(float x) {
@@ -95,28 +142,67 @@ void etm::Terminal::updatePosition() {
     background.setColor(0x0f0f0f);
 }
 
-void etm::Terminal::userKeyPress(char c) {
-    // input.insertChar(c);
-    std::cout << "key press: " << c << std::endl;
-    dispText(std::string() + c);
-    // std::cout << "string'd = " << std::to_string(c) << std::endl;
-    // flush();
+void etm::Terminal::inputChar(char c) {
+    if (takeInput) {
+        doInputChar(c);
+    }
 }
-void etm::Terminal::userPaste(const std::string &text) {
-    // input.insertString(text);
+void etm::Terminal::doInputChar(char c) {
+    if (!escapeNext) {
+        switch (c) {
+            case '\n':
+                flushInputBuffer();
+                display.append(c);
+                break;
+            case '\\':
+                escapeNext = true;
+                break;
+            default:
+                display.append(c);
+                inputBuffer.push_back(c);
+        }
+    } else {
+        display.append(c);
+        inputBuffer.push_back(c);
+    }
 }
-void etm::Terminal::userActionKey(actionKey key) {
-    // input.action(key);
+void etm::Terminal::inputString(const std::string &text) {
+    for (char c : text) {
+        if (!takeInput) break;
+        inputChar(c);
+    }
 }
-void etm::Terminal::userScroll(float yOffset) {
-    // output.mouseScroll(yOffset);
+void etm::Terminal::inputActionKey(actionKey key) {
+    switch (key) {
+        case ENTER:
+            inputChar('\n');
+            break;
+        case BACKSPACE:
+            deleteLastChar();
+            break;
+        case UP:
+            // TODO
+            break;
+        case DOWN:
+            // TODO
+            break;
+        case LEFT:
+            // TODO
+            break;
+        case RIGHT:
+            // TODO
+            break;
+        // Ignore if there's no match
+    }
 }
-void etm::Terminal::userClick(bool isPressed, float mouseX, float mouseY) {
-    // output.mouseClick(isPressed, mouseX, mouseY);
-    focused = viewport.hasPoint(mouseX, mouseY);
+void etm::Terminal::inputMouseScroll(float yOffset) {
+
 }
-void etm::Terminal::userMove(float mouseX, float mouseY) {
-    // output.mouseMoved(mouseX, mouseY);
+void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {
+    // focused = viewport.hasPoint();
+}
+void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
+
 }
 
 void etm::Terminal::render() {

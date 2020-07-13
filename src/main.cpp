@@ -2,6 +2,7 @@
 
 #include "../src/terminal/Terminal.h"
 #include "../src/terminal/util/util.h"
+#include "../src/terminal/util/enums.h"
 
 #define GLFW_DLL
 #include <glad/glad.h>
@@ -72,17 +73,47 @@ int main() {
 }
 
 void mouseScroll(GLFWwindow* window, double xoffset, double yoffset) {
-    terminal->userScroll(static_cast<float>(yoffset));
+    terminal->inputMouseScroll(static_cast<float>(yoffset));
 }
 
 void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    terminal->userKeyPress('d');
+
+    if (action == GLFW_RELEASE) return;
+
+    // if (mods & GLFW_SHIFT  || MODS & GLFW_CAPS) {
+
+    // }
+
+    if (GLFW_KEY_A <= key && key <= GLFW_KEY_Z) {
+        terminal->inputChar((key - GLFW_KEY_A) + 'a');
+    } else {
+        switch (key) {
+            case GLFW_KEY_ENTER:
+                terminal->inputActionKey(etm::actionKey::ENTER);
+                break;
+            case GLFW_KEY_BACKSPACE:
+                terminal->inputActionKey(etm::actionKey::BACKSPACE);
+                break;
+            case GLFW_KEY_UP:
+                terminal->inputActionKey(etm::actionKey::UP);
+                break;
+            case GLFW_KEY_DOWN:
+                terminal->inputActionKey(etm::actionKey::DOWN);
+                break;
+            case GLFW_KEY_LEFT:
+                terminal->inputActionKey(etm::actionKey::LEFT);
+                break;
+            case GLFW_KEY_RIGHT:
+                terminal->inputActionKey(etm::actionKey::RIGHT);
+                break;
+        }
+    }
 }
 
 void mouseClick(GLFWwindow* window, int button, int action, int mods) {
     double mouseX, mouseY;
     glfwGetCursorPos(glfwGetCurrentContext(), &mouseX, &mouseY);
-    terminal->userClick(
+    terminal->inputMouseClick(
         action == GLFW_PRESS,
         static_cast<float>(mouseX),
         static_cast<float>(mouseY)
@@ -90,5 +121,5 @@ void mouseClick(GLFWwindow* window, int button, int action, int mods) {
 }
 
 void mouseMove(GLFWwindow* window, double xpos, double ypos) {
-    terminal->userMove(static_cast<float>(xpos), static_cast<float>(ypos));
+    terminal->inputMouseMove(static_cast<float>(xpos), static_cast<float>(ypos));
 }

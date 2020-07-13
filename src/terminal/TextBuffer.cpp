@@ -41,7 +41,9 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
 // }
 
 void etm::TextBuffer::append(char c) {
-    if (!lines.size()) {
+    if (c == '\n') {
+        newline();
+    } else if (!lines.size()) {
         newline();
         lines.back().push_back(c);
     } else if (lines.back().size() + 1 > width) {
