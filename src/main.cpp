@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #include "../src/terminal/Terminal.h"
 #include "../src/terminal/util/util.h"
@@ -50,12 +51,22 @@ int main() {
 
         std::cout << "loop" << std::endl;
 
+        long samples = 0;
+        long totalMillis = 0;
         while (!glfwWindowShouldClose(window)) {
 
             glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            auto fstart = std::chrono::high_resolution_clock::now();
             terminal->render();
+            totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - fstart).count();
+            samples++;
+            if (samples > 100) {
+                std::cout << "LAST FRAME AVG: " << (static_cast<float>(totalMillis) / samples) << std::endl;
+                samples = 0;
+                totalMillis = 0;
+            }
 
             etm::assertGLErr("Render loop");
 

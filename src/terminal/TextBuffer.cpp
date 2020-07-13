@@ -55,59 +55,55 @@ void etm::TextBuffer::lockCursor() {
 
 
 void etm::TextBuffer::moveCursorCollumn(int distance) {
-    cursorCollumn = std::min(std::max(cursorCollumn + distance, cursorMinCollumn), lines[cursorRow].size());
+    cursorCollumn = std::min(cursorCollumn + distance, lines[cursorRow].size());
+    if (cursorRow <= cursorMinRow) {
+        cursorCollumn = std::max(cursorCollumn, cursorMinCollumn);
+    }
 }
 void etm::TextBuffer::moveCursorRow(int distance) {
     cursorRow = std::min(std::max(cursorRow + distance, cursorMinRow), lines.size()-1);
     cursorCollumn = std::min(cursorCollumn, lines[cursorRow].size());
+    std::cout << "lines[cursorRow].size() = " << lines[cursorRow].size() << std::endl;
+    std::cout << "cursorCollumn = " << cursorCollumn << std::endl;
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
-
-    // const int val = std::abs(distance);
-    // const int sign = distance / val;
-    // moveCursorRow();
-    // moveCursorCollumn();
     line_index_t oldCursorCollumn = cursorCollumn;
     int collumnTemp = static_cast<int>(cursorCollumn) + distance;
 
-    std::cout << "collumnTemp = " << collumnTemp << std::endl;
-    std::cout << "static_cast<int>(lines[cursorRow].size()) = " << static_cast<int>(lines[cursorRow].size()) << std::endl;
-
     if (collumnTemp > static_cast<int>(lines[cursorRow].size())) {
         cursorCollumn = static_cast<line_index_t>(collumnTemp);
-        cursorCollumn -= lines[cursorRow].size() - cursorCollumn;
-        std::cout << "cursorCollumn = " << cursorCollumn << std::endl;
         while (cursorCollumn > lines[cursorRow].size()) {
             if (cursorRow + 1 < lines.size()) {
-                cursorRow++;
                 cursorCollumn -= lines[cursorRow].size();
+                cursorRow++;
             } else {
                 cursorCollumn = lines[cursorRow].size();
                 break;
             }
         }
-        cursorCollumn = std::max(cursorCollumn, cursorMinCollumn);
-    } else if (cursorCollumn < 0) {
-        collumnTemp += oldCursorCollumn;
-        std::cout << "rundsa" << std::endl;
-        if (cursorRow - 1 >= cursorMinRow) {
-            cursorRow--;
-            while (collumnTemp < 0) {
-                if (cursorRow - 1 >= cursorMinRow) {
-                    cursorRow--;
-                    std::cout << "subtract row" << std::endl;
-                    collumnTemp += lines[cursorRow].size();
-                } else {
-                    collumnTemp = 0;
-                    break;
-                }
+    } else if (collumnTemp < 0) {
+        // collumnTemp += static_cast<int>(oldCursorCollumn);
+        while (collumnTemp < 0) {
+            if (cursorRow - 1 >= cursorMinRow) {
+                cursorRow--;
+                collumnTemp += lines[cursorRow].size();
+            } else {
+                collumnTemp = 0;
+                break;
             }
-        } else {
-            collumnTemp = 0;
         }
-        cursorCollumn = std::max(static_cast<line_index_t>(collumnTemp), cursorMinCollumn);
+        cursorCollumn = static_cast<line_index_t>(collumnTemp);
     } else {
-        cursorCollumn = std::max(collumnTemp, static_cast<int>(cursorMinCollumn));
+        cursorCollumn = static_cast<line_index_t>(std::max(collumnTemp, 0));
+        // Wrap cursor to next line.
+        // I mean MinTTY does it so really there's no reason not to
+        if (cursorRow < lines.size() - 1 && cursorCollumn == lines[cursorRow].size()) {
+            cursorRow++;
+            cursorCollumn = 0;
+        }
+    }
+    if (cursorRow <= cursorMinRow) {
+        cursorCollumn = std::max(cursorCollumn, cursorMinCollumn);
     }
 }
 
@@ -125,9 +121,10 @@ bool etm::TextBuffer::cursorIsToggled() {
     return displayCursor;
 }
 
-// void etm::TextBuffer::setWidth(data_index_t width) {
 
-// }
+void etm::TextBuffer::setWidth(line_index_t width) {
+    this->width = width;
+}
 etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
     return width;
 }
@@ -168,8 +165,9 @@ void etm::TextBuffer::doAppend(char c) {
         if (c != ' ' && (lastLine.size() - 1 < 0 || lastLine[lastLine.size()-1] != ' ')) {
             // -2 because we already checked that -1 wasn't a space
             // Check less than while deincrementing because unsigned
-            for (unsigned int i = lastLine.size() - 2; i < lastLine.size(); i--) {
+            for (line_index_t i = lastLine.size() - 2; i < lastLine.size(); i--) {
                 if (lastLine[i] == ' ') {
+                    const line_index_t index = i;
                     i++;
                     // Move the last word from the last line to the next
                     // line via recursion
@@ -177,6 +175,7 @@ void etm::TextBuffer::doAppend(char c) {
                         append(lastLine[i]);
                         lastLine[i] = ' '; // TEMP, in future want to add wrap flag
                     }
+                    lastLine.erase(index+1);
                     break;
                 }
             }
@@ -247,7 +246,6 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t collumn) {
     for (char c : buffer) {
         doAppend(c);
     }
-    std::cout << "TOOK STRING:\n" << buffer << "\n::END::" << std::endl;
 }
 
 void etm::TextBuffer::render(Resources *res) {

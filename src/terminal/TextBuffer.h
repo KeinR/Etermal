@@ -84,7 +84,7 @@ namespace etm {
         // requre insertions (of whitespace) or deletions
         // (of glyphs) at multible locations to adjust the internal
         // buffer
-        // void setWidth(line_index_t width);
+        void setWidth(line_index_t width);
         line_index_t getWidth();
 
         // (Rows = y, Collumns = x)

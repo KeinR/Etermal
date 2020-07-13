@@ -18,6 +18,12 @@ etm::Terminal::Terminal():
     shell(nullptr)
 {
     updatePosition();
+
+    resources->getFont().setSize(18);
+    // std::cout << "widdasd = " << (400 / (resources->getFont().getFace()->size->metrics.max_advance / 64)) << std::endl;
+
+    display.setWidth(400 / (resources->getFont().getFace()->size->metrics.max_advance / 64));
+
     // output.getElements().push_back(&text);
     // output.update();
 
@@ -25,17 +31,16 @@ etm::Terminal::Terminal():
     // text.setFontSize(19);
 
     // TEMP
-    dispText(
-        // "f"
-        "fell like a rain AA gg kk qq iii"
-        // "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\n"
-        // "llllllllllllllllllllllllllllllll\n"
-        // "ABCDEFGHIJKLMNOPQRSTUVWXYZZZZZZZ\n"
-        // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWw"
-    );
-    flush();
+    // dispText(
+    //     // "f"
+    //     "fell like a rain AA gg kk qq iii"
+    //     // "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\n"
+    //     // "llllllllllllllllllllllllllllllll\n"
+    //     // "ABCDEFGHIJKLMNOPQRSTUVWXYZZZZZZZ\n"
+    //     // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWw"
+    // );
+    // flush();
 
-    resources->getFont().setSize(18);
     FT_Face f = resources->getFont().getFace();
 
     std::cout << "max descender = " << (f->size->metrics.descender / 64.0f) << std::endl;
@@ -59,7 +64,7 @@ etm::Terminal::Terminal():
 }
 
 void etm::Terminal::displayWelcome() {
-    dispText("Welcome to terminal!\n");
+    dispText("Etermal v0.1\n");
     flush();
 }
 void etm::Terminal::displayPrompt() {
