@@ -16,6 +16,14 @@ etm::TextBuffer::TextBuffer(Font &font, line_index_t width):
 void etm::TextBuffer::newline() {
     lines.emplace_back();
     lines.back().reserve(width);
+    newlineChars.emplace_back(false);
+}
+
+void etm::TextBuffer::insertNewline(line_index_t row) {
+    row++;
+    lines.insert(lines.begin() + row, line_t());
+    lines[row].reserve(width);
+    newlineChars.insert(newlineChars.begin() + row, false);
 }
 
 bool etm::TextBuffer::cursorAtEnd() {
@@ -47,10 +55,11 @@ void etm::TextBuffer::lockCursor() {
 
 
 void etm::TextBuffer::moveCursorCollumn(int distance) {
-    cursorCollumn = std::min(std::max(cursorCollumn + distance, static_cast<line_index_t>(0)), lines[cursorRow].size());
+    cursorCollumn = std::min(std::max(cursorCollumn + distance, cursorMinCollumn), lines[cursorRow].size());
 }
 void etm::TextBuffer::moveCursorRow(int distance) {
-    cursorRow = std::min(std::max(cursorRow + distance, static_cast<lines_number_t>(0)), lines.size()-1);
+    cursorRow = std::min(std::max(cursorRow + distance, cursorMinRow), lines.size()-1);
+    cursorCollumn = std::min(cursorCollumn, lines[cursorRow].size());
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
 
@@ -59,10 +68,15 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
     // moveCursorRow();
     // moveCursorCollumn();
     line_index_t oldCursorCollumn = cursorCollumn;
-    cursorCollumn += distance;
+    int collumnTemp = static_cast<int>(cursorCollumn) + distance;
 
-    if (cursorCollumn > lines[cursorRow].size()) {
-        cursorCollumn -= lines[cursorRow].size() - oldCursorCollumn;
+    std::cout << "collumnTemp = " << collumnTemp << std::endl;
+    std::cout << "static_cast<int>(lines[cursorRow].size()) = " << static_cast<int>(lines[cursorRow].size()) << std::endl;
+
+    if (collumnTemp > static_cast<int>(lines[cursorRow].size())) {
+        cursorCollumn = static_cast<line_index_t>(collumnTemp);
+        cursorCollumn -= lines[cursorRow].size() - cursorCollumn;
+        std::cout << "cursorCollumn = " << cursorCollumn << std::endl;
         while (cursorCollumn > lines[cursorRow].size()) {
             if (cursorRow + 1 < lines.size()) {
                 cursorRow++;
@@ -72,17 +86,28 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
                 break;
             }
         }
+        cursorCollumn = std::max(cursorCollumn, cursorMinCollumn);
     } else if (cursorCollumn < 0) {
-        cursorCollumn += oldCursorCollumn;
-        while (cursorCollumn < 0) {
-            if (cursorRow - 1 >= 0) {
-                cursorRow--;
-                cursorCollumn += lines[cursorRow].size();
-            } else {
-                cursorCollumn = 0;
-                break;
+        collumnTemp += oldCursorCollumn;
+        std::cout << "rundsa" << std::endl;
+        if (cursorRow - 1 >= cursorMinRow) {
+            cursorRow--;
+            while (collumnTemp < 0) {
+                if (cursorRow - 1 >= cursorMinRow) {
+                    cursorRow--;
+                    std::cout << "subtract row" << std::endl;
+                    collumnTemp += lines[cursorRow].size();
+                } else {
+                    collumnTemp = 0;
+                    break;
+                }
             }
+        } else {
+            collumnTemp = 0;
         }
+        cursorCollumn = std::max(static_cast<line_index_t>(collumnTemp), cursorMinCollumn);
+    } else {
+        cursorCollumn = std::max(collumnTemp, static_cast<int>(cursorMinCollumn));
     }
 }
 
@@ -92,6 +117,12 @@ void etm::TextBuffer::jumpCursor() {
 }
 void etm::TextBuffer::toggleCursor(bool val) {
     displayCursor = val;
+}
+void etm::TextBuffer::switchCursorToggle() {
+    displayCursor = !displayCursor;
+}
+bool etm::TextBuffer::cursorIsToggled() {
+    return displayCursor;
 }
 
 // void etm::TextBuffer::setWidth(data_index_t width) {
@@ -121,18 +152,17 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
 // void etm::TextBuffer::erase(data_index_t row, data_index_t collumn) {
 // }
 
-void etm::TextBuffer::append(char c) {
-    const bool moveCursor = cursorAtEnd();
-
+void etm::TextBuffer::doAppend(char c) {
     if (c == '\n') {
+        newlineChars.back() = true;
         newline();
     } else if (!lines.size()) {
         newline();
         lines.back().push_back(c);
     } else if (lines.back().size() + 1 > width) {
         newline(); // Warning: refs invalidated after call!
-        line_t &lastLine = lines[lines.size() - 1];
-        line_t &nextLine = lines[lines.size() - 2];
+        line_t &lastLine = lines[lines.size() - 2];
+        line_t &nextLine = lines[lines.size() - 1];
 
         // If the last char or this char is NOT a space, do word wrap 
         if (c != ' ' && (lastLine.size() - 1 < 0 || lastLine[lastLine.size()-1] != ' ')) {
@@ -160,10 +190,64 @@ void etm::TextBuffer::append(char c) {
     } else {
         lines.back().push_back(c);
     }
+}
 
+void etm::TextBuffer::append(char c) {
+    const bool moveCursor = cursorAtEnd();
+    doAppend(c);
     if (moveCursor) {
         jumpCursor();
     }
+}
+
+void etm::TextBuffer::insertAtCursor(char c) {
+    insert(cursorRow, cursorCollumn, c);
+    moveCursorCollumnWrap(1);
+}
+
+void etm::TextBuffer::insert(lines_number_t row, line_index_t collumn, char c) {
+    if (cursorAtEnd()) {
+        doAppend(c);
+        return;
+    }
+
+    // At this point, it is not possible that there are no lines
+
+    if (c == '\n') {
+        // Move the text after the newline to the newly created line
+        std::string buffer(lines[row].substr(collumn));
+        lines[row].erase(collumn);
+        insertNewline(row);
+        lines[row+1] += buffer;
+        newlineChars[row] = true;
+        if (!newlineChars[row+1]) {
+            reformat(row + 1, 0);
+        }
+    } else {
+        lines[row].insert(lines[row].begin() + collumn, c);
+        if (lines[row].size() > width) {
+            reformat(row, collumn);
+        }
+    }
+
+}
+
+void etm::TextBuffer::reformat(lines_number_t row, line_index_t collumn) {
+    std::string buffer;
+    buffer += lines[row].substr(collumn);
+    lines[row].erase(collumn);
+    for (lines_number_t r = row+1; r < lines.size(); r++) {
+        buffer += lines[r];
+        if (newlineChars[r]) {
+            buffer.push_back('\n');
+        }
+    }
+    lines.erase(lines.begin() + row + 1, lines.end());
+    newlineChars.erase(newlineChars.begin() + row + 1, newlineChars.end());
+    for (char c : buffer) {
+        doAppend(c);
+    }
+    std::cout << "TOOK STRING:\n" << buffer << "\n::END::" << std::endl;
 }
 
 void etm::TextBuffer::render(Resources *res) {

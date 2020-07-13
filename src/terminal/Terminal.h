@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "util/enums.h"
+#include "util/Timer.h"
 // #include "gui/TextInput.h"
 // #include "gui/ScrollBox.h"
 #include "Resources.h"
@@ -56,6 +57,8 @@ namespace etm {
 
         // Should the next char be escaped?
         bool escapeNext;
+
+        Timer cursorBlink;
 
         Shell *shell;
 

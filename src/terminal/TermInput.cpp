@@ -1,4 +1,4 @@
-#include "TerminalInput.h"
+#include "TermInput.h"
 
 etm::TermInput::~TermInput() {
 }

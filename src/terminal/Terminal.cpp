@@ -14,6 +14,7 @@ etm::Terminal::Terminal():
     focused(true),
     takeInput(true),
     escapeNext(false),
+    cursorBlink(500),
     shell(nullptr)
 {
     updatePosition();
@@ -67,8 +68,8 @@ void etm::Terminal::displayPrompt() {
 }
 
 void etm::Terminal::prepareInput() {
-    display.lockCursor();
     display.jumpCursor();
+    display.lockCursor();
     display.toggleCursor(true);
 }
 
@@ -82,8 +83,9 @@ void etm::Terminal::flushInputBuffer() {
             std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
         }
         inputBuffer.clear();
-        displayPrompt();
     }
+    prepareInput();
+    displayPrompt();
 }
 
 void etm::Terminal::deleteLastChar() {
@@ -160,18 +162,19 @@ void etm::Terminal::doInputChar(char c) {
     if (!escapeNext) {
         switch (c) {
             case '\n':
-                display.append(c);
+                display.jumpCursor(); // Avoid distorted text
+                display.insertAtCursor(c);
                 flushInputBuffer();
                 break;
             case '\\':
                 escapeNext = true;
                 break;
             default:
-                display.append(c);
+                display.insertAtCursor(c);
                 inputBuffer.push_back(c);
         }
     } else {
-        display.append(c);
+        display.insertAtCursor(c);
         inputBuffer.push_back(c);
     }
 }
@@ -225,6 +228,10 @@ void etm::Terminal::render() {
     background.render();
     assertGLErr("Terminal.cpp:94");
     resources->bindTextureShader();
+    if (cursorBlink.hasEnded()) {
+        display.switchCursorToggle();
+        cursorBlink.start();
+    }
     display.render(resources.get());
     assertGLErr("Terminal.cpp:96");
     // output.render();

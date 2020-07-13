@@ -19,6 +19,7 @@ namespace etm {
         typedef lines_t::size_type lines_number_t;
     private:
         Font *font;
+        std::vector<bool> newlineChars;
         lines_t lines;
         line_index_t width;
         // Height is dynamic
@@ -33,7 +34,14 @@ namespace etm {
 
         // Construct a new line
         void newline();
+        // Inserts a newline after the given row
+        void insertNewline(line_index_t row);
         bool cursorAtEnd();
+        void doAppend(char c);
+        // Re-appends all chars after and including row and collumn to re-format the text
+        void reformat(lines_number_t row, line_index_t collumn);
+        void checkCursorCollumn();
+        void checkCursorRow();
 
     public:
         // Create text buffer with width
@@ -65,6 +73,11 @@ namespace etm {
         void jumpCursor();
         // Toggle display of the cursor
         void toggleCursor(bool val);
+        // Change the toggle value of the cursor to the opposate
+        // of what it was
+        void switchCursorToggle();
+        // Get the toggle state of the cursor
+        bool cursorIsToggled();
 
         // Set the width.
         // Note that this is not reccomended as it'll
@@ -86,6 +99,12 @@ namespace etm {
         // void erase(lines_number_t row, line_index_t collumn);
         // Adds the char to the end of the buffer
         void append(char c);
+
+        // Insert the char where the cursor is,
+        // and moves it forward by one
+        void insertAtCursor(char c);
+        // Called by insertAtCursor
+        void insert(lines_number_t row, line_index_t collumn, char c);
 
         void render(Resources *res);
     };
