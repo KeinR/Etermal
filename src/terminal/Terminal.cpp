@@ -54,6 +54,7 @@ etm::Terminal::Terminal():
 
     displayWelcome();
     displayPrompt();
+    prepareInput();
 }
 
 void etm::Terminal::displayWelcome() {
@@ -63,6 +64,12 @@ void etm::Terminal::displayWelcome() {
 void etm::Terminal::displayPrompt() {
     dispText("\nuser@terminal ~\n$ ");
     flush();
+}
+
+void etm::Terminal::prepareInput() {
+    display.lockCursor();
+    display.jumpCursor();
+    display.toggleCursor(true);
 }
 
 void etm::Terminal::flushInputBuffer() {
@@ -153,8 +160,8 @@ void etm::Terminal::doInputChar(char c) {
     if (!escapeNext) {
         switch (c) {
             case '\n':
-                flushInputBuffer();
                 display.append(c);
+                flushInputBuffer();
                 break;
             case '\\':
                 escapeNext = true;
@@ -183,16 +190,16 @@ void etm::Terminal::inputActionKey(actionKey key) {
             deleteLastChar();
             break;
         case UP:
-            // TODO
+            display.moveCursorRow(-1);
             break;
         case DOWN:
-            // TODO
+            display.moveCursorRow(1);
             break;
         case LEFT:
-            // TODO
+            display.moveCursorCollumnWrap(-1);
             break;
         case RIGHT:
-            // TODO
+            display.moveCursorCollumnWrap(1);
             break;
         // Ignore if there's no match
     }

@@ -1,18 +1,97 @@
 #include "TextBuffer.h"
 
 #include <iostream>
+#include <cmath>
 
 #include "gui/Rectangle.h"
 #include "gui/Image.h"
 
 etm::TextBuffer::TextBuffer(Font &font, line_index_t width):
     font(&font), width(width),
-    cursorRow(0), cursorCollumn(0) {
+    cursorRow(0), cursorCollumn(0),
+    cursorMinRow(0), cursorMinCollumn(0),
+    displayCursor(false) {
 }
 
 void etm::TextBuffer::newline() {
     lines.emplace_back();
     lines.back().reserve(width);
+}
+
+bool etm::TextBuffer::cursorAtEnd() {
+    return cursorRow == lines.size() - 1 && cursorCollumn == lines[cursorRow].size();
+}
+
+etm::TextBuffer::lines_number_t etm::TextBuffer::getCountRows() {
+    return lines.size();
+}
+
+etm::TextBuffer::lines_number_t etm::TextBuffer::getCursorRow() {
+    return cursorRow;
+}
+etm::TextBuffer::line_index_t etm::TextBuffer::getCursorCollumn() {
+    return cursorCollumn;
+}
+
+void etm::TextBuffer::setCursorMinRow(lines_number_t row) {
+    cursorMinRow = row;
+}
+void etm::TextBuffer::setCursorMinCollumn(line_index_t collumn) {
+    cursorMinCollumn = collumn;
+}
+
+void etm::TextBuffer::lockCursor() {
+    setCursorMinRow(cursorRow);
+    setCursorMinCollumn(cursorCollumn);
+}
+
+
+void etm::TextBuffer::moveCursorCollumn(int distance) {
+    cursorCollumn = std::min(std::max(cursorCollumn + distance, static_cast<line_index_t>(0)), lines[cursorRow].size());
+}
+void etm::TextBuffer::moveCursorRow(int distance) {
+    cursorRow = std::min(std::max(cursorRow + distance, static_cast<lines_number_t>(0)), lines.size()-1);
+}
+void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
+
+    // const int val = std::abs(distance);
+    // const int sign = distance / val;
+    // moveCursorRow();
+    // moveCursorCollumn();
+    line_index_t oldCursorCollumn = cursorCollumn;
+    cursorCollumn += distance;
+
+    if (cursorCollumn > lines[cursorRow].size()) {
+        cursorCollumn -= lines[cursorRow].size() - oldCursorCollumn;
+        while (cursorCollumn > lines[cursorRow].size()) {
+            if (cursorRow + 1 < lines.size()) {
+                cursorRow++;
+                cursorCollumn -= lines[cursorRow].size();
+            } else {
+                cursorCollumn = lines[cursorRow].size();
+                break;
+            }
+        }
+    } else if (cursorCollumn < 0) {
+        cursorCollumn += oldCursorCollumn;
+        while (cursorCollumn < 0) {
+            if (cursorRow - 1 >= 0) {
+                cursorRow--;
+                cursorCollumn += lines[cursorRow].size();
+            } else {
+                cursorCollumn = 0;
+                break;
+            }
+        }
+    }
+}
+
+void etm::TextBuffer::jumpCursor() {
+    cursorRow = lines.size() - 1;
+    cursorCollumn = lines[cursorRow].size();
+}
+void etm::TextBuffer::toggleCursor(bool val) {
+    displayCursor = val;
 }
 
 // void etm::TextBuffer::setWidth(data_index_t width) {
@@ -43,6 +122,8 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
 // }
 
 void etm::TextBuffer::append(char c) {
+    const bool moveCursor = cursorAtEnd();
+
     if (c == '\n') {
         newline();
     } else if (!lines.size()) {
@@ -79,6 +160,10 @@ void etm::TextBuffer::append(char c) {
     } else {
         lines.back().push_back(c);
     }
+
+    if (moveCursor) {
+        jumpCursor();
+    }
 }
 
 void etm::TextBuffer::render(Resources *res) {
@@ -90,15 +175,17 @@ void etm::TextBuffer::render(Resources *res) {
     img.setWidth(advance);
     img.setHeight(lineHeight);
 
-    res->bindPrimitiveShader();
+    if (displayCursor) {
+        res->bindPrimitiveShader();
 
-    Rectangle cursor(res);
-    cursor.setColor(0xffffff);
-    cursor.setX(cursorCollumn * advance);
-    cursor.setY(cursorRow * lineHeight);
-    cursor.setWidth(1);
-    cursor.setHeight(lineHeight);
-    cursor.render();
+        Rectangle cursor(res);
+        cursor.setColor(0xffffff);
+        cursor.setX(cursorCollumn * advance);
+        cursor.setY(cursorRow * lineHeight);
+        cursor.setWidth(1);
+        cursor.setHeight(lineHeight);
+        cursor.render();
+    }
 
     res->bindTextureShader();
 

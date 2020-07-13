@@ -26,12 +26,45 @@ namespace etm {
         lines_number_t cursorRow;
         line_index_t cursorCollumn;
 
+        lines_number_t cursorMinRow;
+        line_index_t cursorMinCollumn;
+
+        bool displayCursor;
+
         // Construct a new line
         void newline();
+        bool cursorAtEnd();
 
     public:
         // Create text buffer with width
         TextBuffer(Font &font, line_index_t width);
+
+        lines_number_t getCountRows();
+
+        lines_number_t getCursorRow();
+        line_index_t getCursorCollumn();
+
+        void setCursorMinRow(lines_number_t row);
+        void setCursorMinCollumn(line_index_t collumn);
+
+        // Prevent cursor from moving before its location
+        void lockCursor();
+
+        // Positive distance up/right, negative for down/left.
+        // If values are above/below max/min, moves max/min.
+        void moveCursorCollumn(int distance);
+        void moveCursorRow(int distance);
+
+        // Like its namesake, however will move to the next/previous line
+        // to deal with large distance values.
+        // Still guards against values that'd take it past the last line
+        // or before the first.
+        void moveCursorCollumnWrap(int distance);
+
+        // Move cursor to end of input
+        void jumpCursor();
+        // Toggle display of the cursor
+        void toggleCursor(bool val);
 
         // Set the width.
         // Note that this is not reccomended as it'll
