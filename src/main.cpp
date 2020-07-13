@@ -85,7 +85,13 @@ void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
     // }
 
     if (GLFW_KEY_A <= key && key <= GLFW_KEY_Z) {
-        terminal->inputChar((key - GLFW_KEY_A) + 'a');
+        char c = (key - GLFW_KEY_A) + 'a';
+        if ((mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT || (mods & GLFW_MOD_CAPS_LOCK) == GLFW_MOD_CAPS_LOCK) {
+            c ^= 0x20;
+        }
+        terminal->inputChar(c);
+    } else if (GLFW_KEY_0 <= key && key <= GLFW_KEY_9) {
+        terminal->inputChar((key - GLFW_KEY_A) + '0');
     } else {
         switch (key) {
             case GLFW_KEY_ENTER:
@@ -105,6 +111,42 @@ void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
                 break;
             case GLFW_KEY_RIGHT:
                 terminal->inputActionKey(etm::actionKey::RIGHT);
+                break;
+            case GLFW_KEY_SPACE:
+                terminal->inputChar(' ');
+                break;
+            case GLFW_KEY_APOSTROPHE:
+                terminal->inputChar('\'');
+                break;
+            case GLFW_KEY_COMMA:
+                terminal->inputChar(',');
+                break;
+            case GLFW_KEY_MINUS:
+                terminal->inputChar('-');
+                break;
+            case GLFW_KEY_PERIOD:
+                terminal->inputChar('.');
+                break;
+            case GLFW_KEY_SLASH:
+                terminal->inputChar('/');
+                break;
+            case GLFW_KEY_SEMICOLON:
+                terminal->inputChar(';');
+                break;
+            case GLFW_KEY_EQUAL:
+                terminal->inputChar('=');
+                break;
+            case GLFW_KEY_LEFT_BRACKET:
+                terminal->inputChar('[');
+                break;
+            case GLFW_KEY_BACKSLASH:
+                terminal->inputChar('\\');
+                break;
+            case GLFW_KEY_RIGHT_BRACKET:
+                terminal->inputChar(']');
+                break;
+            case GLFW_KEY_GRAVE_ACCENT:
+                terminal->inputChar('`');
                 break;
         }
     }

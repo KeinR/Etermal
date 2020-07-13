@@ -23,6 +23,9 @@ namespace etm {
         line_index_t width;
         // Height is dynamic
 
+        lines_number_t cursorRow;
+        line_index_t cursorCollumn;
+
         // Construct a new line
         void newline();
 

@@ -35,9 +35,11 @@ etm::Terminal::Terminal():
     flush();
 
     resources->getFont().setSize(18);
-    // FT_Face f = resources->getFont().getFace();
+    FT_Face f = resources->getFont().getFace();
 
-    // // float height = (f->ascender - f->descender) / 64.0f;
+    std::cout << "max descender = " << (f->size->metrics.descender / 64.0f) << std::endl;
+
+    // float height = (f->ascender - f->descender) / 64.0f;
     // float height = (f->size->metrics.height) / 64.0f;
     // // float width = (f->max_advance_width) / 64.0f;
     // float width = (f->size->metrics.max_advance) / 64.0f;

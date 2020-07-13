@@ -2,10 +2,12 @@
 
 #include <iostream>
 
+#include "gui/Rectangle.h"
 #include "gui/Image.h"
 
 etm::TextBuffer::TextBuffer(Font &font, line_index_t width):
-    font(&font), width(width) {
+    font(&font), width(width),
+    cursorRow(0), cursorCollumn(0) {
 }
 
 void etm::TextBuffer::newline() {
@@ -87,6 +89,19 @@ void etm::TextBuffer::render(Resources *res) {
     const int advance = font->getFace()->size->metrics.max_advance / 64;
     img.setWidth(advance);
     img.setHeight(lineHeight);
+
+    res->bindPrimitiveShader();
+
+    Rectangle cursor(res);
+    cursor.setColor(0xffffff);
+    cursor.setX(cursorCollumn * advance);
+    cursor.setY(cursorRow * lineHeight);
+    cursor.setWidth(1);
+    cursor.setHeight(lineHeight);
+    cursor.render();
+
+    res->bindTextureShader();
+
     for (lines_number_t r = 0; r < lines.size(); r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.size(); c++) {

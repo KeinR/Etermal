@@ -52,8 +52,10 @@ void etm::Font::renderChar(int x, int y, char c, Image &out) {
     if (error == FT_Err_Ok) {
 
         std::vector<unsigned char> data(lineHeight * uWidth * channels);
-        const int yShift = lineHeight - face->glyph->bitmap.rows;
+        const int yShift = face->size->metrics.ascender / 64 - face->glyph->bitmap_top;
         const int xShift = (uWidth - face->glyph->bitmap.width) / 2;
+        // std::cout << "face->size->metrics.ascender = " << face->size->metrics.ascender << std::endl;
+        // std::cout << "face->glyph->bitmap_top = " << face->glyph->bitmap_top << std::endl;
         // std::cout << "face->glyph->bitmap.rows = " << face->glyph->bitmap.rows << std::endl;
         // std::cout << "face->glyph->bitmap.width = " << face->glyph->bitmap.width << std::endl;
         // std::cout << "lineHeight = " << lineHeight << std::endl;
