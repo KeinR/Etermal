@@ -17,7 +17,6 @@ namespace etm {
         Terminal *terminal;
 
         Buffer rectangle;
-        Buffer texRectangle;
 
         shader::Texture textureShader;
         shader::Primitive primitiveShader;
@@ -27,7 +26,6 @@ namespace etm {
         Font font;
 
         void genRectangle();
-        void genTexRectangle();
     public:
         Resources(Terminal &terminal);
 
@@ -35,7 +33,6 @@ namespace etm {
         Terminal &getTerminal();
 
         void renderRectangle();
-        void renderTexRectangle();
 
         void bindTextureShader();
         void bindPrimitiveShader();

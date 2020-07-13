@@ -113,5 +113,5 @@ void etm::Image::render() {
     // Bind the texture so that it's the one that's sampled from
     texture.bind();
     // Render using the configuration in the buffer
-    res->renderTexRectangle();
+    res->renderRectangle();
 }
