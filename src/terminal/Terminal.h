@@ -12,6 +12,8 @@
 #include "TextBuffer.h"
 #include "gui/Rectangle.h"
 #include "../shell/ETerminal.h"
+#include "Scroll.h"
+#include "gui/Scrollbar.h"
 
 namespace etm { 
     // ../shell/EShell
@@ -36,14 +38,6 @@ namespace etm {
         int maxWidth;
         int maxHeight;
 
-        // std::string line1text; // TEMP
-        // Text testText; // TEMP
-        // Image testImage; // TEMP
-        // std::vector<Text> lines;
-        // std::string textBuffer;
-        // Text text; // temporary measure
-        // std::vector<Character> buffer;
-        // ScrollBox output;
         TextBuffer display;
         Rectangle background;
 
@@ -59,6 +53,9 @@ namespace etm {
         // Should the next char be escaped?
         bool escapeNext;
 
+        Scroll scroll;
+        Scrollbar scrollbar;
+
         Timer cursorBlink;
 
         EShell *shell;
@@ -68,7 +65,6 @@ namespace etm {
         void flushInputBuffer();
         void prepareInput();
         void doInputChar(char c);
-        void deleteLastChar();
         bool acceptInput();
     public:
 
@@ -137,7 +133,7 @@ namespace etm {
         // Only the y offset is relevent.
         // Value is difference from the last scroll
         // position
-        void inputMouseScroll(float yOffset);
+        void inputMouseScroll(float yOffset, float mouseX, float mouseY);
         // Viewport coordinates of the mouse
         // (model coords are used to calculate if mouse clicked)
         void inputMouseClick(bool isPressed, float mouseX, float mouseY);

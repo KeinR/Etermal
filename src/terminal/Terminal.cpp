@@ -6,6 +6,7 @@
 #include "util/util.h" // TEMP
 #include "../shell/TermInput.h"
 #include "../shell/EShell.h"
+#include "State.h"
 
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
@@ -15,54 +16,25 @@ etm::Terminal::Terminal():
     focused(true),
     takeInput(false),
     escapeNext(false),
+    scrollbar(resources.get(), scroll),
     cursorBlink(500),
     shell(nullptr)
 {
+    background.setColor(0x0f0f0f);
+
+    scrollbar.setWidth(20);
+    scrollbar.setSideMargin(2);
+    scrollbar.setSliderColor(0xbababa);
+    scrollbar.setBarColor(0xf5f5f5);
+
     updatePosition();
 
     resources->getFont().setSize(18);
-    // std::cout << "widdasd = " << (400 / (resources->getFont().getFace()->size->metrics.max_advance / 64)) << std::endl;
 
     display.setWidth(400 / (resources->getFont().getFace()->size->metrics.max_advance / 64));
 
-    // output.getElements().push_back(&text);
-    // output.update();
-
-    // text.setColor(0xffffff);
-    // text.setFontSize(19);
-
-    // TEMP
-    // dispText(
-    //     // "f"
-    //     "fell like a rain AA gg kk qq iii"
-    //     // "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii\n"
-    //     // "llllllllllllllllllllllllllllllll\n"
-    //     // "ABCDEFGHIJKLMNOPQRSTUVWXYZZZZZZZ\n"
-    //     // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWw"
-    // );
-    // flush();
-
-    FT_Face f = resources->getFont().getFace();
-
-    std::cout << "max descender = " << (f->size->metrics.descender / 64.0f) << std::endl;
-
-    // float height = (f->ascender - f->descender) / 64.0f;
-    // float height = (f->size->metrics.height) / 64.0f;
-    // // float width = (f->max_advance_width) / 64.0f;
-    // float width = (f->size->metrics.max_advance) / 64.0f;
-    // std::cout << "height = " << height << std::endl;
-    // std::cout << "width = " << width << std::endl;
-    // std::cout << "left = " << f->bbox.xMax << std::endl;
-    // // std::cout << "right = " << width << std::endl;
-    // std::cout << "f->max_advance_width = " << f->max_advance_width << std::endl;
-
-    // std::cout << "bounds = " << (resources->getFont().getFace()->bbox.xMax -
-    //                             resources->getFont().getFace()->bbox.xMin) / resources->getFont().getFace()->units_per_EM << std::endl;
-
     displayWelcome();
     display.setCursorEnabled(false);
-    // displayPrompt();
-    // prepareInput();
 }
 
 void etm::Terminal::displayWelcome() {
@@ -100,10 +72,6 @@ void etm::Terminal::flushInputBuffer() {
     if (acceptInput()) {
         prepareInput();
     }
-}
-
-void etm::Terminal::deleteLastChar() {
-    // TODO
 }
 
 // The shell is where user input will be directed
@@ -148,6 +116,12 @@ void etm::Terminal::flush() {
         display.append(c);
     }
     displayBuffer.clear();
+    const bool jump = scroll.getOffset() + 1 >= scroll.getMaxOffset();
+    scroll.setGrossHeight(display.getHeight());
+    if (jump) {
+        scroll.jump();
+    }
+    scrollbar.update();
 }
 
 void etm::Terminal::setX(float x) {
@@ -164,15 +138,16 @@ void etm::Terminal::setMaxHeight(float height) {
 }
 
 void etm::Terminal::updatePosition() {
-    // output.setX(viewport.x);
-    // output.setY(viewport.y);
-    // output.setWidth(viewport.width);
-    // output.setHeight(viewport.height - 30);
     background.setX(viewport.x);
     background.setY(viewport.y);
-    background.setWidth(viewport.width);
-    background.setHeight(viewport.height - 30);
-    background.setColor(0x0f0f0f);
+    background.setWidth(viewport.width - scrollbar.getWidth());
+    background.setHeight(viewport.height);
+
+    scrollbar.setX(viewport.x + viewport.width - scrollbar.getWidth());
+    scrollbar.setY(viewport.y);
+    scrollbar.setHeight(viewport.height);
+
+    scroll.setNetHeight(viewport.height);
 }
 
 void etm::Terminal::inputChar(char c) {
@@ -229,35 +204,24 @@ void etm::Terminal::inputActionKey(actionKey key) {
         // Ignore if there's no match
     }
 }
-void etm::Terminal::inputMouseScroll(float yOffset) {
-
+void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) {
+    if (viewport.hasPoint(mouseX, mouseY)) {
+        scroll.scroll(-yOffset * 6);
+        scrollbar.update();
+        std::cout << "scrolling" << std::endl;
+    }
 }
 void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {
-    // focused = viewport.hasPoint();
+    scrollbar.mouseClick(isPressed, mouseX, mouseY);
 }
 void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
-
+    scrollbar.mouseMove(mouseX, mouseY);
 }
 
 void etm::Terminal::render() {
-    // Store caller's state
-    GLboolean scissor, blend;
-    GLint program;
-    GLint srcRGB, dstRGB, srcAlpha, dstAlpha;
-    glGetBooleanv(GL_SCISSOR_TEST, &scissor);
-    glGetBooleanv(GL_BLEND, &blend);
-    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-    // ty stack https://stackoverflow.com/a/40025210/10821333
-    glGetIntegerv(GL_BLEND_SRC_RGB, &srcRGB);
-    glGetIntegerv(GL_BLEND_DST_RGB, &dstRGB);
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &srcAlpha);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &dstAlpha);
+    State state;
+    state.set(viewport);
 
-
-    // Apply _our_ desired state
-    glEnable(GL_SCISSOR_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Run animiations
     if (cursorBlink.hasEnded()) {
@@ -270,19 +234,11 @@ void etm::Terminal::render() {
     resources->bindPrimitiveShader();
     assertGLErr("Terminal.cpp:92");
     background.render();
+    scrollbar.render();
     assertGLErr("Terminal.cpp:94");
-    display.render();
+    display.render(viewport.x, viewport.y - scroll.getOffset());
     assertGLErr("Terminal.cpp:96");
 
 
-
-    // Restore caller's state
-    if (!scissor) {
-        glDisable(GL_SCISSOR_TEST);
-    }
-    if (!blend) {
-        glDisable(GL_BLEND);
-    }
-    glUseProgram(program);
-    glBlendFuncSeparate(srcRGB, dstAlpha, srcAlpha, dstAlpha);
+    state.restore();
 }

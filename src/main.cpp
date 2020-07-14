@@ -17,6 +17,7 @@ static void mouseScroll(GLFWwindow* window, double xoffset, double yoffset);
 static void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods);
 static void mouseClick(GLFWwindow* window, int button, int action, int mods);
 static void mouseMove(GLFWwindow* window, double xpos, double ypos);
+static void charCallback(GLFWwindow* window, unsigned int codepoint);
 
 int main() {
     try {
@@ -41,6 +42,8 @@ int main() {
         glfwSetKeyCallback(window, keyPress);
         glfwSetMouseButtonCallback(window, mouseClick);
         glfwSetCursorPosCallback(window, mouseMove);
+        glfwSetInputMode(window, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
+        glfwSetCharCallback(window, charCallback);
 
         std::cout << "afs" << std::endl;
 
@@ -91,83 +94,42 @@ int main() {
 }
 
 void mouseScroll(GLFWwindow* window, double xoffset, double yoffset) {
-    terminal->inputMouseScroll(static_cast<float>(yoffset));
+    double mouseX, mouseY;
+    glfwGetCursorPos(glfwGetCurrentContext(), &mouseX, &mouseY);
+    terminal->inputMouseScroll(
+        static_cast<float>(yoffset),
+        static_cast<float>(mouseX),
+        static_cast<float>(mouseY)
+    );
 }
 
 void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
-
     if (action == GLFW_RELEASE) return;
 
-    // if (mods & GLFW_SHIFT  || MODS & GLFW_CAPS) {
-
-    // }
-
-    if (GLFW_KEY_A <= key && key <= GLFW_KEY_Z) {
-        char c = (key - GLFW_KEY_A) + 'a';
-        if ((mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT || (mods & GLFW_MOD_CAPS_LOCK) == GLFW_MOD_CAPS_LOCK) {
-            c ^= 0x20;
-        }
-        terminal->inputChar(c);
-    } else if (GLFW_KEY_0 <= key && key <= GLFW_KEY_9) {
-        terminal->inputChar((key - GLFW_KEY_A) + '0');
-    } else {
-        switch (key) {
-            case GLFW_KEY_ENTER:
-                terminal->inputActionKey(etm::actionKey::ENTER);
-                break;
-            case GLFW_KEY_BACKSPACE:
-                terminal->inputActionKey(etm::actionKey::BACKSPACE);
-                break;
-            case GLFW_KEY_UP:
-                terminal->inputActionKey(etm::actionKey::UP);
-                break;
-            case GLFW_KEY_DOWN:
-                terminal->inputActionKey(etm::actionKey::DOWN);
-                break;
-            case GLFW_KEY_LEFT:
-                terminal->inputActionKey(etm::actionKey::LEFT);
-                break;
-            case GLFW_KEY_RIGHT:
-                terminal->inputActionKey(etm::actionKey::RIGHT);
-                break;
-            case GLFW_KEY_SPACE:
-                terminal->inputChar(' ');
-                break;
-            case GLFW_KEY_APOSTROPHE:
-                terminal->inputChar('\'');
-                break;
-            case GLFW_KEY_COMMA:
-                terminal->inputChar(',');
-                break;
-            case GLFW_KEY_MINUS:
-                terminal->inputChar('-');
-                break;
-            case GLFW_KEY_PERIOD:
-                terminal->inputChar('.');
-                break;
-            case GLFW_KEY_SLASH:
-                terminal->inputChar('/');
-                break;
-            case GLFW_KEY_SEMICOLON:
-                terminal->inputChar(';');
-                break;
-            case GLFW_KEY_EQUAL:
-                terminal->inputChar('=');
-                break;
-            case GLFW_KEY_LEFT_BRACKET:
-                terminal->inputChar('[');
-                break;
-            case GLFW_KEY_BACKSLASH:
-                terminal->inputChar('\\');
-                break;
-            case GLFW_KEY_RIGHT_BRACKET:
-                terminal->inputChar(']');
-                break;
-            case GLFW_KEY_GRAVE_ACCENT:
-                terminal->inputChar('`');
-                break;
-        }
+    switch (key) {
+        case GLFW_KEY_ENTER:
+            terminal->inputActionKey(etm::actionKey::ENTER);
+            break;
+        case GLFW_KEY_BACKSPACE:
+            terminal->inputActionKey(etm::actionKey::BACKSPACE);
+            break;
+        case GLFW_KEY_UP:
+            terminal->inputActionKey(etm::actionKey::UP);
+            break;
+        case GLFW_KEY_DOWN:
+            terminal->inputActionKey(etm::actionKey::DOWN);
+            break;
+        case GLFW_KEY_LEFT:
+            terminal->inputActionKey(etm::actionKey::LEFT);
+            break;
+        case GLFW_KEY_RIGHT:
+            terminal->inputActionKey(etm::actionKey::RIGHT);
+            break;
     }
+}
+
+static void charCallback(GLFWwindow* window, unsigned int codepoint) {
+    terminal->inputChar(static_cast<char>(codepoint));
 }
 
 void mouseClick(GLFWwindow* window, int button, int action, int mods) {

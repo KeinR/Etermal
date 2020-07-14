@@ -61,6 +61,9 @@ namespace etm {
         // Create text buffer with width
         TextBuffer(Resources *res, line_index_t width);
 
+        // The (visible) height of all the rows combined
+        int getHeight();
+
         lines_number_t getCountRows();
 
         lines_number_t getCursorRow();
@@ -125,7 +128,7 @@ namespace etm {
         void insert(lines_number_t row, line_index_t collumn, char c);
 
         // ---Assumes that the primitive shader has already been set---
-        void render();
+        void render(int x, int y);
     };
 }
 

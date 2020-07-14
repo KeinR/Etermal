@@ -65,3 +65,17 @@ etm::Color::prop_t *etm::Color::get() {
 void etm::Color::set(const shader::Shader &shader) {
     glUniform4fv(shader.getColor(), 1, color);
 }
+
+etm::Color etm::Color::brighten(float percent) const {
+    Color c;
+    for (int i = 0; i < 4; i++) {
+        c.color[i] = color[i] + color[i] * percent;
+        // Truncate the value if the value is too high/low
+        if (c.color[i] > 1) {
+            c.color[i] = 1;
+        } else if (c.color[i] < 0) {
+            c.color[i] = 0;
+        }
+    }
+    return c;
+}

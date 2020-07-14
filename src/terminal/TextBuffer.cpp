@@ -34,6 +34,11 @@ bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t collumn) {
     return row >= lines.size() || collumn >= lines[row].size();
 }
 
+int etm::TextBuffer::getHeight() {
+    const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
+    return static_cast<int>(lines.size()) * lineHeight;
+}
+
 etm::TextBuffer::lines_number_t etm::TextBuffer::getCountRows() {
     return lines.size();
 }
@@ -348,9 +353,7 @@ void etm::TextBuffer::renderChar(int x, int y, char c) {
     img->render();
 }
 
-void etm::TextBuffer::render() {
-    int x = 0;
-    int y = 0;
+void etm::TextBuffer::render(int x, int y) {
     const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
     const int advance = res->getFont().getFace()->size->metrics.max_advance / 64;
 

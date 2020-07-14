@@ -46,6 +46,12 @@ namespace etm {
 
         // Binds this color to the current color uniform
         void set(const shader::Shader &shader);
+
+        // Returns a copy based of this one, with
+        // the brightness modified by `percent`.
+        // Darker values would be caused by a negative arg,
+        // Brighter ones by a positive one
+        Color brighten(float percent) const;
     };
 }
 
