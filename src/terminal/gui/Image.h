@@ -85,6 +85,8 @@ namespace etm {
         // Controls where the image is positioned
         Model model;
     public:
+        // Will be ill-formed, calling render() will result in undefined behavior
+        Image();
         // When first construced, the image will, as you might expect, not
         // have any image.
         Image(Resources *res);

@@ -20,7 +20,7 @@ namespace etm {
         // Font &operator=(Font &&other);
         void setSize(unsigned int size);
         // x/y are the top-left coordiates, with y increasing down.
-        void renderChar(int x, int y, char c, Image &out);
+        void renderChar(char c, Image &out);
     };
 }
 

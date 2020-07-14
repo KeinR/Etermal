@@ -57,7 +57,8 @@ void etm::freeImage(unsigned char *data) {
     stbi_image_free(data);
 }
 
-
+etm::Image::Image(): Image(nullptr) {
+}
 etm::Image::Image(Resources *res): res(res) {
 }
 

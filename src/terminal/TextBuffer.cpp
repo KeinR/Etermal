@@ -6,8 +6,8 @@
 #include "gui/Rectangle.h"
 #include "gui/Image.h"
 
-etm::TextBuffer::TextBuffer(Font &font, line_index_t width):
-    font(&font), width(width),
+etm::TextBuffer::TextBuffer(Resources *res, line_index_t width):
+    res(res), width(width),
     cursorRow(0), cursorCollumn(0),
     cursorMinRow(0), cursorMinCollumn(0),
     cursorEnabled(false), displayCursor(false) {
@@ -197,7 +197,7 @@ void etm::TextBuffer::write(lines_number_t row, line_index_t collumn, char c) {
 }
 void etm::TextBuffer::erase(lines_number_t row, line_index_t collumn) {
     if (outOfBounds(row, collumn)) return;
-    
+
 }
 
 void etm::TextBuffer::append(char c) {
@@ -256,14 +256,31 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t collumn) {
     }
 }
 
-void etm::TextBuffer::render(Resources *res) {
-    Image img(res);
+void etm::TextBuffer::renderChar(int x, int y, char c) {
+    textCache_t::iterator loc = textCache.find(c);
+    Image *img;
+    if (loc != textCache.end()) {
+        img = &loc->second;
+    } else {
+        Image nm(res);
+        res->getFont().renderChar(c, nm);
+        textCache[c] = std::move(nm);
+        img = &textCache[c];
+    }
+    const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
+    const int advance = res->getFont().getFace()->size->metrics.max_advance / 64;
+    img->setWidth(advance);
+    img->setHeight(lineHeight);
+    img->setX(x);
+    img->setY(y);
+    img->render();
+}
+
+void etm::TextBuffer::render() {
     int x = 0;
     int y = 0;
-    const int lineHeight = font->getFace()->size->metrics.height / 64;
-    const int advance = font->getFace()->size->metrics.max_advance / 64;
-    img.setWidth(advance);
-    img.setHeight(lineHeight);
+    const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
+    const int advance = res->getFont().getFace()->size->metrics.max_advance / 64;
 
     if (cursorEnabled && displayCursor) {
         // Assume that the primitive shader was already set by
@@ -282,10 +299,7 @@ void etm::TextBuffer::render(Resources *res) {
     for (lines_number_t r = 0; r < lines.size(); r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.size(); c++) {
-            font->renderChar(x, y, line[c], img);
-            img.setX(x);
-            img.setY(y);
-            img.render();
+            renderChar(x, y, line[c]);
             x += advance;
         }
         x = 0;

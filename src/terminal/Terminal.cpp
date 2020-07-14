@@ -10,7 +10,7 @@
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
     viewport(0, 0, 400, 400),
-    display(resources->getFont(), 30),
+    display(resources.get(), 30),
     background(resources.get()),
     focused(true),
     takeInput(false),
@@ -271,7 +271,7 @@ void etm::Terminal::render() {
     assertGLErr("Terminal.cpp:92");
     background.render();
     assertGLErr("Terminal.cpp:94");
-    display.render(resources.get());
+    display.render();
     assertGLErr("Terminal.cpp:96");
 
 

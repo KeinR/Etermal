@@ -3,8 +3,10 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include "render/Model.h"
+#include "gui/Image.h"
 
 #include "Resources.h" // TEMP
 
@@ -18,7 +20,9 @@ namespace etm {
         typedef std::vector<line_t> lines_t;
         typedef lines_t::size_type lines_number_t;
     private:
-        Font *font;
+        typedef std::map<char, Image> textCache_t;
+
+        Resources *res;
         std::vector<bool> newlineChars;
         lines_t lines;
         line_index_t width;
@@ -33,6 +37,9 @@ namespace etm {
         bool cursorEnabled;
         bool displayCursor;
 
+        // Must be cleared upon font change
+        textCache_t textCache;
+
         // Construct a new line
         void newline();
         // Inserts a newline after the given row
@@ -46,9 +53,11 @@ namespace etm {
         // Returns true if the coords are out of bounds
         bool outOfBounds(lines_number_t row, line_index_t collumn);
 
+        void renderChar(int x, int y, char c);
+
     public:
         // Create text buffer with width
-        TextBuffer(Font &font, line_index_t width);
+        TextBuffer(Resources *res, line_index_t width);
 
         lines_number_t getCountRows();
 
@@ -107,7 +116,7 @@ namespace etm {
         void insert(lines_number_t row, line_index_t collumn, char c);
 
         // ---Assumes that the primitive shader has already been set---
-        void render(Resources *res);
+        void render();
     };
 }
 

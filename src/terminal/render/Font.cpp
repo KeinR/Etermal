@@ -32,7 +32,7 @@ FT_Face etm::Font::getFace() {
 void etm::Font::setSize(unsigned int size) {
     FT_Set_Pixel_Sizes(face, 0, size);
 }
-void etm::Font::renderChar(int x, int y, char c, Image &out) {
+void etm::Font::renderChar(char c, Image &out) {
 
     // std::cout << "font self = " << this << std::endl;
 
