@@ -1,6 +1,7 @@
 #include "Terminal.h"
 
 #include <iostream>
+#include <cmath>
 
 #include "render/glfw.h"
 #include "util/util.h" // TEMP
@@ -28,11 +29,10 @@ etm::Terminal::Terminal():
     scrollbar.setSliderColor(0xbababa);
     scrollbar.setBarColor(0xf5f5f5);
 
-    updatePosition();
-
+    // Must happen before position update
     resources->getFont().setSize(18);
 
-    display.setWidth(400 / (resources->getFont().getFace()->size->metrics.max_advance / 64));
+    updatePosition();
 
     displayWelcome();
     display.setCursorEnabled(false);
@@ -151,6 +151,8 @@ void etm::Terminal::updatePosition() {
     scrollbar.setHeight(viewport.height);
 
     scroll.setNetHeight(viewport.height);
+
+    display.setWidth(std::floor(background.getWidth() / (resources->getFont().getFace()->size->metrics.max_advance / 64)));
 }
 
 void etm::Terminal::inputChar(char c) {
