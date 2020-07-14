@@ -11,11 +11,12 @@
 #include "Resources.h"
 #include "TextBuffer.h"
 #include "gui/Rectangle.h"
+#include "../shell/ETerminal.h"
 
 namespace etm { 
-    // ../shell/Shell
-    class Shell;
-    // TermInput
+    // ../shell/EShell
+    class EShell;
+    // ../shell/TermInput
     class TermInput;
 }
 
@@ -24,7 +25,7 @@ namespace etm {
 */
 
 namespace etm {
-    class Terminal {
+    class Terminal: public ETerminal {
     public:
         typedef std::deque<TermInput*> inputRequests_t;
         typedef bool(*flushFunc_t)(char);
@@ -60,15 +61,15 @@ namespace etm {
 
         Timer cursorBlink;
 
-        Shell *shell;
+        EShell *shell;
 
         void displayWelcome();
-        void displayPrompt();
 
         void flushInputBuffer();
         void prepareInput();
         void doInputChar(char c);
         void deleteLastChar();
+        bool acceptInput();
     public:
 
         // Initializes with the current context.
@@ -79,31 +80,32 @@ namespace etm {
         Terminal &operator=(Terminal &&other) = default;
 
         // The shell is where user input will be directed
-        void setShell(Shell &shell);
+        void setShell(EShell &shell);
 
         // Sets whether the terminal will process user input.
-        // If this is set to false, all user input is discarded.
-        // If it's true, user input will be shown as it's typed.
-        // If true, calls to `flush()` will be denied.
-        void setTakeInput(bool value);
+        // And send it to the shell.
+        // Will still fulfill input requests
+        void setTakeInput(bool value) override;
+
+        void displayPrompt() override;
 
         // Each call adds `callback` to the input queue.
         // Each time input is entered, the callback is called
         // and removed.
         // Be careful of multible calls to this,
         // for you could become locked in.
-        void requestInput(TermInput &callback);
+        void requestInput(TermInput &callback) override;
         // Removes all instances of `callback` from queue
-        void cancelInputRequest(TermInput *callback);
+        void cancelInputRequest(TermInput *callback) override;
         // Deletes all input requests.
         // Only call if you know what you're doing.
-        void clearInputRequests();
+        void clearInputRequests() override;
 
         // Inputs text to the display buffer.
         // Will not actually display until flushed.
-        void dispText(const std::string &str);
+        void dispText(const std::string &str) override;
         // Manually pushes (flushes) the display buffer to the display
-        void flush();
+        void flush() override;
         // // Sets whether the terminal should automatically flush
         // // the dispaly buffer
         // void setAutoFlush(bool val);

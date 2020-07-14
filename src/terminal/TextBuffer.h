@@ -30,6 +30,7 @@ namespace etm {
         lines_number_t cursorMinRow;
         line_index_t cursorMinCollumn;
 
+        bool cursorEnabled;
         bool displayCursor;
 
         // Construct a new line
@@ -71,13 +72,14 @@ namespace etm {
 
         // Move cursor to end of input
         void jumpCursor();
-        // Toggle display of the cursor
-        void toggleCursor(bool val);
+        // Set displaying of the cursor.
+        // Different from the toggle state.
+        void setCursorEnabled(bool val);
+        bool cursorIsEnabled();
         // Change the toggle value of the cursor to the opposate
-        // of what it was
-        void switchCursorToggle();
-        // Get the toggle state of the cursor
-        bool cursorIsToggled();
+        // of what it was.
+        // aka blink blink
+        void toggleCursor();
 
         // Set the width.
         // Note that this is not reccomended as it'll

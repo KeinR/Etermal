@@ -1,6 +1,8 @@
 #include <iostream>
 #include <chrono>
 
+#include "../src/shell/Shell.h"
+
 #include "../src/terminal/Terminal.h"
 #include "../src/terminal/util/util.h"
 #include "../src/terminal/util/enums.h"
@@ -44,6 +46,11 @@ int main() {
 
         etm::Terminal term;
         terminal = &term;
+
+        etm::Shell shell;
+
+        term.setShell(shell);
+        shell.setTerminal(term);
 
         std::cout << "created" << std::endl;
 

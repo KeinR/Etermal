@@ -4,7 +4,8 @@
 
 #include "render/glfw.h"
 #include "util/util.h" // TEMP
-#include "TermInput.h"
+#include "../shell/TermInput.h"
+#include "../shell/EShell.h"
 
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
@@ -12,7 +13,7 @@ etm::Terminal::Terminal():
     display(resources->getFont(), 30),
     background(resources.get()),
     focused(true),
-    takeInput(true),
+    takeInput(false),
     escapeNext(false),
     cursorBlink(500),
     shell(nullptr)
@@ -59,8 +60,9 @@ etm::Terminal::Terminal():
     //                             resources->getFont().getFace()->bbox.xMin) / resources->getFont().getFace()->units_per_EM << std::endl;
 
     displayWelcome();
-    displayPrompt();
-    prepareInput();
+    display.setCursorEnabled(false);
+    // displayPrompt();
+    // prepareInput();
 }
 
 void etm::Terminal::displayWelcome() {
@@ -75,10 +77,15 @@ void etm::Terminal::displayPrompt() {
 void etm::Terminal::prepareInput() {
     display.jumpCursor();
     display.lockCursor();
-    display.toggleCursor(true);
+    display.setCursorEnabled(true);
+}
+
+bool etm::Terminal::acceptInput() {
+    return takeInput || inputRequests.size();
 }
 
 void etm::Terminal::flushInputBuffer() {
+    display.setCursorEnabled(false);
     if (inputBuffer.size()) {
         if (inputRequests.size()) {
             inputRequests.front()->terminalInput(inputBuffer);
@@ -86,11 +93,13 @@ void etm::Terminal::flushInputBuffer() {
         } else {
             // Print the default prompt, etc.
             std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
+            shell->input(inputBuffer);
         }
         inputBuffer.clear();
     }
-    prepareInput();
-    displayPrompt();
+    if (acceptInput()) {
+        prepareInput();
+    }
 }
 
 void etm::Terminal::deleteLastChar() {
@@ -98,15 +107,23 @@ void etm::Terminal::deleteLastChar() {
 }
 
 // The shell is where user input will be directed
-void etm::Terminal::setShell(Shell &shell) {
+void etm::Terminal::setShell(EShell &shell) {
     this->shell = &shell;
 }
 
 void etm::Terminal::setTakeInput(bool value) {
-    takeInput = value;
+    if (takeInput != value) {
+        if (!takeInput && !inputRequests.size()) {
+            prepareInput();
+        }
+        takeInput = value;
+    }
 }
 
 void etm::Terminal::requestInput(TermInput &callback) {
+    if (!acceptInput()) {
+        prepareInput();
+    }
     inputRequests.push_back(&callback);
 }
 void etm::Terminal::cancelInputRequest(TermInput *callback) {
@@ -159,7 +176,7 @@ void etm::Terminal::updatePosition() {
 }
 
 void etm::Terminal::inputChar(char c) {
-    if (takeInput) {
+    if (acceptInput()) {
         doInputChar(c);
     }
 }
@@ -185,7 +202,7 @@ void etm::Terminal::doInputChar(char c) {
 }
 void etm::Terminal::inputString(const std::string &text) {
     for (char c : text) {
-        if (!takeInput) break;
+        if (!acceptInput()) break;
         inputChar(c);
     }
 }
@@ -234,7 +251,7 @@ void etm::Terminal::render() {
     assertGLErr("Terminal.cpp:94");
     resources->bindTextureShader();
     if (cursorBlink.hasEnded()) {
-        display.switchCursorToggle();
+        display.toggleCursor();
         cursorBlink.start();
     }
     display.render(resources.get());

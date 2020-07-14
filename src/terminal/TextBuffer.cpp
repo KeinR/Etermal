@@ -10,7 +10,7 @@ etm::TextBuffer::TextBuffer(Font &font, line_index_t width):
     font(&font), width(width),
     cursorRow(0), cursorCollumn(0),
     cursorMinRow(0), cursorMinCollumn(0),
-    displayCursor(false) {
+    cursorEnabled(false), displayCursor(false) {
 }
 
 void etm::TextBuffer::newline() {
@@ -111,14 +111,14 @@ void etm::TextBuffer::jumpCursor() {
     cursorRow = lines.size() - 1;
     cursorCollumn = lines[cursorRow].size();
 }
-void etm::TextBuffer::toggleCursor(bool val) {
-    displayCursor = val;
+void etm::TextBuffer::setCursorEnabled(bool val) {
+    cursorEnabled = val;
 }
-void etm::TextBuffer::switchCursorToggle() {
+bool etm::TextBuffer::cursorIsEnabled() {
+    return cursorEnabled;
+}
+void etm::TextBuffer::toggleCursor() {
     displayCursor = !displayCursor;
-}
-bool etm::TextBuffer::cursorIsToggled() {
-    return displayCursor;
 }
 
 
@@ -257,7 +257,7 @@ void etm::TextBuffer::render(Resources *res) {
     img.setWidth(advance);
     img.setHeight(lineHeight);
 
-    if (displayCursor) {
+    if (cursorEnabled && displayCursor) {
         res->bindPrimitiveShader();
 
         Rectangle cursor(res);
