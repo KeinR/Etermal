@@ -6,28 +6,6 @@
 
 static const char *getGLErrorStr(GLenum error);
 
-void etm::setScissor(int x, int y, int width, int height) {
-    int winWidth, winHeight;
-    glfwGetWindowSize(glfwGetCurrentContext(), &winWidth, &winHeight); // TEMP
-    glScissor(
-        x,
-        winHeight - height - y,
-        width,
-        height
-    );
-}
-
-void etm::resetScissor() {
-    int winWidth, winHeight;
-    glfwGetWindowSize(glfwGetCurrentContext(), &winWidth, &winHeight); // TEMP
-    glScissor(
-        0,
-        0,
-        winWidth,
-        winHeight
-    );
-}
-
 void etm::assertGLErr(const char *location) {
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
