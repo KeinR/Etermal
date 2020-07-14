@@ -55,6 +55,8 @@ namespace etm {
 
         Scroll scroll;
         Scrollbar scrollbar;
+        // Factor when doing mouse scroll
+        float scrollSensitivity;
 
         Timer cursorBlink;
 
@@ -74,6 +76,11 @@ namespace etm {
         Terminal();
         Terminal(Terminal &&other) = delete; // Temp
         Terminal &operator=(Terminal &&other) = delete;
+
+        // Set the modifier for how much is scrolled on mouse
+        // scroll.
+        // negative values will result in inverted scroll.
+        void setScrollSensitivity(float value);
 
         // The shell is where user input will be directed
         void setShell(EShell &shell);

@@ -17,6 +17,7 @@ etm::Terminal::Terminal():
     takeInput(false),
     escapeNext(false),
     scrollbar(resources.get(), scroll),
+    scrollSensitivity(25.0f),
     cursorBlink(500),
     shell(nullptr)
 {
@@ -70,6 +71,10 @@ void etm::Terminal::flushInputBuffer() {
     if (acceptInput()) {
         prepareInput();
     }
+}
+
+void etm::Terminal::setScrollSensitivity(float value) {
+    scrollSensitivity = value;
 }
 
 // The shell is where user input will be directed
@@ -204,7 +209,7 @@ void etm::Terminal::inputActionKey(actionKey key) {
 }
 void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) {
     if (viewport.hasPoint(mouseX, mouseY)) {
-        scroll.scroll(-yOffset * 6);
+        scroll.scroll(-yOffset * scrollSensitivity);
         scrollbar.update();
         std::cout << "scrolling" << std::endl;
     }
