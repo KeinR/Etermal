@@ -43,6 +43,8 @@ namespace etm {
         void reformat(lines_number_t row, line_index_t collumn);
         void checkCursorCollumn();
         void checkCursorRow();
+        // Returns true if the coords are out of bounds
+        bool outOfBounds(lines_number_t row, line_index_t collumn);
 
     public:
         // Create text buffer with width
@@ -89,16 +91,12 @@ namespace etm {
         void setWidth(line_index_t width);
         line_index_t getWidth();
 
-        // (Rows = y, Collumns = x)
-        // Rows inverted.
-        // Row 0 would be the current row, 1 would the the
-        // one above it.
-        // Rows and collum values are automatically min/maxed
-        // to prevent buffer over/underflows
-        // void write(lines_number_t row, line_index_t collumn, char c);
-        // // Unlike write(...), erase(...) will do nothing for indices that are
-        // // out of bounds
-        // void erase(lines_number_t row, line_index_t collumn);
+        // Overwrites character at row, collumn.
+        // Does nothing if out of bounds.
+        void write(lines_number_t row, line_index_t collumn, char c);
+        // Erases character at row, collumn.
+        // If out of bounds, does nothing.
+        void erase(lines_number_t row, line_index_t collumn);
         // Adds the char to the end of the buffer
         void append(char c);
 

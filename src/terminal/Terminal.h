@@ -76,8 +76,8 @@ namespace etm {
         // NOTE: THE DESIRED CONTEXT MUST BE CURRENT WHEN IT IS INITIALIZED!!!
         // FAILURE TO DO SO WILL RESULT IN BAD THIGNS HAPPENING
         Terminal();
-        Terminal(Terminal &&other) = default;
-        Terminal &operator=(Terminal &&other) = default;
+        Terminal(Terminal &&other) = delete; // Temp
+        Terminal &operator=(Terminal &&other) = delete;
 
         // The shell is where user input will be directed
         void setShell(EShell &shell);

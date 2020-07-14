@@ -30,6 +30,10 @@ bool etm::TextBuffer::cursorAtEnd() {
     return cursorRow == lines.size() - 1 && cursorCollumn == lines[cursorRow].size();
 }
 
+bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t collumn) {
+    return row >= lines.size() || collumn >= lines[row].size();
+}
+
 etm::TextBuffer::lines_number_t etm::TextBuffer::getCountRows() {
     return lines.size();
 }
@@ -188,6 +192,14 @@ void etm::TextBuffer::doAppend(char c) {
     }
 }
 
+void etm::TextBuffer::write(lines_number_t row, line_index_t collumn, char c) {
+    if (outOfBounds(row, collumn)) return;
+}
+void etm::TextBuffer::erase(lines_number_t row, line_index_t collumn) {
+    if (outOfBounds(row, collumn)) return;
+    
+}
+
 void etm::TextBuffer::append(char c) {
     const bool moveCursor = cursorAtEnd();
     doAppend(c);
@@ -197,17 +209,16 @@ void etm::TextBuffer::append(char c) {
 }
 
 void etm::TextBuffer::insertAtCursor(char c) {
-    insert(cursorRow, cursorCollumn, c);
+    if (cursorAtEnd()) {
+        doAppend(c);
+    } else {
+        insert(cursorRow, cursorCollumn, c);
+    }
     moveCursorCollumnWrap(1);
 }
 
 void etm::TextBuffer::insert(lines_number_t row, line_index_t collumn, char c) {
-    if (cursorAtEnd()) {
-        doAppend(c);
-        return;
-    }
-
-    // At this point, it is not possible that there are no lines
+    if (outOfBounds(row, collumn)) return;
 
     if (c == '\n') {
         // Move the text after the newline to the newly created line
