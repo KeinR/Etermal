@@ -58,17 +58,15 @@ bool etm::Terminal::acceptInput() {
 
 void etm::Terminal::flushInputBuffer() {
     display.setCursorEnabled(false);
-    if (inputBuffer.size()) {
-        if (inputRequests.size()) {
-            inputRequests.front()->terminalInput(inputBuffer);
-            inputRequests.pop_front();
-        } else {
-            // Print the default prompt, etc.
-            std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
-            shell->input(inputBuffer);
-        }
-        inputBuffer.clear();
+    if (inputRequests.size()) {
+        inputRequests.front()->terminalInput(inputBuffer);
+        inputRequests.pop_front();
+    } else {
+        // Print the default prompt, etc.
+        std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
+        shell->input(inputBuffer);
     }
+    inputBuffer.clear();
     if (acceptInput()) {
         prepareInput();
     }
