@@ -4,7 +4,6 @@
 #include <cmath>
 
 #include "gui/Rectangle.h"
-#include "gui/Image.h"
 
 etm::TextBuffer::TextBuffer(Resources *res, line_index_t width):
     res(res), width(width),
@@ -333,24 +332,14 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t collumn) {
     }
 }
 
-void etm::TextBuffer::renderChar(int x, int y, char c) {
+void etm::TextBuffer::bindChar(char c) {
     textCache_t::iterator loc = textCache.find(c);
-    Image *img;
     if (loc != textCache.end()) {
-        img = &loc->second;
+        loc->second.bind();
     } else {
-        Image nm(res);
-        res->getFont().renderChar(c, nm);
-        textCache[c] = std::move(nm);
-        img = &textCache[c];
+        textCache[c] = res->getFont().renderChar(c);
+        textCache[c].bind();
     }
-    const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
-    const int advance = res->getFont().getFace()->size->metrics.max_advance / 64;
-    img->setWidth(advance);
-    img->setHeight(lineHeight);
-    img->setX(x);
-    img->setY(y);
-    img->render();
 }
 
 void etm::TextBuffer::render(int x, int y) {
@@ -371,13 +360,17 @@ void etm::TextBuffer::render(int x, int y) {
 
     res->bindTextureShader();
 
+    Model model(x, y, advance, lineHeight);
+
     for (lines_number_t r = 0; r < lines.size(); r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.size(); c++) {
-            renderChar(x, y, line[c]);
-            x += advance;
+            bindChar(line[c]);
+            model.set(res->getShader());
+            res->renderRectangle();
+            model.x += advance;
         }
-        x = 0;
-        y += lineHeight;
+        model.x = 0;
+        model.y += lineHeight;
     }
 }

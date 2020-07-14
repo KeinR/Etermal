@@ -129,15 +129,19 @@ void etm::Terminal::flush() {
 
 void etm::Terminal::setX(float x) {
     viewport.x = x;
+    updatePosition();
 }
 void etm::Terminal::setY(float y) {
     viewport.y = y;
+    updatePosition();
 }
 void etm::Terminal::setMaxWidth(float width) {
     viewport.width = width;
+    updatePosition();
 }
 void etm::Terminal::setMaxHeight(float height) {
     viewport.height = height;
+    updatePosition();
 }
 
 void etm::Terminal::updatePosition() {

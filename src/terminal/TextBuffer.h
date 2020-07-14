@@ -6,7 +6,7 @@
 #include <map>
 
 #include "render/Model.h"
-#include "gui/Image.h"
+#include "render/Texture.h"
 
 #include "Resources.h" // TEMP
 
@@ -20,7 +20,7 @@ namespace etm {
         typedef std::vector<line_t> lines_t;
         typedef lines_t::size_type lines_number_t;
     private:
-        typedef std::map<char, Image> textCache_t;
+        typedef std::map<char, Texture> textCache_t;
 
         Resources *res;
         std::vector<bool> newlineChars;
@@ -55,7 +55,8 @@ namespace etm {
         void doErase(lines_number_t row, line_index_t collumn);
         void doTrunc();
 
-        void renderChar(int x, int y, char c);
+        // Bind texture for char
+        void bindChar(char c);
 
     public:
         // Create text buffer with width

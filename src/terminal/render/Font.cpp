@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 
-#include "../gui/Image.h"
 #include "../util/error.h"
 #include "glfw.h"
 
@@ -32,7 +31,7 @@ FT_Face etm::Font::getFace() {
 void etm::Font::setSize(unsigned int size) {
     FT_Set_Pixel_Sizes(face, 0, size);
 }
-void etm::Font::renderChar(char c, Image &out) {
+etm::Texture etm::Font::renderChar(char c) {
 
     // std::cout << "font self = " << this << std::endl;
 
@@ -54,13 +53,6 @@ void etm::Font::renderChar(char c, Image &out) {
         std::vector<unsigned char> data(lineHeight * uWidth * channels);
         const int yShift = face->size->metrics.ascender / 64 - face->glyph->bitmap_top;
         const int xShift = (uWidth - face->glyph->bitmap.width) / 2;
-        // std::cout << "face->size->metrics.ascender = " << face->size->metrics.ascender << std::endl;
-        // std::cout << "face->glyph->bitmap_top = " << face->glyph->bitmap_top << std::endl;
-        // std::cout << "face->glyph->bitmap.rows = " << face->glyph->bitmap.rows << std::endl;
-        // std::cout << "face->glyph->bitmap.width = " << face->glyph->bitmap.width << std::endl;
-        // std::cout << "lineHeight = " << lineHeight << std::endl;
-        // std::cout << "uWidth = " << uWidth << std::endl;
-        // unsigned char *data = new unsigned char[face->glyph->bitmap.rows * face->glyph->bitmap.width * 4];
         for (unsigned int sy = 0; sy < face->glyph->bitmap.rows; sy++) {
             for (unsigned int sx = 0; sx < face->glyph->bitmap.width; sx++) {
                 // The source index
@@ -92,16 +84,16 @@ void etm::Font::renderChar(char c, Image &out) {
                     const int insIndex = ((xShift + static_cast<int>(sx)) + (lineHeight - 1 - (yShift + static_cast<int>(sy))) * uWidth) * channels;
                     // Apply the bitmap value to every channel in the insertion bitmap in `render`
                     for (int c = 0; c < channels; c++) {
-                        // Modify the channel value by the corresponding 0-1 float value in channelMod
-                        data.at(insIndex + c) = std::round(face->glyph->bitmap.buffer[srcIndex] * channelMod[c]);
+                        data.at(insIndex + c) = face->glyph->bitmap.buffer[srcIndex];
                     }
                 }
             }
         }
 
-        out.setImage(GL_RGBA, uWidth, lineHeight, data.data());
+        Texture tex;
+        tex.setData(GL_RGBA, uWidth, lineHeight, data.data());
 
-        // delete[] data;
+        return tex;
     } else {
         throw fe_error("Failed to load glyph: " + std::to_string(error));
     }

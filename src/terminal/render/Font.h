@@ -5,8 +5,7 @@
 
 #include "ftype.h"
 #include "FontLibrary.h" // TEMP, do forward
-
-namespace etm { class Image; }
+#include "Texture.h"
 
 namespace etm {
     class Font {
@@ -20,7 +19,7 @@ namespace etm {
         // Font &operator=(Font &&other);
         void setSize(unsigned int size);
         // x/y are the top-left coordiates, with y increasing down.
-        void renderChar(char c, Image &out);
+        Texture renderChar(char c);
     };
 }
 

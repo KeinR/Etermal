@@ -50,6 +50,9 @@ int main() {
         etm::Terminal term;
         terminal = &term;
 
+        term.setMaxWidth(700);
+        term.setMaxHeight(700);
+
         etm::Shell shell;
 
         term.setShell(shell);
