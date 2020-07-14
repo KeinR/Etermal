@@ -52,6 +52,8 @@ namespace etm {
         void checkCursorRow();
         // Returns true if the coords are out of bounds
         bool outOfBounds(lines_number_t row, line_index_t collumn);
+        void doErase(lines_number_t row, line_index_t collumn);
+        void doTrunc();
 
         void renderChar(int x, int y, char c);
 
@@ -103,11 +105,18 @@ namespace etm {
         // Overwrites character at row, collumn.
         // Does nothing if out of bounds.
         void write(lines_number_t row, line_index_t collumn, char c);
+        // Erases the character before the cursor, and deincrements the
+        // cursor's index.
+        // If the collumn is zero, will erase the last char on the next line.
+        // If that'd be out of bounds, does nothing.
+        void eraseAtCursor();
         // Erases character at row, collumn.
         // If out of bounds, does nothing.
         void erase(lines_number_t row, line_index_t collumn);
         // Adds the char to the end of the buffer
         void append(char c);
+        // Removes the last char
+        void trunc();
 
         // Insert the char where the cursor is,
         // and moves it forward by one

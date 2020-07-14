@@ -212,7 +212,7 @@ void etm::Terminal::inputActionKey(actionKey key) {
             inputChar('\n');
             break;
         case BACKSPACE:
-            deleteLastChar();
+            display.eraseAtCursor();
             break;
         case UP:
             display.moveCursorRow(-1);

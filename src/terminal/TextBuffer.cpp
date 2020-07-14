@@ -130,26 +130,6 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
     return width;
 }
 
-// void etm::TextBuffer::write(data_index_t row, data_index_t collumn, char c) {
-//     // const int height = data.size() / width; // Zero index'd
-//     // if (row > height) {
-//     //     row = height;
-//     // } else if (row < 0) {
-//     //     row = 0;
-//     // }
-//     // if (collumn > width) {
-//     //     collumn = width;
-//     // } else if (collumn < 0) {
-//     //     collumn = 0;
-//     // }
-
-
-
-// }
-
-// void etm::TextBuffer::erase(data_index_t row, data_index_t collumn) {
-// }
-
 void etm::TextBuffer::doAppend(char c) {
     if (c == '\n') {
         newlineChars.back() = true;
@@ -194,9 +174,60 @@ void etm::TextBuffer::doAppend(char c) {
 
 void etm::TextBuffer::write(lines_number_t row, line_index_t collumn, char c) {
     if (outOfBounds(row, collumn)) return;
+
+    if (collumn == lines[row].size()-1 && newlineChars[row] && c != '\n') {
+        // If was the last char and the line was broken manually,
+        // instead it deleted the newline
+        newlineChars[row] = false;
+        lines[row].push_back(c);
+        reformat(row, collumn);
+    } else {
+        lines[row][collumn] = c;
+    }
 }
+
+void etm::TextBuffer::eraseAtCursor() {
+    lines_number_t row = cursorRow;
+    line_index_t collumn = cursorCollumn - 1;
+    // Because it's unsigned it underflows to big number
+    if (collumn > lines[row].size()) {
+        row--;
+        // Because it's unsigned it underflows to big number
+        if (row < lines.size() && row >= cursorMinRow) {
+            collumn = lines[row].size();
+        } else {
+            return;
+        }
+    }
+    if (collumn >= cursorMinCollumn && collumn < lines[row].size()) {
+        if (cursorAtEnd()) {
+            doTrunc();
+            jumpCursor();
+        } else {
+            erase(row, collumn);
+            cursorCollumn = collumn;
+            cursorRow = row;
+        }
+    }
+}
+
 void etm::TextBuffer::erase(lines_number_t row, line_index_t collumn) {
-    if (outOfBounds(row, collumn)) return;
+    if (!outOfBounds(row, collumn)) {
+        doErase(row, collumn);
+    }
+}
+void etm::TextBuffer::doErase(lines_number_t row, line_index_t collumn) {
+    // TODO: reformating needs to be optimized
+
+    if (collumn == lines[row].size()-1 && newlineChars[row]) {
+        // If was the last char and the line was broken manually,
+        // instead it deleted the newline
+        newlineChars[row] = false;
+        reformat(row, collumn);
+    } else {
+        lines[row].erase(collumn, 1);
+        reformat(row, collumn-1);
+    }
 
 }
 
@@ -206,6 +237,47 @@ void etm::TextBuffer::append(char c) {
     if (moveCursor) {
         jumpCursor();
     }
+}
+
+void etm::TextBuffer::trunc() {
+    const bool moveCursor = cursorAtEnd();
+    doTrunc();
+    if (moveCursor) {
+        jumpCursor();
+    }
+}
+
+void etm::TextBuffer::doTrunc() {
+
+    if (lines.size()) {
+        if (!lines.back().size()) {
+            // If line empty, delete it
+            if (lines.size() > 1) {
+                // Only if this isn't the last line
+                lines.pop_back();
+            } else {
+                // This is the last line and it has no chars.
+                // Deny everything.
+                return;
+            }
+        }
+        lines.back().pop_back();
+        // Don't delete line if it's the only one.
+        if (lines.size() > 1 && !newlineChars[newlineChars.size() - 2]) {
+            // Delete line if empty and last line didn't force
+            // a newline break.
+            if (!lines.back().size()) {
+                lines.pop_back();
+                newlineChars.pop_back();
+            } else if (width - lines[lines.size()-2].size() >= lines.back().size()) {
+                // Move data, as it can sort-of reverse-wrap back to the previous line
+                lines[lines.size()-2] += lines.back();
+                lines.pop_back();
+                newlineChars.pop_back();
+            }
+        }
+    }
+
 }
 
 void etm::TextBuffer::insertAtCursor(char c) {
