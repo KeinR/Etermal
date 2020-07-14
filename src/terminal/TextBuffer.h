@@ -108,6 +108,7 @@ namespace etm {
         // Called by insertAtCursor
         void insert(lines_number_t row, line_index_t collumn, char c);
 
+        // ---Assumes that the primitive shader has already been set---
         void render(Resources *res);
     };
 }

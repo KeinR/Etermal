@@ -240,26 +240,49 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 }
 
 void etm::Terminal::render() {
+    // Store caller's state
+    GLboolean scissor, blend;
+    GLint program;
+    GLint srcRGB, dstRGB, srcAlpha, dstAlpha;
+    glGetBooleanv(GL_SCISSOR_TEST, &scissor);
+    glGetBooleanv(GL_BLEND, &blend);
+    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+    // ty stack https://stackoverflow.com/a/40025210/10821333
+    glGetIntegerv(GL_BLEND_SRC_RGB, &srcRGB);
+    glGetIntegerv(GL_BLEND_DST_RGB, &dstRGB);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &srcAlpha);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &dstAlpha);
+
+
+    // Apply _our_ desired state
     glEnable(GL_SCISSOR_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    // Run animiations
+    if (cursorBlink.hasEnded()) {
+        display.toggleCursor();
+        cursorBlink.start();
+    }
+
+    // Render
     assertGLErr("Terminal.cpp:91");
     resources->bindPrimitiveShader();
     assertGLErr("Terminal.cpp:92");
     background.render();
     assertGLErr("Terminal.cpp:94");
-    resources->bindTextureShader();
-    if (cursorBlink.hasEnded()) {
-        display.toggleCursor();
-        cursorBlink.start();
-    }
     display.render(resources.get());
     assertGLErr("Terminal.cpp:96");
-    // output.render();
-    // input.render();
-    // resources->bindTextureShader();
-    // lines[0].render();
-    // testText.render();
-    // testImage.render();
+
+
+
+    // Restore caller's state
+    if (!scissor) {
+        glDisable(GL_SCISSOR_TEST);
+    }
+    if (!blend) {
+        glDisable(GL_BLEND);
+    }
+    glUseProgram(program);
+    glBlendFuncSeparate(srcRGB, dstAlpha, srcAlpha, dstAlpha);
 }

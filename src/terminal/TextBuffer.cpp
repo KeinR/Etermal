@@ -63,11 +63,8 @@ void etm::TextBuffer::moveCursorCollumn(int distance) {
 void etm::TextBuffer::moveCursorRow(int distance) {
     cursorRow = std::min(std::max(cursorRow + distance, cursorMinRow), lines.size()-1);
     cursorCollumn = std::min(cursorCollumn, lines[cursorRow].size());
-    std::cout << "lines[cursorRow].size() = " << lines[cursorRow].size() << std::endl;
-    std::cout << "cursorCollumn = " << cursorCollumn << std::endl;
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
-    line_index_t oldCursorCollumn = cursorCollumn;
     int collumnTemp = static_cast<int>(cursorCollumn) + distance;
 
     if (collumnTemp > static_cast<int>(lines[cursorRow].size())) {
@@ -258,8 +255,8 @@ void etm::TextBuffer::render(Resources *res) {
     img.setHeight(lineHeight);
 
     if (cursorEnabled && displayCursor) {
-        res->bindPrimitiveShader();
-
+        // Assume that the primitive shader was already set by
+        // the terminal
         Rectangle cursor(res);
         cursor.setColor(0xffffff);
         cursor.setX(cursorCollumn * advance);
