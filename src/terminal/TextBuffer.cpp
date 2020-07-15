@@ -30,8 +30,8 @@ bool etm::TextBuffer::cursorAtEnd() {
     return cursorRow == lines.size() - 1 && cursorCollumn == lines[cursorRow].size();
 }
 
-bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t collumn) {
-    return row >= lines.size() || collumn >= lines[row].size();
+bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t column) {
+    return row >= lines.size() || column >= lines[row].size();
 }
 
 void etm::TextBuffer::setDefForeGColor(const Color &color) {
@@ -60,8 +60,8 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getCursorCollumn() {
 void etm::TextBuffer::setCursorMinRow(lines_number_t row) {
     cursorMinRow = row;
 }
-void etm::TextBuffer::setCursorMinCollumn(line_index_t collumn) {
-    cursorMinCollumn = collumn;
+void etm::TextBuffer::setCursorMinCollumn(line_index_t column) {
+    cursorMinCollumn = column;
 }
 
 void etm::TextBuffer::lockCursor() {
@@ -81,10 +81,10 @@ void etm::TextBuffer::moveCursorRow(int distance) {
     cursorCollumn = std::min(cursorCollumn, lines[cursorRow].size());
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
-    int collumnTemp = static_cast<int>(cursorCollumn) + distance;
+    int columnTemp = static_cast<int>(cursorCollumn) + distance;
 
-    if (collumnTemp > static_cast<int>(lines[cursorRow].size())) {
-        cursorCollumn = static_cast<line_index_t>(collumnTemp);
+    if (columnTemp > static_cast<int>(lines[cursorRow].size())) {
+        cursorCollumn = static_cast<line_index_t>(columnTemp);
         while (cursorCollumn > lines[cursorRow].size()) {
             if (cursorRow + 1 < lines.size()) {
                 cursorCollumn -= lines[cursorRow].size();
@@ -94,20 +94,20 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
                 break;
             }
         }
-    } else if (collumnTemp < 0) {
-        // collumnTemp += static_cast<int>(oldCursorCollumn);
-        while (collumnTemp < 0) {
+    } else if (columnTemp < 0) {
+        // columnTemp += static_cast<int>(oldCursorCollumn);
+        while (columnTemp < 0) {
             if (cursorRow - 1 >= cursorMinRow) {
                 cursorRow--;
-                collumnTemp += lines[cursorRow].size();
+                columnTemp += lines[cursorRow].size();
             } else {
-                collumnTemp = 0;
+                columnTemp = 0;
                 break;
             }
         }
-        cursorCollumn = static_cast<line_index_t>(collumnTemp);
+        cursorCollumn = static_cast<line_index_t>(columnTemp);
     } else {
-        cursorCollumn = static_cast<line_index_t>(std::max(collumnTemp, 0));
+        cursorCollumn = static_cast<line_index_t>(std::max(columnTemp, 0));
         // Wrap cursor to next line.
         // I mean MinTTY does it so really there's no reason not to
         if (cursorRow < lines.size() - 1 && cursorCollumn == lines[cursorRow].size()) {
@@ -188,61 +188,61 @@ void etm::TextBuffer::doAppend(const Character &c) {
     }
 }
 
-void etm::TextBuffer::write(lines_number_t row, line_index_t collumn, const Character &c) {
-    if (outOfBounds(row, collumn)) return;
+void etm::TextBuffer::write(lines_number_t row, line_index_t column, const Character &c) {
+    if (outOfBounds(row, column)) return;
 
-    if (collumn == lines[row].size()-1 && lines[row].hasNewline() && c.getValue() != '\n') {
+    if (column == lines[row].size()-1 && lines[row].hasNewline() && c.getValue() != '\n') {
         // If was the last char and the line was broken manually,
         // instead it deleted the newline
         lines[row].setNewline(false);
         lines[row].append(c);
-        reformat(row, collumn);
+        reformat(row, column);
     } else {
-        lines[row][collumn] = c;
+        lines[row][column] = c;
     }
 }
 
 void etm::TextBuffer::eraseAtCursor() {
     lines_number_t row = cursorRow;
-    line_index_t collumn = cursorCollumn - 1;
+    line_index_t column = cursorCollumn - 1;
     // Because it's unsigned it underflows to big number
-    if (collumn > lines[row].size()) {
+    if (column > lines[row].size()) {
         row--;
         // Because it's unsigned it underflows to big number
         if (row < lines.size() && row >= cursorMinRow) {
-            collumn = lines[row].size();
+            column = lines[row].size();
         } else {
             return;
         }
     }
-    if (collumn >= cursorMinCollumn && collumn < lines[row].size()) {
+    if (column >= cursorMinCollumn && column < lines[row].size()) {
         if (cursorAtEnd()) {
             doTrunc();
             jumpCursor();
         } else {
-            erase(row, collumn);
-            cursorCollumn = collumn;
+            erase(row, column);
+            cursorCollumn = column;
             cursorRow = row;
         }
     }
 }
 
-void etm::TextBuffer::erase(lines_number_t row, line_index_t collumn) {
-    if (!outOfBounds(row, collumn)) {
-        doErase(row, collumn);
+void etm::TextBuffer::erase(lines_number_t row, line_index_t column) {
+    if (!outOfBounds(row, column)) {
+        doErase(row, column);
     }
 }
-void etm::TextBuffer::doErase(lines_number_t row, line_index_t collumn) {
+void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
     // TODO: reformating needs to be optimized
 
-    if (collumn == lines[row].size()-1 && lines[row].hasNewline()) {
+    if (column == lines[row].size()-1 && lines[row].hasNewline()) {
         // If was the last char and the line was broken manually,
         // instead it deleted the newline
         lines[row].setNewline(false);
-        reformat(row, collumn);
+        reformat(row, column);
     } else {
-        lines[row].erase(collumn, 1);
-        reformat(row, collumn-1);
+        lines[row].erase(column, 1);
+        reformat(row, column-1);
     }
 
 }
@@ -303,14 +303,14 @@ void etm::TextBuffer::insertAtCursor(const Character &c) {
     moveCursorCollumnWrap(1);
 }
 
-void etm::TextBuffer::insert(lines_number_t row, line_index_t collumn, const Character &c) {
-    if (outOfBounds(row, collumn)) return;
+void etm::TextBuffer::insert(lines_number_t row, line_index_t column, const Character &c) {
+    if (outOfBounds(row, column)) return;
 
     if (c.getValue() == '\n') {
         if (!lines[row].hasNewline()) {            
             // Move the text after the newline to the newly created line
-            Line::string_t buffer(lines[row].substr(collumn));
-            lines[row].erase(collumn);
+            Line::string_t buffer(lines[row].substr(column));
+            lines[row].erase(column);
             lines[row].setNewline(true);
             if (row + 1 >= lines.size()) {
                 newline();
@@ -325,17 +325,17 @@ void etm::TextBuffer::insert(lines_number_t row, line_index_t collumn, const Cha
             insertNewline(row);
         }
     } else {
-        lines[row].insert(collumn, c);
+        lines[row].insert(column, c);
         if (lines[row].size() > width) {
-            reformat(row, collumn);
+            reformat(row, column);
         }
     }
 
 }
 
-void etm::TextBuffer::reformat(lines_number_t row, line_index_t collumn) {
-    Line::string_t buffer(lines[row].substr(collumn));
-    lines[row].erase(collumn);
+void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
+    Line::string_t buffer(lines[row].substr(column));
+    lines[row].erase(column);
     for (lines_number_t r = row+1; r < lines.size(); r++) {
         lines[r].copyTo(buffer);
         if (lines[r].hasNewline()) {

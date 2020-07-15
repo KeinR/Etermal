@@ -56,13 +56,13 @@ namespace etm {
         void insertNewline(line_index_t row);
         bool cursorAtEnd();
         void doAppend(const Character &c);
-        // Re-appends all chars after and including row and collumn to re-format the text
-        void reformat(lines_number_t row, line_index_t collumn);
+        // Re-appends all chars after and including row and column to re-format the text
+        void reformat(lines_number_t row, line_index_t column);
         void checkCursorCollumn();
         void checkCursorRow();
         // Returns true if the coords are out of bounds
-        bool outOfBounds(lines_number_t row, line_index_t collumn);
-        void doErase(lines_number_t row, line_index_t collumn);
+        bool outOfBounds(lines_number_t row, line_index_t column);
+        void doErase(lines_number_t row, line_index_t column);
         void doTrunc();
 
         // Bind texture for char
@@ -84,7 +84,7 @@ namespace etm {
         line_index_t getCursorCollumn();
 
         void setCursorMinRow(lines_number_t row);
-        void setCursorMinCollumn(line_index_t collumn);
+        void setCursorMinCollumn(line_index_t column);
 
         // Prevent cursor from moving before its location
         void lockCursor();
@@ -119,17 +119,17 @@ namespace etm {
         void setWidth(line_index_t width);
         line_index_t getWidth();
 
-        // Overwrites character at row, collumn.
+        // Overwrites character at row, column.
         // Does nothing if out of bounds.
-        void write(lines_number_t row, line_index_t collumn, const Character &c);
+        void write(lines_number_t row, line_index_t column, const Character &c);
         // Erases the character before the cursor, and deincrements the
         // cursor's index.
-        // If the collumn is zero, will erase the last char on the next line.
+        // If the column is zero, will erase the last char on the next line.
         // If that'd be out of bounds, does nothing.
         void eraseAtCursor();
-        // Erases character at row, collumn.
+        // Erases character at row, column.
         // If out of bounds, does nothing.
-        void erase(lines_number_t row, line_index_t collumn);
+        void erase(lines_number_t row, line_index_t column);
         // Adds the char to the end of the buffer
         void append(const Character &c);
         // Removes the last char
@@ -139,7 +139,7 @@ namespace etm {
         // and moves it forward by one
         void insertAtCursor(const Character &c);
         // Called by insertAtCursor
-        void insert(lines_number_t row, line_index_t collumn, const Character &c);
+        void insert(lines_number_t row, line_index_t column, const Character &c);
 
         // ---Assumes that the primitive shader has already been set---
         void render(int x, int y);
