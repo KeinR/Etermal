@@ -12,7 +12,7 @@ function comp {
 `xxd -i ${1}.frag`
 #endif
 EOF
-    sed -E -i\
+    sed -i\
         -e 's/unsigned char/static const char/g'\
         -e 's/unsigned int/static int/g'\
         -e 's/  /    /g'\
