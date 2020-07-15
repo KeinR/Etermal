@@ -30,9 +30,10 @@ etm::Terminal::Terminal():
     scrollbar.setSliderColor(0xbababa);
     scrollbar.setBarColor(0xf5f5f5);
 
-    // Must happen before position update
-    resources->getFont().setSize(18);
+    setFontSize(18);
 
+    // Superfluous given that setFontSize() calls it, however just
+    // to make sure...
     updatePosition();
 
     displayWelcome();
@@ -153,6 +154,12 @@ void etm::Terminal::setMaxHeight(float height) {
     updatePosition();
 }
 
+void etm::Terminal::setFontSize(unsigned int size) {
+    resources->getFont().setSize(size);
+    scroll.setAlign(resources->getFont().getCharHeight());
+    updatePosition();
+}
+
 void etm::Terminal::updatePosition() {
     background.setX(viewport.x);
     background.setY(viewport.y);
@@ -224,9 +231,10 @@ void etm::Terminal::inputActionKey(actionKey key) {
 }
 void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) {
     if (viewport.hasPoint(mouseX, mouseY)) {
-        scroll.scroll(-yOffset * scrollSensitivity);
-        scrollbar.update();
-        std::cout << "scrolling" << std::endl;
+        if (scroll.scroll(-yOffset * scrollSensitivity)) {
+            scrollbar.update();
+            std::cout << "scrolling" << std::endl;
+        }
     }
 }
 void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {

@@ -42,6 +42,10 @@ namespace etm {
         Scrollbar scrollbar;
         // Factor when doing mouse scroll
         float scrollSensitivity;
+        // Scroll builds up until it reaches one char
+        // height...
+        // Aligns the scrolling to the text
+        float scrollBuffer;
 
         TextBuffer display;
         Rectangle background;
@@ -112,9 +116,6 @@ namespace etm {
         void dispText(const std::string &str) override;
         // Manually pushes (flushes) the display buffer to the display
         void flush() override;
-        // // Sets whether the terminal should automatically flush
-        // // the dispaly buffer
-        // void setAutoFlush(bool val);
 
         void setX(float x);
         void setY(float y);
@@ -125,7 +126,7 @@ namespace etm {
         // Note that this will resize the terminal,
         // however it will not become larger than the set
         // max width and height
-        // void setFontSize(int size);
+        void setFontSize(unsigned int size);
 
         // Position elemnts according to coords
         void updatePosition();

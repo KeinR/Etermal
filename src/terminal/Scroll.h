@@ -15,9 +15,17 @@ namespace etm {
         // Maximum scroll offset
         float maxOffset;
 
+        // Scroll units
+        float align;
+        // Scroll unit progress
+        float alignBuffer;
+
         void recalc();
     public:
         Scroll();
+
+        // Must be positive and not equal to zero
+        void setAlign(float value);
 
         void setNetHeight(int height);
         void setGrossHeight(int height);
@@ -27,7 +35,8 @@ namespace etm {
         float getOffset();
         float getMaxOffset();
 
-        void scroll(float ammount);
+        // Returns true if actually scrolled
+        bool scroll(float ammount);
         // Scroll to max offset
         void jump();
     };
