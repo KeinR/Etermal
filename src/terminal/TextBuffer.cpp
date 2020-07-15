@@ -14,9 +14,13 @@ etm::TextBuffer::pos::pos(lines_number_t row, line_index_t column):
 }
 
 etm::TextBuffer::TextBuffer(Resources *res, line_index_t width):
-    res(res), width(width),
-    cursorEnabled(false), displayCursor(false),
-    defForegroundColor(0xffffff), defBackgroundColor(0x000000) {
+    res(res), width(width), dispCursor(res),
+    cursorEnabled(false), displayCursor(false)
+{
+    setDefForeGColor(0xffffff);
+    setDefBackGColor(0x000000);
+    setCursorColor(0xffffff);
+    setCursorWidth(1);
 }
 
 void etm::TextBuffer::newline() {
@@ -38,6 +42,13 @@ bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t column) {
     return row >= lines.size() || column >= lines[row].size();
 }
 
+int etm::TextBuffer::charWidth() {
+    return res->getFont().getCharWidth();
+}
+int etm::TextBuffer::charHeight() {
+    return res->getFont().getCharHeight();
+}
+
 void etm::TextBuffer::setDefForeGColor(const Color &color) {
     defForegroundColor = color;
 }
@@ -46,8 +57,7 @@ void etm::TextBuffer::setDefBackGColor(const Color &color) {
 }
 
 int etm::TextBuffer::getHeight() {
-    const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
-    return static_cast<int>(lines.size()) * lineHeight;
+    return static_cast<int>(lines.size()) * charHeight();
 }
 
 etm::TextBuffer::lines_number_t etm::TextBuffer::getCountRows() {
@@ -136,6 +146,14 @@ bool etm::TextBuffer::cursorIsEnabled() {
 }
 void etm::TextBuffer::toggleCursor() {
     displayCursor = !displayCursor;
+}
+
+void etm::TextBuffer::setCursorColor(const Color &color) {
+    dispCursor.setColor(color);
+}
+
+void etm::TextBuffer::setCursorWidth(int value) {
+    dispCursor.setWidth(value);
 }
 
 
@@ -363,25 +381,19 @@ void etm::TextBuffer::bindChar(char c) {
 }
 
 void etm::TextBuffer::render(int x, int y) {
-    const int lineHeight = res->getFont().getFace()->size->metrics.height / 64;
-    const int advance = res->getFont().getFace()->size->metrics.max_advance / 64;
 
     if (cursorEnabled && displayCursor) {
         // Assume that the primitive shader was already set by
         // the terminal
-        // TODO: Make class var
-        Rectangle dispCursor(res);
-        dispCursor.setColor(0xffffff);
-        dispCursor.setX(cursor.column * advance);
-        dispCursor.setY(cursor.row * lineHeight);
-        dispCursor.setWidth(1);
-        dispCursor.setHeight(lineHeight);
+        dispCursor.setX(cursor.column * charWidth());
+        dispCursor.setY(cursor.row * charHeight());
+        dispCursor.setHeight(charHeight());
         dispCursor.render();
     }
 
     res->bindTextShader();
 
-    Model model(x, y, advance, lineHeight);
+    Model model(x, y, charWidth(), charHeight());
 
 
     Color *backgroundColor = &defBackgroundColor;
@@ -408,9 +420,9 @@ void etm::TextBuffer::render(int x, int y) {
             bindChar(chr.getValue());
             model.set(res->getShader());
             res->renderRectangle();
-            model.x += advance;
+            model.x += charWidth();
         }
         model.x = 0;
-        model.y += lineHeight;
+        model.y += charHeight();
     }
 }

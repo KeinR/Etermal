@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 
+#include "gui/Rectangle.h"
 #include "render/Model.h"
 #include "render/Texture.h"
 #include "render/Color.h"
@@ -44,7 +45,11 @@ namespace etm {
 
         pos cursor;
         pos cursorMin;
+        Rectangle dispCursor; // Cursor display
 
+        // Cursor's enabled state is manually controlled.
+        // The display state is intended to be controlled through
+        // animations (blinking), hence the toggleCursor() func
         bool cursorEnabled;
         bool displayCursor;
 
@@ -72,6 +77,12 @@ namespace etm {
 
         // Bind texture for char
         void bindChar(char c);
+
+        // Wrappers for calls to
+        // res->getFont().getCharWidth() and
+        // res->getFont().getCharHeight() respectively
+        int charWidth();
+        int charHeight();
 
     public:
         // Create text buffer with width
@@ -115,6 +126,12 @@ namespace etm {
         // of what it was.
         // aka blink blink
         void toggleCursor();
+
+        // Sets the color of the little blinky boi
+        void setCursorColor(const Color &color);
+        // The pixel width of the cursor.
+        // For the average user, this is probally best at the default (1)
+        void setCursorWidth(int width);
 
         // Set the width.
         // Note that this is not reccomended as it'll

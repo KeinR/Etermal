@@ -165,7 +165,7 @@ void etm::Terminal::updatePosition() {
 
     scroll.setNetHeight(viewport.height);
 
-    display.setWidth(std::floor(background.getWidth() / (resources->getFont().getFace()->size->metrics.max_advance / 64)));
+    display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
 }
 
 void etm::Terminal::inputChar(char c) {
