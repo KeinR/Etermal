@@ -32,6 +32,11 @@ namespace etm {
         // Convinience operator, calls setHex(hex)
         Color &operator=(hex_t hex);
 
+        // Returns true if both have the same color values.
+        // Because of how the colors are stored as floating point
+        // values, checks each value is +/- 1 / 255 / 2
+        bool operator==(const Color &other);
+
         // Hex value for RGB, with first 8 bytes ignored
         void setHex(hex_t hex);
         // Same as above, but including an additional alpha value

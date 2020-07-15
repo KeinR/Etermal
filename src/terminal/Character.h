@@ -5,15 +5,21 @@
 #include "util/enums.h"
 
 namespace etm {
-    class Glyph {
-    public:
-        int index;
+    class Character {
+        char value;
         Color color;
         charStyle::type style;
+    public:
         // Zero initialize
-        Glyph();
+        Character();
         // With args
-        Glyph(int index, const Color &color, charStyle::type style);
+        Character(char value);
+
+        void setValue(char value);
+        void setColor(const Color &color);
+
+        char getValue() const;
+        Color &getColor();
     };
 }
 

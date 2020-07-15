@@ -20,6 +20,16 @@ etm::Color &etm::Color::operator=(hex_t hex) {
     return *this;
 }
 
+bool etm::Color::operator==(const Color &other) {
+    constexpr float maxDev = 1.0f / 255.0f / 2.0f;
+    for (int i = 0; i < 4; i++) {
+        if (std::abs(other.color[i] - color[i]) > maxDev) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void etm::Color::setHex(hex_t hex) {
     // We ignore the first byte
     setVal(
