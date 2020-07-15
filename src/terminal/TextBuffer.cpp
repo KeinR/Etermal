@@ -378,16 +378,29 @@ void etm::TextBuffer::render(int x, int y) {
 
     Model model(x, y, advance, lineHeight);
 
+
+    Color *backgroundColor = &defBackgroundColor;
+    Color *foregroundColor = &defForegroundColor;
+
     assertGLErr("Pre-color sset");
-    defBackgroundColor.setBackground(res->getShader());
+    backgroundColor->setBackground(res->getShader());
     assertGLErr("mid-color sset");
-    defForegroundColor.setForeground(res->getShader());
+    foregroundColor->setForeground(res->getShader());
     assertGLErr("post-color sset");
 
     for (lines_number_t r = 0; r < lines.size(); r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.size(); c++) {
-            bindChar(line[c].getValue());
+            Character &chr = line[c];
+            if (chr.hasBackGC() && chr.getBackGC() != *backgroundColor) {
+                backgroundColor = &chr.getBackGC();
+                backgroundColor->setBackground(res->getShader());
+            }
+            if (chr.hasForeGC() && chr.getForeGC() != *foregroundColor) {
+                foregroundColor = &chr.getForeGC();
+                foregroundColor->setForeground(res->getShader());
+            }
+            bindChar(chr.getValue());
             model.set(res->getShader());
             res->renderRectangle();
             model.x += advance;

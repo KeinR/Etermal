@@ -30,6 +30,10 @@ bool etm::Color::operator==(const Color &other) {
     return true;
 }
 
+bool etm::Color::operator!=(const Color &other) {
+    return !(*this == other);
+}
+
 void etm::Color::setHex(hex_t hex) {
     // We ignore the first byte
     setVal(

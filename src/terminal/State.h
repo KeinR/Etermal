@@ -18,11 +18,11 @@ namespace etm { class Model; }
 
 namespace etm {
     class State: public singleton {
-        GLboolean scissor, blend;
+        GLboolean scissor;
+        GLboolean blend;
         GLint program;
         GLint scissorCoords[4];
         GLint unpackAlign;
-        GLint srcRGB, dstRGB, srcAlpha, dstAlpha;
     public:
         State();
         void set(const Model &viewport);

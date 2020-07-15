@@ -36,6 +36,8 @@ namespace etm {
         // Because of how the colors are stored as floating point
         // values, checks each value is +/- 1 / 255 / 2
         bool operator==(const Color &other);
+        // Returns a NOT of operator==
+        bool operator!=(const Color &other);
 
         // Hex value for RGB, with first 8 bytes ignored
         void setHex(hex_t hex);

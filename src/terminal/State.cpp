@@ -8,16 +8,10 @@ etm::State::State() {
     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
     glGetIntegerv(GL_SCISSOR_BOX, scissorCoords);
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlign);
-    // ty stack https://stackoverflow.com/a/40025210/10821333
-    glGetIntegerv(GL_BLEND_SRC_RGB, &srcRGB);
-    glGetIntegerv(GL_BLEND_DST_RGB, &dstRGB);
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &srcAlpha);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &dstAlpha);
 }
 void etm::State::set(const Model &viewport) {
     glEnable(GL_SCISSOR_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_BLEND);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     int winHeight;
     glfwGetWindowSize(glfwGetCurrentContext(), NULL, &winHeight);
@@ -27,13 +21,12 @@ void etm::State::restore() {
     if (!scissor) {
         glDisable(GL_SCISSOR_TEST);
     }
-    if (!blend) {
-        glDisable(GL_BLEND);
+    if (blend) {
+        glEnable(GL_BLEND);
     }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
     }
     glUseProgram(program);
     glScissor(scissorCoords[0], scissorCoords[1], scissorCoords[2], scissorCoords[3]);
-    glBlendFuncSeparate(srcRGB, dstAlpha, srcAlpha, dstAlpha);
 }

@@ -7,7 +7,10 @@
 namespace etm {
     class Character {
         char value;
-        Color color;
+        Color backGColor;
+        bool enforceBackColor;
+        Color foreGColor;
+        bool enforceForeColor;
         charStyle::type style;
     public:
         // Zero initialize
@@ -16,10 +19,15 @@ namespace etm {
         Character(char value);
 
         void setValue(char value);
-        void setColor(const Color &color);
+        void setBackColor(const Color &color);
+        void setForeColor(const Color &color);
 
         char getValue() const;
-        Color &getColor();
+
+        bool hasBackGC();
+        bool hasForeGC();
+        Color &getBackGC();
+        Color &getForeGC();
     };
 }
 
