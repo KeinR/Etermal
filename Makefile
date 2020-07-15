@@ -16,6 +16,9 @@ $(OUT): bin/ $(OBJS)
 
 include depconfig.mk
 
+resources/shaders/%.h: resources/shaders/%.vert resources/shaders/%.frag
+	./shaders.sh
+
 bin/:
 	mkdir bin/
 

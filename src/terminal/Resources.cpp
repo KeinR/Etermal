@@ -49,8 +49,8 @@ void etm::Resources::renderRectangle() {
     rectangle.render();
 }
 
-void etm::Resources::bindTextureShader() {
-    currentShader = &textureShader;
+void etm::Resources::bindTextShader() {
+    currentShader = &textShader;
     currentShader->use();
 }
 void etm::Resources::bindPrimitiveShader() {

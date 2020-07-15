@@ -62,8 +62,22 @@ etm::Color::prop_t *etm::Color::get() {
     return color;
 }
 
+void etm::Color::setRGB(int location) {
+    // Notice how the digit for the function is different
+    glUniform3fv(location, 1, color);
+}
+void etm::Color::setRGBA(int location) {
+    glUniform4fv(location, 1, color);
+}
+
 void etm::Color::set(const shader::Shader &shader) {
-    glUniform4fv(shader.getColor(), 1, color);
+    setRGBA(shader.getColor());
+}
+void etm::Color::setBackground(const shader::Shader &shader) {
+    setRGB(shader.getBackGColor());
+}
+void etm::Color::setForeground(const shader::Shader &shader) {
+    setRGB(shader.getForeGColor());
 }
 
 etm::Color etm::Color::brighten(float percent) const {

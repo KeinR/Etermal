@@ -35,14 +35,7 @@ etm::Texture etm::Font::renderChar(char c) {
 
     // std::cout << "font self = " << this << std::endl;
 
-    constexpr int channels = 4;
-    // TEMP
-    float channelMod[channels] = {
-        191.0f / 255.0f,
-        191.0f / 255.0f,
-        191.0f / 255.0f,
-        1
-    };
+    constexpr int channels = 1;
 
     const int lineHeight = face->size->metrics.height / 64;
     const int uWidth = face->size->metrics.max_advance / 64;
@@ -82,7 +75,6 @@ etm::Texture etm::Font::renderChar(char c) {
                     // render.channels // Number of channels
                     // 
                     const int insIndex = ((xShift + static_cast<int>(sx)) + (lineHeight - 1 - (yShift + static_cast<int>(sy))) * uWidth) * channels;
-                    // Apply the bitmap value to every channel in the insertion bitmap in `render`
                     for (int c = 0; c < channels; c++) {
                         data.at(insIndex + c) = face->glyph->bitmap.buffer[srcIndex];
                     }
@@ -91,7 +83,7 @@ etm::Texture etm::Font::renderChar(char c) {
         }
 
         Texture tex;
-        tex.setData(GL_RGBA, uWidth, lineHeight, data.data());
+        tex.setData(GL_RED, uWidth, lineHeight, data.data());
 
         return tex;
     } else {

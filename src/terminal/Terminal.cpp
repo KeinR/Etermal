@@ -22,7 +22,8 @@ etm::Terminal::Terminal():
     cursorBlink(500),
     shell(nullptr)
 {
-    background.setColor(0x0f0f0f);
+    setBackgroundColor(0x0f0f0f);
+    setTextColor(0xffffff);
 
     scrollbar.setWidth(20);
     scrollbar.setSideMargin(2);
@@ -71,6 +72,14 @@ void etm::Terminal::flushInputBuffer() {
     if (acceptInput()) {
         prepareInput();
     }
+}
+
+void etm::Terminal::setBackgroundColor(const Color &color) {
+    background.setColor(color);
+    display.setDefBackGColor(color);
+}
+void etm::Terminal::setTextColor(const Color &color) {
+    display.setDefForeGColor(color);
 }
 
 void etm::Terminal::setScrollSensitivity(float value) {
@@ -230,7 +239,6 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 void etm::Terminal::render() {
     State state;
     state.set(viewport);
-
 
     // Run animiations
     if (cursorBlink.hasEnded()) {

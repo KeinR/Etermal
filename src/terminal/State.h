@@ -21,6 +21,7 @@ namespace etm {
         GLboolean scissor, blend;
         GLint program;
         GLint scissorCoords[4];
+        GLint unpackAlign;
         GLint srcRGB, dstRGB, srcAlpha, dstAlpha;
     public:
         State();

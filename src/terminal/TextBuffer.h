@@ -7,6 +7,7 @@
 
 #include "render/Model.h"
 #include "render/Texture.h"
+#include "render/Color.h"
 
 #include "Resources.h" // TEMP
 
@@ -40,6 +41,10 @@ namespace etm {
         // Must be cleared upon font change
         textCache_t textCache;
 
+        // Default fore/back ground colors
+        Color defForegroundColor;
+        Color defBackgroundColor;
+
         // Construct a new line
         void newline();
         // Inserts a newline after the given row
@@ -61,6 +66,9 @@ namespace etm {
     public:
         // Create text buffer with width
         TextBuffer(Resources *res, line_index_t width);
+
+        void setDefForeGColor(const Color &color);
+        void setDefBackGColor(const Color &color);
 
         // The (visible) height of all the rows combined
         int getHeight();

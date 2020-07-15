@@ -7,7 +7,6 @@
 #include "../render/glfw.h"
 #include "../util/error.h"
 
-static char *loadFile(const std::string &path, int &length, std::string &error);
 // Compiles the given shader and returns a handle to the OpenGL object.
 // Throws an instance of gl_error if failed
 static GLuint compileShader(GLenum type, const char *data, int length, std::string &error);
@@ -16,21 +15,10 @@ static GLuint compileShader(GLenum type, const char *data, int length, std::stri
 // Throws an instance of gl_error if failed
 static GLuint linkShaders(GLuint vertObject, GLuint fragObject, std::string &error);
 
-etm::shader::Shader::Shader(const std::string &vertexPath, const std::string &fragmentPath) {
+etm::shader::Shader::Shader(const char *vertData, int vertLen, const char *fragData, int fragLen) {
     std::string error;
-    int vertLength;
-    char *vertData = loadFile(vertexPath, vertLength, error);
-    if (error.size()) {
-        throw fe_error(error + " @" + vertexPath);
-    }
-    int fragLength;
-    char *fragData = loadFile(fragmentPath, fragLength, error);
-    if (error.size()) {
-        delete[] vertData;
-        throw fe_error(error + " @" + fragmentPath);
-    }
-    GLuint vertShader = compileShader(GL_VERTEX_SHADER, vertData, vertLength, error);
-    GLuint fragShader = compileShader(GL_FRAGMENT_SHADER, fragData, fragLength, error);
+    GLuint vertShader = compileShader(GL_VERTEX_SHADER, vertData, vertLen, error);
+    GLuint fragShader = compileShader(GL_FRAGMENT_SHADER, fragData, fragLen, error);
     if (error.size()) {
         glDeleteShader(vertShader);
         throw fe_error(error);
@@ -57,31 +45,6 @@ void etm::shader::Shader::use() const {
 
 etm::shader::Shader::shader_program_t etm::shader::Shader::get() const {
     return shader;
-}
-
-char *loadFile(const std::string &path, int &length, std::string &error) {
-    std::ifstream file(path);
-    if (!file.good()) {
-        error = "etm::shader::Shader::loadFile: Failed to open shader file";
-        return nullptr;
-    }
-    file.seekg(0, file.end);
-    length = file.tellg();
-    file.seekg(0, file.beg);
-
-    char *data = new char[length];
-
-    file.read(data, length);
-
-    if (!file.good()) {
-        error = "etm::shader::Shader::loadFile: Failed to read from shader file";
-        delete[] data;
-        return nullptr;
-    }
-
-    file.close();
-
-    return data;
 }
 
 GLuint compileShader(GLenum type, const char *data, int length, std::string &error) {

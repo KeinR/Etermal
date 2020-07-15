@@ -4,12 +4,14 @@
 #include <cmath>
 
 #include "gui/Rectangle.h"
+#include "util/util.h" // TEMP
 
 etm::TextBuffer::TextBuffer(Resources *res, line_index_t width):
     res(res), width(width),
     cursorRow(0), cursorCollumn(0),
     cursorMinRow(0), cursorMinCollumn(0),
-    cursorEnabled(false), displayCursor(false) {
+    cursorEnabled(false), displayCursor(false),
+    defForegroundColor(0xffffff), defBackgroundColor(0x000000) {
 }
 
 void etm::TextBuffer::newline() {
@@ -31,6 +33,13 @@ bool etm::TextBuffer::cursorAtEnd() {
 
 bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t collumn) {
     return row >= lines.size() || collumn >= lines[row].size();
+}
+
+void etm::TextBuffer::setDefForeGColor(const Color &color) {
+    defForegroundColor = color;
+}
+void etm::TextBuffer::setDefBackGColor(const Color &color) {
+    defBackgroundColor = color;
 }
 
 int etm::TextBuffer::getHeight() {
@@ -358,9 +367,15 @@ void etm::TextBuffer::render(int x, int y) {
         cursor.render();
     }
 
-    res->bindTextureShader();
+    res->bindTextShader();
 
     Model model(x, y, advance, lineHeight);
+
+    assertGLErr("Pre-color sset");
+    defBackgroundColor.setBackground(res->getShader());
+    assertGLErr("mid-color sset");
+    defForegroundColor.setForeground(res->getShader());
+    assertGLErr("post-color sset");
 
     for (lines_number_t r = 0; r < lines.size(); r++) {
         line_t &line = lines[r];

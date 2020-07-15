@@ -11,6 +11,8 @@ namespace etm::shader {
         Primitive();
         uniform_t getModel() const override;
         uniform_t getColor() const override;
+        uniform_t getBackGColor() const override;
+        uniform_t getForeGColor() const override;
     };
 }
 

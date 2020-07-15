@@ -77,6 +77,9 @@ namespace etm {
         Terminal(Terminal &&other) = delete; // Temp
         Terminal &operator=(Terminal &&other) = delete;
 
+        void setBackgroundColor(const Color &color);
+        void setTextColor(const Color &color);
+
         // Set the modifier for how much is scrolled on mouse
         // scroll.
         // negative values will result in inverted scroll.

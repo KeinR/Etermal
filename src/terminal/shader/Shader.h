@@ -37,7 +37,7 @@ namespace etm::shader {
         void steal(Shader &other);
     public:
         // Throws in instance of "fe_error" if fail
-        Shader(const std::string &vertexPath, const std::string &fragmentPath);
+        Shader(const char *vertexData, int vertexLen, const char *fragData, int fragLen);
         virtual ~Shader() = 0;
 
         // Sets this shader as current
@@ -48,6 +48,8 @@ namespace etm::shader {
         // Subclasses override these
         virtual uniform_t getModel() const = 0;
         virtual uniform_t getColor() const = 0;
+        virtual uniform_t getBackGColor() const = 0;
+        virtual uniform_t getForeGColor() const = 0;
     };
 }
 

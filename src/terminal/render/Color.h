@@ -18,6 +18,10 @@ namespace etm {
     private:
         // RGBA, Red Green Blue Alpha, in that order
         prop_t color[4];
+        // RGB
+        void setRGB(int location);
+        // RGBA
+        void setRGBA(int location);
     public:
         // Default initialization
         // 0, 0, 0, 255 by default; ie, "opaque black"
@@ -46,6 +50,8 @@ namespace etm {
 
         // Binds this color to the current color uniform
         void set(const shader::Shader &shader);
+        void setBackground(const shader::Shader &shader);
+        void setForeground(const shader::Shader &shader);
 
         // Returns a copy based of this one, with
         // the brightness modified by `percent`.

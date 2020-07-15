@@ -5,7 +5,7 @@
 #include "render/Font.h"
 #include "render/FontLibrary.h"
 #include "shader/Primitive.h"
-#include "shader/Texture.h"
+#include "shader/Text.h"
 
 namespace etm {
     class Shader;
@@ -18,7 +18,7 @@ namespace etm {
 
         Buffer rectangle;
 
-        shader::Texture textureShader;
+        shader::Text textShader;
         shader::Primitive primitiveShader;
         shader::Shader *currentShader;
 
@@ -34,7 +34,7 @@ namespace etm {
 
         void renderRectangle();
 
-        void bindTextureShader();
+        void bindTextShader();
         void bindPrimitiveShader();
         shader::Shader &getShader();
 
