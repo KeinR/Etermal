@@ -7,10 +7,14 @@
 #include "Resources.h"
 #include "util/util.h" // TEMP
 
+etm::TextBuffer::pos::pos(): pos(0, 0) {
+}
+etm::TextBuffer::pos::pos(lines_number_t row, line_index_t column):
+    row(row), column(column) {
+}
+
 etm::TextBuffer::TextBuffer(Resources *res, line_index_t width):
     res(res), width(width),
-    cursorRow(0), cursorCollumn(0),
-    cursorMinRow(0), cursorMinCollumn(0),
     cursorEnabled(false), displayCursor(false),
     defForegroundColor(0xffffff), defBackgroundColor(0x000000) {
 }
@@ -27,7 +31,7 @@ void etm::TextBuffer::insertNewline(line_index_t row) {
 }
 
 bool etm::TextBuffer::cursorAtEnd() {
-    return cursorRow == lines.size() - 1 && cursorCollumn == lines[cursorRow].size();
+    return cursor.row == lines.size() - 1 && cursor.column == lines[cursor.row].size();
 }
 
 bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t column) {
@@ -51,78 +55,78 @@ etm::TextBuffer::lines_number_t etm::TextBuffer::getCountRows() {
 }
 
 etm::TextBuffer::lines_number_t etm::TextBuffer::getCursorRow() {
-    return cursorRow;
+    return cursor.row;
 }
 etm::TextBuffer::line_index_t etm::TextBuffer::getCursorCollumn() {
-    return cursorCollumn;
+    return cursor.column;
 }
 
 void etm::TextBuffer::setCursorMinRow(lines_number_t row) {
-    cursorMinRow = row;
+    cursorMin.row = row;
 }
 void etm::TextBuffer::setCursorMinCollumn(line_index_t column) {
-    cursorMinCollumn = column;
+    cursorMin.column = column;
 }
 
 void etm::TextBuffer::lockCursor() {
-    setCursorMinRow(cursorRow);
-    setCursorMinCollumn(cursorCollumn);
+    setCursorMinRow(cursor.row);
+    setCursorMinCollumn(cursor.column);
 }
 
 
 void etm::TextBuffer::moveCursorCollumn(int distance) {
-    cursorCollumn = std::min(cursorCollumn + distance, lines[cursorRow].size());
-    if (cursorRow <= cursorMinRow) {
-        cursorCollumn = std::max(cursorCollumn, cursorMinCollumn);
+    cursor.column = std::min(cursor.column + distance, lines[cursor.row].size());
+    if (cursor.row <= cursorMin.row) {
+        cursor.column = std::max(cursor.column, cursorMin.column);
     }
 }
 void etm::TextBuffer::moveCursorRow(int distance) {
-    cursorRow = std::min(std::max(cursorRow + distance, cursorMinRow), lines.size()-1);
-    cursorCollumn = std::min(cursorCollumn, lines[cursorRow].size());
+    cursor.row = std::min(std::max(cursor.row + distance, cursorMin.row), lines.size()-1);
+    cursor.column = std::min(cursor.column, lines[cursor.row].size());
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
-    int columnTemp = static_cast<int>(cursorCollumn) + distance;
+    int columnTemp = static_cast<int>(cursor.column) + distance;
 
-    if (columnTemp > static_cast<int>(lines[cursorRow].size())) {
-        cursorCollumn = static_cast<line_index_t>(columnTemp);
-        while (cursorCollumn > lines[cursorRow].size()) {
-            if (cursorRow + 1 < lines.size()) {
-                cursorCollumn -= lines[cursorRow].size();
-                cursorRow++;
+    if (columnTemp > static_cast<int>(lines[cursor.row].size())) {
+        cursor.column = static_cast<line_index_t>(columnTemp);
+        while (cursor.column > lines[cursor.row].size()) {
+            if (cursor.row + 1 < lines.size()) {
+                cursor.column -= lines[cursor.row].size();
+                cursor.row++;
             } else {
-                cursorCollumn = lines[cursorRow].size();
+                cursor.column = lines[cursor.row].size();
                 break;
             }
         }
     } else if (columnTemp < 0) {
         // columnTemp += static_cast<int>(oldCursorCollumn);
         while (columnTemp < 0) {
-            if (cursorRow - 1 >= cursorMinRow) {
-                cursorRow--;
-                columnTemp += lines[cursorRow].size();
+            if (cursor.row - 1 >= cursorMin.row) {
+                cursor.row--;
+                columnTemp += lines[cursor.row].size();
             } else {
                 columnTemp = 0;
                 break;
             }
         }
-        cursorCollumn = static_cast<line_index_t>(columnTemp);
+        cursor.column = static_cast<line_index_t>(columnTemp);
     } else {
-        cursorCollumn = static_cast<line_index_t>(std::max(columnTemp, 0));
+        cursor.column = static_cast<line_index_t>(std::max(columnTemp, 0));
         // Wrap cursor to next line.
         // I mean MinTTY does it so really there's no reason not to
-        if (cursorRow < lines.size() - 1 && cursorCollumn == lines[cursorRow].size()) {
-            cursorRow++;
-            cursorCollumn = 0;
+        if (cursor.row < lines.size() - 1 && cursor.column == lines[cursor.row].size()) {
+            cursor.row++;
+            cursor.column = 0;
         }
     }
-    if (cursorRow <= cursorMinRow) {
-        cursorCollumn = std::max(cursorCollumn, cursorMinCollumn);
+    if (cursor.row <= cursorMin.row) {
+        cursor.column = std::max(cursor.column, cursorMin.column);
     }
 }
 
 void etm::TextBuffer::jumpCursor() {
-    cursorRow = lines.size() - 1;
-    cursorCollumn = lines[cursorRow].size();
+    cursor.row = lines.size() - 1;
+    cursor.column = lines[cursor.row].size();
 }
 void etm::TextBuffer::setCursorEnabled(bool val) {
     cursorEnabled = val;
@@ -203,26 +207,26 @@ void etm::TextBuffer::write(lines_number_t row, line_index_t column, const Chara
 }
 
 void etm::TextBuffer::eraseAtCursor() {
-    lines_number_t row = cursorRow;
-    line_index_t column = cursorCollumn - 1;
+    lines_number_t row = cursor.row;
+    line_index_t column = cursor.column - 1;
     // Because it's unsigned it underflows to big number
     if (column > lines[row].size()) {
         row--;
         // Because it's unsigned it underflows to big number
-        if (row < lines.size() && row >= cursorMinRow) {
+        if (row < lines.size() && row >= cursorMin.row) {
             column = lines[row].size();
         } else {
             return;
         }
     }
-    if (column >= cursorMinCollumn && column < lines[row].size()) {
+    if (column >= cursorMin.column && column < lines[row].size()) {
         if (cursorAtEnd()) {
             doTrunc();
             jumpCursor();
         } else {
             erase(row, column);
-            cursorCollumn = column;
-            cursorRow = row;
+            cursor.column = column;
+            cursor.row = row;
         }
     }
 }
@@ -298,7 +302,7 @@ void etm::TextBuffer::insertAtCursor(const Character &c) {
     if (cursorAtEnd()) {
         doAppend(c);
     } else {
-        insert(cursorRow, cursorCollumn, c);
+        insert(cursor.row, cursor.column, c);
     }
     moveCursorCollumnWrap(1);
 }
@@ -365,13 +369,14 @@ void etm::TextBuffer::render(int x, int y) {
     if (cursorEnabled && displayCursor) {
         // Assume that the primitive shader was already set by
         // the terminal
-        Rectangle cursor(res);
-        cursor.setColor(0xffffff);
-        cursor.setX(cursorCollumn * advance);
-        cursor.setY(cursorRow * lineHeight);
-        cursor.setWidth(1);
-        cursor.setHeight(lineHeight);
-        cursor.render();
+        // TODO: Make class var
+        Rectangle dispCursor(res);
+        dispCursor.setColor(0xffffff);
+        dispCursor.setX(cursor.column * advance);
+        dispCursor.setY(cursor.row * lineHeight);
+        dispCursor.setWidth(1);
+        dispCursor.setHeight(lineHeight);
+        dispCursor.render();
     }
 
     res->bindTextShader();

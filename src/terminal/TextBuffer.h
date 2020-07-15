@@ -26,6 +26,14 @@ namespace etm {
         typedef line_t::size_type line_index_t;
         typedef std::vector<line_t> lines_t;
         typedef lines_t::size_type lines_number_t;
+
+        struct pos {
+            lines_number_t row;
+            line_index_t column;
+            pos();
+            pos(lines_number_t row, line_index_t column);
+        };
+
     private:
         typedef std::map<char, Texture> textCache_t;
 
@@ -34,11 +42,8 @@ namespace etm {
         line_index_t width;
         // Height is dynamic
 
-        lines_number_t cursorRow;
-        line_index_t cursorCollumn;
-
-        lines_number_t cursorMinRow;
-        line_index_t cursorMinCollumn;
+        pos cursor;
+        pos cursorMin;
 
         bool cursorEnabled;
         bool displayCursor;
