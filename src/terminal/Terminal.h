@@ -38,6 +38,11 @@ namespace etm {
         int maxWidth;
         int maxHeight;
 
+        Scroll scroll;
+        Scrollbar scrollbar;
+        // Factor when doing mouse scroll
+        float scrollSensitivity;
+
         TextBuffer display;
         Rectangle background;
 
@@ -52,11 +57,6 @@ namespace etm {
 
         // Should the next char be escaped?
         bool escapeNext;
-
-        Scroll scroll;
-        Scrollbar scrollbar;
-        // Factor when doing mouse scroll
-        float scrollSensitivity;
 
         Timer cursorBlink;
 

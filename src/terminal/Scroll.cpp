@@ -28,6 +28,9 @@ void etm::Scroll::setGrossHeight(int height) {
     recalc();
 }
 
+int etm::Scroll::getNetHeight() {
+    return netHeight;
+}
 int etm::Scroll::getGrossHeight() {
     return grossHeight;
 }

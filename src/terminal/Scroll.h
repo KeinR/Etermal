@@ -22,6 +22,7 @@ namespace etm {
         void setNetHeight(int height);
         void setGrossHeight(int height);
 
+        int getNetHeight();
         int getGrossHeight();
         float getOffset();
         float getMaxOffset();

@@ -18,6 +18,8 @@ namespace etm {
     class Character;
     // render/Font
     class Font;
+    // Scroll
+    class Scroll;
 }
 
 namespace etm {
@@ -39,6 +41,10 @@ namespace etm {
         typedef std::map<char, Texture> textCache_t;
 
         Resources *res;
+        // Tells what parts of self should render.
+        // A very useful optimization.
+        Scroll *scroll;
+
         lines_t lines;
         line_index_t width;
         // Height is dynamic
@@ -86,7 +92,7 @@ namespace etm {
 
     public:
         // Create text buffer with width
-        TextBuffer(Resources *res, line_index_t width);
+        TextBuffer(Resources *res, Scroll &scroll, line_index_t width);
 
         void setDefForeGColor(const Color &color);
         void setDefBackGColor(const Color &color);

@@ -12,13 +12,13 @@
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
     viewport(0, 0, 400, 400),
-    display(resources.get(), 30),
+    scrollbar(resources.get(), scroll),
+    scrollSensitivity(25.0f),
+    display(resources.get(), scroll, 30),
     background(resources.get()),
     focused(true),
     takeInput(false),
     escapeNext(false),
-    scrollbar(resources.get(), scroll),
-    scrollSensitivity(25.0f),
     cursorBlink(500),
     shell(nullptr)
 {

@@ -6,6 +6,7 @@
 #include "gui/Rectangle.h"
 #include "Resources.h"
 #include "util/util.h" // TEMP
+#include "Scroll.h"
 
 etm::TextBuffer::pos::pos(): pos(0, 0) {
 }
@@ -13,8 +14,9 @@ etm::TextBuffer::pos::pos(lines_number_t row, line_index_t column):
     row(row), column(column) {
 }
 
-etm::TextBuffer::TextBuffer(Resources *res, line_index_t width):
-    res(res), width(width), dispCursor(res),
+etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
+    res(res), scroll(&scroll),
+    width(width), dispCursor(res),
     cursorEnabled(false), displayCursor(false)
 {
     setDefForeGColor(0xffffff);
@@ -385,16 +387,23 @@ void etm::TextBuffer::render(int x, int y) {
     if (cursorEnabled && displayCursor) {
         // Assume that the primitive shader was already set by
         // the terminal
-        dispCursor.setX(cursor.column * charWidth());
-        dispCursor.setY(cursor.row * charHeight());
+        dispCursor.setX(static_cast<int>(cursor.column * charWidth()));
+        dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));
         dispCursor.setHeight(charHeight());
         dispCursor.render();
     }
 
     res->bindTextShader();
 
-    Model model(x, y, charWidth(), charHeight());
+    lines_number_t start = std::floor(scroll->getOffset() / charHeight());
+    lines_number_t end = std::min(
+        lines.size(),
+        static_cast<lines_number_t>(
+            start + scroll->getNetHeight() / charHeight() + 1
+        )
+    );
 
+    Model model(x, y + static_cast<int>(charHeight() * start), charWidth(), charHeight());
 
     Color *backgroundColor = &defBackgroundColor;
     Color *foregroundColor = &defForegroundColor;
@@ -405,7 +414,7 @@ void etm::TextBuffer::render(int x, int y) {
     foregroundColor->setForeground(res->getShader());
     assertGLErr("post-color sset");
 
-    for (lines_number_t r = 0; r < lines.size(); r++) {
+    for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.size(); c++) {
             Character &chr = line[c];
