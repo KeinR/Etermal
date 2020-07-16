@@ -35,18 +35,18 @@ etm::Line::size_type etm::Line::correctIndex(size_type index) {
             cIndex++;
         }
     }
-    while (i == env::CONTROL_CHAR) {
+    while (i < string.size() && string[i] == env::CONTROL_CHAR) {
         i += env::CONTROL_BLOCK_SIZE + 1;
     }
     return i;
 }
-
 etm::Line::value_type &etm::Line::operator[](size_type index) {
     if (correctIndex(index) >= string.size()) {
-        std::cout << "OUT OF BOUNDS!!" << std::endl;
-        std::cout << "index = " << index << std::endl;
-        std::cout << "correctIndex(index) = " << correctIndex(index) << std::endl;
-        std::cout << "string.size() = " << string.size() << std::endl;
+        std::cerr << "OUT OF BOUNDS!!" << std::endl;
+        std::cerr << "index = " << index << std::endl;
+        std::cerr << "correctIndex(index) = " << correctIndex(index) << std::endl;
+        std::cerr << "string.size() = " << string.size() << std::endl;
+        std::cout << "string == \"" << string << "\"" << std::endl;
         exit(32);
     }
     return string[correctIndex(index)];
@@ -78,7 +78,7 @@ void etm::Line::eraseChar(size_type index) {
     defactoSize--;
 }
 void etm::Line::appendStr(const string_t &str) {
-    string += str;
+    string.insert(string.end(), str.begin(), str.end());
     defactoSize += findDefactoSize(str);
 }
 void etm::Line::appendOther(const Line &other) {
