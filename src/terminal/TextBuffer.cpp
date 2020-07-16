@@ -445,16 +445,26 @@ void etm::TextBuffer::render(int x, int y) {
 
     Model model(x, y + static_cast<int>(charHeight() * start), charWidth(), charHeight());
 
-    Color *backgroundColor = &defBackgroundColor;
-    Color *foregroundColor = &defForegroundColor;
-
-    assertGLErr("Pre-color sset");
-    backgroundColor->setBackground(res->getShader());
-    assertGLErr("mid-color sset");
-    foregroundColor->setForeground(res->getShader());
-    assertGLErr("post-color sset");
-
     tm::TextState state(res->getShader(), defBackgroundColor, defForegroundColor);
+
+    // Move back to get color settings that might've been
+    // missed had we started at `start`.
+    // This does make me mad through, because it means that the
+    // time complexity is linear as opposed to constant...
+    // Well, it's definitely better than the alternatives...
+    // The goal is to prioritize memory... Performance is less of an
+    // issue, since the console itn't going to be active, _all the time_
+    for (lines_number_t r = 0; r < start; r++) {
+        line_t &line = lines[r];
+        for (line_index_t c = 0; c < line.dejureSize(); c++) {
+            Line::value_type chr = line.getDejure(c);
+            if (chr == env::CONTROL_CHAR) {
+                applyMod(c, line, state);
+                c += env::CONTROL_BLOCK_SIZE;
+            }
+        }
+    }
+
     for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.dejureSize(); c++) {
