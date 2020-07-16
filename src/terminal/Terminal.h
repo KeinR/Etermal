@@ -71,8 +71,9 @@ namespace etm {
         void prepareInput();
         void doInputChar(char c);
         bool acceptInput();
+        // Expects i to be pointing to the char preceeding the hex.
         // Reads a hex that starts on i and is 3 chars long.
-        // i is set to the first character after the hex.
+        // i is set to the last character of the hex.
         // Will stop prematurely if the hex is truncated
         int readHexFromStr(std::string &str, std::string::size_type &i);
     public:

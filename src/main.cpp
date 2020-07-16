@@ -76,7 +76,7 @@ int main() {
             totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - fstart).count();
             samples++;
             if (samples > 100) {
-                std::cout << "LAST FRAME AVG: " << (static_cast<float>(totalMillis) / samples) << std::endl;
+                std::cout << "LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1e6 / 60.0f) * 100) << "% of frame" << std::endl;
                 samples = 0;
                 totalMillis = 0;
             }

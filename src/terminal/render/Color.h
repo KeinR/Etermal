@@ -19,9 +19,9 @@ namespace etm {
         // RGBA, Red Green Blue Alpha, in that order
         prop_t color[4];
         // RGB
-        void setRGB(int location);
+        void setRGB(int location) const;
         // RGBA
-        void setRGBA(int location);
+        void setRGBA(int location) const;
     public:
         // Default initialization
         // 0, 0, 0, 255 by default; ie, "opaque black"
@@ -35,9 +35,9 @@ namespace etm {
         // Returns true if both have the same color values.
         // Because of how the colors are stored as floating point
         // values, checks each value is +/- 1 / 255 / 2
-        bool operator==(const Color &other);
+        bool operator==(const Color &other) const;
         // Returns a NOT of operator==
-        bool operator!=(const Color &other);
+        bool operator!=(const Color &other) const;
 
         // Hex value for RGB, with first 8 bytes ignored
         void setHex(hex_t hex);
@@ -56,9 +56,9 @@ namespace etm {
         prop_t *get();
 
         // Binds this color to the current color uniform
-        void set(const shader::Shader &shader);
-        void setBackground(const shader::Shader &shader);
-        void setForeground(const shader::Shader &shader);
+        void set(const shader::Shader &shader) const;
+        void setBackground(const shader::Shader &shader) const;
+        void setForeground(const shader::Shader &shader) const;
 
         // Returns a copy based of this one, with
         // the brightness modified by `percent`.

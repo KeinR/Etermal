@@ -4,12 +4,15 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 #include "gui/Rectangle.h"
 #include "render/Model.h"
 #include "render/Texture.h"
 #include "render/Color.h"
 #include "Line.h"
+
+#include "textmods/Mod.h"
 
 namespace etm {
     // Resources
@@ -20,6 +23,10 @@ namespace etm {
     class Font;
     // Scroll
     class Scroll;
+    namespace tm {
+        // textmods/TextState
+        class TextState;
+    }
 }
 
 namespace etm {
@@ -29,6 +36,8 @@ namespace etm {
         typedef line_t::size_type line_index_t;
         typedef std::vector<line_t> lines_t;
         typedef lines_t::size_type lines_number_t;
+
+        typedef std::vector<std::shared_ptr<tm::Mod>> modifierBlocks_t;
 
         struct pos {
             lines_number_t row;
@@ -66,6 +75,8 @@ namespace etm {
         Color defForegroundColor;
         Color defBackgroundColor;
 
+        modifierBlocks_t modifierBlocks;
+
         // Construct a new line
         void newline();
         // Inserts a newline after the given row
@@ -90,9 +101,13 @@ namespace etm {
         int charWidth();
         int charHeight();
 
+        void applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state);
+
     public:
         // Create text buffer with width
         TextBuffer(Resources *res, Scroll &scroll, line_index_t width);
+
+        void pushMod(const std::shared_ptr<tm::Mod> &mod);
 
         void clear();
 

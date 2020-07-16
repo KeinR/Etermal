@@ -7,6 +7,8 @@
 #include "Resources.h"
 #include "util/util.h" // TEMP
 #include "Scroll.h"
+#include "env.h"
+#include "textmods/TextState.h"
 
 etm::TextBuffer::pos::pos(): pos(0, 0) {
 }
@@ -51,8 +53,25 @@ int etm::TextBuffer::charHeight() {
     return res->getFont().getCharHeight();
 }
 
+void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
+    modifierBlocks.push_back(mod);
+    modifierBlocks_t::size_type index = modifierBlocks.size() - 1;
+    Line::string_t str;
+    str.push_back(env::CONTROL_CHAR);
+    int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_SIZE);
+    for (unsigned int n = 0; n < env::CONTROL_BLOCK_SIZE; n++) {
+        shift -= 8;
+        str.push_back(static_cast<Line::value_type>((index >> shift) & 0xff));
+    }
+    if (!lines.size()) {
+        newline();
+    }
+    lines.back().appendControl(str);
+}
+
 void etm::TextBuffer::clear() {
     lines.clear();
+    modifierBlocks.clear();
 }
 
 void etm::TextBuffer::setDefForeGColor(const Color &color) {
@@ -276,7 +295,7 @@ void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
         lines[row].setNewline(false);
         reformat(row, column);
     } else {
-        lines[row].erase(column, 1);
+        lines[row].eraseChar(column);
         reformat(row, column-1);
     }
 
@@ -351,7 +370,7 @@ void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::valu
                 newline();
                 lines[row+1].appendStr(buffer);
             } else {
-                lines[row+1].insertStr(0, buffer);
+                lines[row+1].prependStr(buffer);
                 if (lines[row+1].size() > width) {
                     reformat(row + 1, 0);
                 }
@@ -374,7 +393,7 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
     for (lines_number_t r = row+1; r < lines.size(); r++) {
         lines[r].copyTo(buffer);
         if (lines[r].hasNewline()) {
-            buffer.emplace_back('\n');
+            buffer.push_back('\n');
         }
     }
     lines.erase(lines.begin() + row + 1, lines.end());
@@ -391,6 +410,16 @@ void etm::TextBuffer::bindChar(Line::value_type c) {
         textCache[c] = res->getFont().renderChar(c);
         textCache[c].bind();
     }
+}
+
+void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state) {
+    int value = 0;
+    int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_SIZE);
+    for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_SIZE; i < end; i++) {
+        shift -= 8;
+        value |= line.getDejure(i) << shift;
+    }
+    modifierBlocks[value]->run(state);
 }
 
 void etm::TextBuffer::render(int x, int y) {
@@ -425,14 +454,20 @@ void etm::TextBuffer::render(int x, int y) {
     foregroundColor->setForeground(res->getShader());
     assertGLErr("post-color sset");
 
+    tm::TextState state(res->getShader(), defBackgroundColor, defForegroundColor);
     for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
-        for (line_index_t c = 0; c < line.size(); c++) {
-            Line::value_type &chr = line[c];
-            bindChar(chr);
-            model.set(res->getShader());
-            res->renderRectangle();
-            model.x += charWidth();
+        for (line_index_t c = 0; c < line.dejureSize(); c++) {
+            Line::value_type chr = line.getDejure(c);
+            if (chr == env::CONTROL_CHAR) {
+                applyMod(c, line, state);
+                c += env::CONTROL_BLOCK_SIZE;
+            } else {
+                bindChar(chr);
+                model.set(res->getShader());
+                res->renderRectangle();
+                model.x += charWidth();
+            }
         }
         model.x = 0;
         model.y += charHeight();

@@ -20,7 +20,7 @@ etm::Color &etm::Color::operator=(hex_t hex) {
     return *this;
 }
 
-bool etm::Color::operator==(const Color &other) {
+bool etm::Color::operator==(const Color &other) const {
     constexpr float maxDev = 1.0f / 255.0f / 2.0f;
     for (int i = 0; i < 4; i++) {
         if (std::abs(other.color[i] - color[i]) > maxDev) {
@@ -30,7 +30,7 @@ bool etm::Color::operator==(const Color &other) {
     return true;
 }
 
-bool etm::Color::operator!=(const Color &other) {
+bool etm::Color::operator!=(const Color &other) const {
     return !(*this == other);
 }
 
@@ -76,21 +76,21 @@ etm::Color::prop_t *etm::Color::get() {
     return color;
 }
 
-void etm::Color::setRGB(int location) {
+void etm::Color::setRGB(int location) const {
     // Notice how the digit for the function is different
     glUniform3fv(location, 1, color);
 }
-void etm::Color::setRGBA(int location) {
+void etm::Color::setRGBA(int location) const {
     glUniform4fv(location, 1, color);
 }
 
-void etm::Color::set(const shader::Shader &shader) {
+void etm::Color::set(const shader::Shader &shader) const {
     setRGBA(shader.getColor());
 }
-void etm::Color::setBackground(const shader::Shader &shader) {
+void etm::Color::setBackground(const shader::Shader &shader) const {
     setRGB(shader.getBackGColor());
 }
-void etm::Color::setForeground(const shader::Shader &shader) {
+void etm::Color::setForeground(const shader::Shader &shader) const {
     setRGB(shader.getForeGColor());
 }
 

@@ -8,6 +8,10 @@
 #include "../shell/TermInput.h"
 #include "../shell/EShell.h"
 #include "State.h"
+#include "env.h"
+
+#include "textmods/Mod.h"
+#include "textmods/mods.h"
 
 etm::Terminal::Terminal():
     resources(new Resources(*this)),
@@ -130,17 +134,10 @@ void etm::Terminal::dispText(const std::string &str) {
 }
 
 int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
+    i++;
     int result = 0;
-    for (std::string::size_type end = i + 6; i < str.size(); i++) {
-        if (i >= end) {
-            if (i+1 < str.size() && str[i+1] == ';') {
-                i++;
-            }
-            break;
-        } else if (str[i] == ';') {
-            i++;
-            break;
-        } else if ('0' <= str[i] && str[i] <= '9') {
+    for (std::string::size_type end = i + 6; i < str.size() && i < end && str[i] != ';'; i++) {
+        if ('0' <= str[i] && str[i] <= '9') {
             result = (result * 16) + str[i] - '0';
         } else {
             const char c = str[i] | 0x20;
@@ -151,36 +148,46 @@ int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
             }
         }
     }
+    std::cout << "read hex 0x" << std::hex << result << std::dec << std::endl;
     return result;
 }
 
 void etm::Terminal::flush() {
     constexpr char ESCAPE = '\x1b';
     for (std::string::size_type i = 0; i < displayBuffer.size(); i++) {
-        // // Escape char
-        //                                 // 1 for the [, 1 for the spec (b/f)
-        // if (displayBuffer[i] == ESCAPE && i + 2 < displayBuffer.size() && displayBuffer[i+1] == '[') {
-        //     Character chr;
-        //     std::string::size_type fi = i + 2;
-        //     switch (displayBuffer[fi]) {
-        //         case 'b':
-        //             chr.setBackColor(readHexFromStr(displayBuffer, fi));
-        //             break;
-        //         case 'f':
-        //             chr.setForeColor(readHexFromStr(displayBuffer, fi));
-        //             break;
-        //     }
-        //     if (fi < displayBuffer.size()) {
-        //         chr.setValue(displayBuffer[fi]);
-        //         i = fi;
-        //     } else {
-        //         chr.setValue(displayBuffer[i]);
-        //     }
-        //     display.append(chr);
-        // } else {
-        //     display.append(displayBuffer[i]);
-        // }
-        display.append(displayBuffer[i]);
+        // Escape char
+                                        // 1 for the [, 1 for the spec (b/f)
+        if (displayBuffer[i] == ESCAPE && i + 2 < displayBuffer.size() && displayBuffer[i+1] == '[') {
+            std::string::size_type fi = i + 2;
+            std::shared_ptr<tm::Mod> mod;
+            switch (displayBuffer[fi]) {
+                case 'b':
+                    mod = std::make_shared<tm::Background>(readHexFromStr(displayBuffer, fi));
+                    break;
+                case 'f':
+                    mod = std::make_shared<tm::Foreground>(readHexFromStr(displayBuffer, fi));
+                    break;
+                case 'B':
+                    mod = std::make_shared<tm::RevBackground>();
+                    break;
+                case 'F':
+                    std::cout << "SET MOD" << std::endl;
+                    mod = std::make_shared<tm::RevForeground>();
+                    break;
+                case 'r':
+                    mod = std::make_shared<tm::RevBackFore>();
+                    break;
+            }
+            if (mod) {
+                std::cout << "add" << std::endl;
+                display.pushMod(mod);
+                i = fi;
+            } else {
+                display.append(displayBuffer[i]);
+            }
+        } else {
+            display.append(displayBuffer[i]);
+        }
     }
     displayBuffer.clear();
     const bool jump = scroll.getOffset() + 1 >= scroll.getMaxOffset();
