@@ -14,8 +14,8 @@
 namespace etm {
     // Resources
     class Resources;
-    // Character
-    class Character;
+    // Line
+    class Line;
     // render/Font
     class Font;
     // Scroll
@@ -38,7 +38,7 @@ namespace etm {
         };
 
     private:
-        typedef std::map<char, Texture> textCache_t;
+        typedef std::map<Line::value_type, Texture> textCache_t;
 
         Resources *res;
         // Tells what parts of self should render.
@@ -71,7 +71,7 @@ namespace etm {
         // Inserts a newline after the given row
         void insertNewline(line_index_t row);
         bool cursorAtEnd();
-        void doAppend(const Character &c);
+        void doAppend(Line::value_type c);
         // Re-appends all chars after and including row and column to re-format the text
         void reformat(lines_number_t row, line_index_t column);
         void checkCursorCollumn();
@@ -82,7 +82,7 @@ namespace etm {
         void doTrunc();
 
         // Bind texture for char
-        void bindChar(char c);
+        void bindChar(Line::value_type c);
 
         // Wrappers for calls to
         // res->getFont().getCharWidth() and
@@ -93,6 +93,8 @@ namespace etm {
     public:
         // Create text buffer with width
         TextBuffer(Resources *res, Scroll &scroll, line_index_t width);
+
+        void clear();
 
         void setDefForeGColor(const Color &color);
         void setDefBackGColor(const Color &color);
@@ -149,7 +151,7 @@ namespace etm {
 
         // Overwrites character at row, column.
         // Does nothing if out of bounds.
-        void write(lines_number_t row, line_index_t column, const Character &c);
+        void write(lines_number_t row, line_index_t column, Line::value_type c);
         // Erases the character before the cursor, and deincrements the
         // cursor's index.
         // If the column is zero, will erase the last char on the next line.
@@ -159,15 +161,15 @@ namespace etm {
         // If out of bounds, does nothing.
         void erase(lines_number_t row, line_index_t column);
         // Adds the char to the end of the buffer
-        void append(const Character &c);
+        void append(Line::value_type c);
         // Removes the last char
         void trunc();
 
         // Insert the char where the cursor is,
         // and moves it forward by one
-        void insertAtCursor(const Character &c);
+        void insertAtCursor(Line::value_type c);
         // Called by insertAtCursor
-        void insert(lines_number_t row, line_index_t column, const Character &c);
+        void insert(lines_number_t row, line_index_t column, Line::value_type c);
 
         // ---Assumes that the primitive shader has already been set---
         void render(int x, int y);

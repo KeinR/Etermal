@@ -66,9 +66,14 @@ void etm::Shell::input(const std::string &commandString) {
             std::string error = com.filter.filter(params, args);
             com.callback(*this, *terminal, args);
         } else {
-            terminal->dispText("Command not found: " + params[0] + "\n");
+            terminal->dispText("\x1b[fd13400;Command not found: " + params[0] + "\n");
         }
     }
+
+    // temp
+    // if (commandString == "clear") {
+    //     terminal->clear();
+    // }
 
     terminal->displayPrompt();
     terminal->flush(); // Make sure it's flushed

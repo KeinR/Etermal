@@ -51,6 +51,10 @@ int etm::TextBuffer::charHeight() {
     return res->getFont().getCharHeight();
 }
 
+void etm::TextBuffer::clear() {
+    lines.clear();
+}
+
 void etm::TextBuffer::setDefForeGColor(const Color &color) {
     defForegroundColor = color;
 }
@@ -139,6 +143,13 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
 void etm::TextBuffer::jumpCursor() {
     cursor.row = lines.size() - 1;
     cursor.column = lines[cursor.row].size();
+
+    // long size = static_cast<long>(sizeof(Line) * lines.capacity() + sizeof(std::vector<Line>));
+    // for (Line &l : lines) {
+    //     size += static_cast<long>(l.string.capacity() * sizeof(Line::value_type));
+    // }
+
+    // std::cout << "MEMORY USAGE: " << (size / 1e6) << std::endl;
 }
 void etm::TextBuffer::setCursorEnabled(bool val) {
     cursorEnabled = val;
@@ -166,8 +177,8 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
     return width;
 }
 
-void etm::TextBuffer::doAppend(const Character &c) {
-    if (c.getValue() == '\n') {
+void etm::TextBuffer::doAppend(Line::value_type c) {
+    if (c == '\n') {
         lines.back().setNewline(true);
         newline();
     } else if (!lines.size()) {
@@ -181,11 +192,11 @@ void etm::TextBuffer::doAppend(const Character &c) {
         // If the last char or this char is NOT a space, do word wrap
                                     // because it's unsigned;
                                     // check for less than zero
-        if (c.getValue() != ' ' && (lastLine.size() - 1 > lastLine.size() || lastLine[lastLine.size()-1].getValue() != ' ')) {
+        if (c != ' ' && (lastLine.size() - 1 > lastLine.size() || lastLine[lastLine.size()-1] != ' ')) {
             // -2 because we already checked that -1 wasn't a space
             // Check less than while deincrementing because unsigned
             for (line_index_t i = lastLine.size() - 2; i < lastLine.size(); i--) {
-                if (lastLine[i].getValue() == ' ') {
+                if (lastLine[i] == ' ') {
                     const line_index_t index = i;
                     i++;
                     // Move the last word from the last line to the next
@@ -212,10 +223,10 @@ void etm::TextBuffer::doAppend(const Character &c) {
     }
 }
 
-void etm::TextBuffer::write(lines_number_t row, line_index_t column, const Character &c) {
+void etm::TextBuffer::write(lines_number_t row, line_index_t column, Line::value_type c) {
     if (outOfBounds(row, column)) return;
 
-    if (column == lines[row].size()-1 && lines[row].hasNewline() && c.getValue() != '\n') {
+    if (column == lines[row].size()-1 && lines[row].hasNewline() && c != '\n') {
         // If was the last char and the line was broken manually,
         // instead it deleted the newline
         lines[row].setNewline(false);
@@ -271,7 +282,7 @@ void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
 
 }
 
-void etm::TextBuffer::append(const Character &c) {
+void etm::TextBuffer::append(Line::value_type c) {
     const bool moveCursor = cursorAtEnd();
     doAppend(c);
     if (moveCursor) {
@@ -318,7 +329,7 @@ void etm::TextBuffer::doTrunc() {
 
 }
 
-void etm::TextBuffer::insertAtCursor(const Character &c) {
+void etm::TextBuffer::insertAtCursor(Line::value_type c) {
     if (cursorAtEnd()) {
         doAppend(c);
     } else {
@@ -327,10 +338,10 @@ void etm::TextBuffer::insertAtCursor(const Character &c) {
     moveCursorCollumnWrap(1);
 }
 
-void etm::TextBuffer::insert(lines_number_t row, line_index_t column, const Character &c) {
+void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::value_type c) {
     if (outOfBounds(row, column)) return;
 
-    if (c.getValue() == '\n') {
+    if (c == '\n') {
         if (!lines[row].hasNewline()) {            
             // Move the text after the newline to the newly created line
             Line::string_t buffer(lines[row].substr(column));
@@ -367,12 +378,12 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
         }
     }
     lines.erase(lines.begin() + row + 1, lines.end());
-    for (Character &c : buffer) {
+    for (Line::value_type &c : buffer) {
         doAppend(c);
     }
 }
 
-void etm::TextBuffer::bindChar(char c) {
+void etm::TextBuffer::bindChar(Line::value_type c) {
     textCache_t::iterator loc = textCache.find(c);
     if (loc != textCache.end()) {
         loc->second.bind();
@@ -417,16 +428,8 @@ void etm::TextBuffer::render(int x, int y) {
     for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.size(); c++) {
-            Character &chr = line[c];
-            if (chr.hasBackGC() && chr.getBackGC() != *backgroundColor) {
-                backgroundColor = &chr.getBackGC();
-                backgroundColor->setBackground(res->getShader());
-            }
-            if (chr.hasForeGC() && chr.getForeGC() != *foregroundColor) {
-                foregroundColor = &chr.getForeGC();
-                foregroundColor->setForeground(res->getShader());
-            }
-            bindChar(chr.getValue());
+            Line::value_type &chr = line[c];
+            bindChar(chr);
             model.set(res->getShader());
             res->renderRectangle();
             model.x += charWidth();

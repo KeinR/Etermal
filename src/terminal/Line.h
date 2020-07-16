@@ -4,12 +4,11 @@
 #include <vector>
 #include <limits>
 
-#include "Character.h"
-
 namespace etm {
     class Line {
     public:
-        typedef std::vector<Character> string_t;
+        typedef char value_type;
+        typedef std::vector<char> string_t;
         typedef string_t::size_type size_type;
     private:
         string_t string;
@@ -18,11 +17,11 @@ namespace etm {
     public:
         static constexpr size_type max = std::numeric_limits<size_type>::max() / 2;
         Line();
-        Character &operator[](size_type index);
+        value_type &operator[](size_type index);
         size_type size();
-        void append(const Character &c);
+        void append(value_type c);
         // Inserts at `index`, pushing forward the last occupant.
-        void insert(size_type index, const Character &c);
+        void insert(size_type index, value_type c);
         void insertStr(size_type index, const string_t &str);
         void erase(size_type index, size_type length = max);
         void appendStr(const string_t &str);

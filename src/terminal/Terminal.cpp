@@ -75,6 +75,10 @@ void etm::Terminal::flushInputBuffer() {
     }
 }
 
+void etm::Terminal::clear() {
+    display.clear();
+}
+
 void etm::Terminal::setBackgroundColor(const Color &color) {
     background.setColor(color);
     display.setDefBackGColor(color);
@@ -124,9 +128,59 @@ void etm::Terminal::clearInputRequests() {
 void etm::Terminal::dispText(const std::string &str) {
     displayBuffer += str;
 }
+
+int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
+    int result = 0;
+    for (std::string::size_type end = i + 6; i < str.size(); i++) {
+        if (i >= end) {
+            if (i+1 < str.size() && str[i+1] == ';') {
+                i++;
+            }
+            break;
+        } else if (str[i] == ';') {
+            i++;
+            break;
+        } else if ('0' <= str[i] && str[i] <= '9') {
+            result = (result * 16) + str[i] - '0';
+        } else {
+            const char c = str[i] | 0x20;
+            if ('a' <= c && c <= 'f') {
+                result = (result * 16) + c - 'a' + 10;
+            } else {
+                break;
+            }
+        }
+    }
+    return result;
+}
+
 void etm::Terminal::flush() {
-    for (char c : displayBuffer) {
-        display.append(c);
+    constexpr char ESCAPE = '\x1b';
+    for (std::string::size_type i = 0; i < displayBuffer.size(); i++) {
+        // // Escape char
+        //                                 // 1 for the [, 1 for the spec (b/f)
+        // if (displayBuffer[i] == ESCAPE && i + 2 < displayBuffer.size() && displayBuffer[i+1] == '[') {
+        //     Character chr;
+        //     std::string::size_type fi = i + 2;
+        //     switch (displayBuffer[fi]) {
+        //         case 'b':
+        //             chr.setBackColor(readHexFromStr(displayBuffer, fi));
+        //             break;
+        //         case 'f':
+        //             chr.setForeColor(readHexFromStr(displayBuffer, fi));
+        //             break;
+        //     }
+        //     if (fi < displayBuffer.size()) {
+        //         chr.setValue(displayBuffer[fi]);
+        //         i = fi;
+        //     } else {
+        //         chr.setValue(displayBuffer[i]);
+        //     }
+        //     display.append(chr);
+        // } else {
+        //     display.append(displayBuffer[i]);
+        // }
+        display.append(displayBuffer[i]);
     }
     displayBuffer.clear();
     const bool jump = scroll.getOffset() + 1 >= scroll.getMaxOffset();

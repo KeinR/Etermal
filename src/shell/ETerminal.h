@@ -15,6 +15,9 @@ namespace etm {
         // Show the default input prompt
         virtual void displayPrompt() = 0;
 
+        // Clears the screen
+        virtual void clear() = 0;
+
         // Each call adds `callback` to the input queue.
         // Each time input is entered, the callback is called
         // and removed.

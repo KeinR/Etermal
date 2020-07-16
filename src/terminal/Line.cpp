@@ -7,16 +7,16 @@ etm::Line::Line():
     newline(false),
     startSpace(false) {
 }
-etm::Character &etm::Line::operator[](size_type index) {
+etm::Line::value_type &etm::Line::operator[](size_type index) {
     return string[index];
 }
 etm::Line::size_type etm::Line::size() {
     return string.size();
 }
-void etm::Line::append(const Character &c) {
+void etm::Line::append(value_type c) {
     string.push_back(c);
 }
-void etm::Line::insert(size_type index, const Character &c) {
+void etm::Line::insert(size_type index, value_type c) {
     string.insert(string.begin() + index, c);
 }
 void etm::Line::insertStr(size_type index, const string_t &str) {
@@ -31,7 +31,7 @@ void etm::Line::appendStr(const string_t &str) {
 void etm::Line::appendOther(const Line &other) {
     newline |= other.newline;
     if (other.startSpace) {
-        append(Character(' '));
+        append(value_type(' '));
     }
     appendStr(other.string);
 }

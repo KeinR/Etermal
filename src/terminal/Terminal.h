@@ -30,7 +30,6 @@ namespace etm {
     class Terminal: public ETerminal {
     public:
         typedef std::deque<TermInput*> inputRequests_t;
-        typedef bool(*flushFunc_t)(char);
     private:
         std::unique_ptr<Resources> resources;
 
@@ -72,6 +71,10 @@ namespace etm {
         void prepareInput();
         void doInputChar(char c);
         bool acceptInput();
+        // Reads a hex that starts on i and is 3 chars long.
+        // i is set to the first character after the hex.
+        // Will stop prematurely if the hex is truncated
+        int readHexFromStr(std::string &str, std::string::size_type &i);
     public:
 
         // Initializes with the current context.
@@ -80,6 +83,8 @@ namespace etm {
         Terminal();
         Terminal(Terminal &&other) = delete; // Temp
         Terminal &operator=(Terminal &&other) = delete;
+
+        void clear() override;
 
         void setBackgroundColor(const Color &color);
         void setTextColor(const Color &color);
