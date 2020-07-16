@@ -43,11 +43,14 @@ Examples:
 */
 
 namespace etm::env {
-    constexpr char CONTROL_CHAR = '\x5';
-    // Not including the control char - 
-    // number of characters included in a control block
-    constexpr unsigned int CONTROL_BLOCK_SIZE = 4;
-    typedef unsigned int cblock_t;
+    constexpr char CONTROL_CHAR_START = '\xE';
+    constexpr char CONTROL_CHAR_END = '\xF';
+    // Not including the first CONTROL_CHAR_START control char - 
+    // number of characters included in a control block.
+    // 4 for sizeof(cblock_t), 1 for CONTROL_CHAR_END
+    constexpr unsigned int CONTROL_BLOCK_SIZE = 5;
+    // Number of bytes used to record offsets for control blocks
+    constexpr unsigned int CONTROL_BLOCK_DATA_BYTES = 4;
 }
 
 #endif

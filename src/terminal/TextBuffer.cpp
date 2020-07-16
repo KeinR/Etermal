@@ -12,6 +12,17 @@
 #include "textmods/RenderState.h"
 #include "textmods/Lookbehind.h"
 
+// Check if the char is valid (ie not a reserved
+// one).
+// If it's not, sets it to something that is valid.
+static void filterChar(etm::Line::value_type &c);
+
+void filterChar(etm::Line::value_type &c) {
+    if (c == etm::env::CONTROL_CHAR_START || c == etm::env::CONTROL_CHAR_END) {
+        c = '\0';
+    }
+}
+
 etm::TextBuffer::pos::pos(): pos(0, 0) {
 }
 etm::TextBuffer::pos::pos(lines_number_t row, line_index_t column):
@@ -59,12 +70,13 @@ void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
     modifierBlocks.push_back(mod);
     modifierBlocks_t::size_type index = modifierBlocks.size() - 1;
     Line::string_t str;
-    str.push_back(env::CONTROL_CHAR);
-    int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_SIZE);
-    for (unsigned int n = 0; n < env::CONTROL_BLOCK_SIZE; n++) {
+    str.push_back(env::CONTROL_CHAR_START);
+    int shift = 8 * env::CONTROL_BLOCK_DATA_BYTES;
+    for (unsigned int n = 0; n < env::CONTROL_BLOCK_DATA_BYTES; n++) {
         shift -= 8;
         str.push_back(static_cast<Line::value_type>((index >> shift) & 0xff));
     }
+    str.push_back(env::CONTROL_CHAR_END);
     if (!lines.size()) {
         newline();
     }
@@ -199,6 +211,7 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
 }
 
 void etm::TextBuffer::doAppend(Line::value_type c) {
+
     if (c == '\n') {
         lines.back().setNewline(true);
         newline();
@@ -246,6 +259,7 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
 
 void etm::TextBuffer::write(lines_number_t row, line_index_t column, Line::value_type c) {
     if (outOfBounds(row, column)) return;
+    filterChar(c);
 
     if (column == lines[row].size()-1 && lines[row].hasNewline() && c != '\n') {
         // If was the last char and the line was broken manually,
@@ -304,6 +318,7 @@ void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
 }
 
 void etm::TextBuffer::append(Line::value_type c) {
+    filterChar(c);
     const bool moveCursor = cursorAtEnd();
     doAppend(c);
     if (moveCursor) {
@@ -352,6 +367,7 @@ void etm::TextBuffer::doTrunc() {
 
 void etm::TextBuffer::insertAtCursor(Line::value_type c) {
     if (cursorAtEnd()) {
+        filterChar(c);
         doAppend(c);
     } else {
         insert(cursor.row, cursor.column, c);
@@ -361,6 +377,7 @@ void etm::TextBuffer::insertAtCursor(Line::value_type c) {
 
 void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::value_type c) {
     if (outOfBounds(row, column)) return;
+    filterChar(c);
 
     if (c == '\n') {
         if (!lines[row].hasNewline()) {            
@@ -416,8 +433,8 @@ void etm::TextBuffer::bindChar(Line::value_type c) {
 
 void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state) {
     int value = 0;
-    int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_SIZE);
-    for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_SIZE; i < end; i++) {
+    int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_DATA_BYTES);
+    for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_DATA_BYTES; i < end; i++) {
         shift -= 8;
         value |= static_cast<int>(line.getDejure(i)) << shift;
     }
@@ -460,7 +477,7 @@ void etm::TextBuffer::render(int x, int y) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
-            if (chr == env::CONTROL_CHAR) {
+            if (chr == env::CONTROL_CHAR_START) {
                 applyMod(c, line, lookbehind);
                 c += env::CONTROL_BLOCK_SIZE;
             }
@@ -474,7 +491,7 @@ void etm::TextBuffer::render(int x, int y) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
-            if (chr == env::CONTROL_CHAR) {
+            if (chr == env::CONTROL_CHAR_START) {
                 applyMod(c, line, state);
                 c += env::CONTROL_BLOCK_SIZE;
             } else {
