@@ -23,7 +23,7 @@ namespace etm {
         GLint unpackAlign;
     public:
         State();
-        void set(const Model &viewport);
+        void set();
         void restore();
     };
 }

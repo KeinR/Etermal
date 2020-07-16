@@ -307,7 +307,7 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 
 void etm::Terminal::render() {
     State state;
-    state.set(viewport);
+    state.set();
 
     // Run animiations
     if (cursorBlink.hasEnded()) {

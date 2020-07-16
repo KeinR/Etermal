@@ -7,7 +7,7 @@ etm::State::State() {
     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlign);
 }
-void etm::State::set(const Model &viewport) {
+void etm::State::set() {
     if (blend) {
         glDisable(GL_BLEND);
     }
