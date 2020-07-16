@@ -19,18 +19,18 @@ void etm::tm::Foreground::run(TextState &state) {
 etm::tm::RevBackground::RevBackground() {
 }
 void etm::tm::RevBackground::run(TextState &state) {
-    state.setBack(state.getDefBack());
+    state.setDefBack();
 }
 
 etm::tm::RevForeground::RevForeground() {
 }
 void etm::tm::RevForeground::run(TextState &state) {
-    state.setFore(state.getDefFore());
+    state.setDefFore();
 }
 
 etm::tm::RevBackFore::RevBackFore() {
 }
 void etm::tm::RevBackFore::run(TextState &state) {
-    state.setBack(state.getDefBack());
-    state.setFore(state.getDefFore());
+    state.setDefBack();
+    state.setDefFore();
 }

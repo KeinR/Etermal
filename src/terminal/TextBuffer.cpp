@@ -9,6 +9,8 @@
 #include "Scroll.h"
 #include "env.h"
 #include "textmods/TextState.h"
+#include "textmods/RenderState.h"
+#include "textmods/Lookbehind.h"
 
 etm::TextBuffer::pos::pos(): pos(0, 0) {
 }
@@ -417,7 +419,7 @@ void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextSt
     int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_SIZE);
     for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_SIZE; i < end; i++) {
         shift -= 8;
-        value |= line.getDejure(i) << shift;
+        value |= static_cast<int>(line.getDejure(i)) << shift;
     }
     modifierBlocks[value]->run(state);
 }
@@ -445,7 +447,7 @@ void etm::TextBuffer::render(int x, int y) {
 
     Model model(x, y + static_cast<int>(charHeight() * start), charWidth(), charHeight());
 
-    tm::TextState state(res->getShader(), defBackgroundColor, defForegroundColor);
+    tm::Lookbehind lookbehind(defBackgroundColor, defForegroundColor, start - 1);
 
     // Move back to get color settings that might've been
     // missed had we started at `start`.
@@ -454,16 +456,19 @@ void etm::TextBuffer::render(int x, int y) {
     // Well, it's definitely better than the alternatives...
     // The goal is to prioritize memory... Performance is less of an
     // issue, since the console itn't going to be active, _all the time_
-    for (lines_number_t r = 0; r < start; r++) {
+    for (lines_number_t r = start - 1; r < start && !lookbehind.bothSet(); r--) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
             if (chr == env::CONTROL_CHAR) {
-                applyMod(c, line, state);
+                applyMod(c, line, lookbehind);
                 c += env::CONTROL_BLOCK_SIZE;
             }
         }
+        lookbehind.decLine();
     }
+
+    tm::RenderState state(res->getShader(), lookbehind.getBack(), lookbehind.getFore());
 
     for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
