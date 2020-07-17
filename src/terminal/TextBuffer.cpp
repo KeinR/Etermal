@@ -229,14 +229,18 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
         if (c != ' ' && (lastLine.size() - 1 > lastLine.size() || lastLine[lastLine.size()-1] != ' ')) {
             // -2 because we already checked that -1 wasn't a space
             // Check less than while deincrementing because unsigned
-            for (line_index_t i = lastLine.size() - 2; i < lastLine.size(); i--) {
-                if (lastLine[i] == ' ') {
-                    const line_index_t index = i;
-                    i++;
+            Line::iterator it(lastLine.last());
+            it -= 2;
+            std::cout << "iterator valid off the bat: " << it.valid() << std::endl;
+            for (; it.valid(); --it) {
+                if (*it == ' ') {
+                    const line_index_t index = it.getIndex();
+                    std::cout << "WRAP AT INDEX " << index << std::endl;
+                    ++it;
                     // Move the last word from the last line to the next
                     // line via recursion
-                    for (; i < lastLine.size(); i++) {
-                        append(lastLine[i]);
+                    for (; it.valid(); ++it) {
+                        append(*it);
                     }
 
                     lastLine.erase(index+1);

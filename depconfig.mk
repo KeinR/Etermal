@@ -28,7 +28,7 @@ bin/terminal.TextBuffer.o: src/terminal/TextBuffer.cpp src/terminal/Line.h src/t
 bin/terminal.textmods.Lookbehind.o: src/terminal/textmods/Lookbehind.cpp src/terminal/textmods/Lookbehind.h src/terminal/textmods/TextState.h
 bin/terminal.textmods.Mod.o: src/terminal/textmods/Mod.cpp src/terminal/textmods/Mod.h
 bin/terminal.textmods.mods.o: src/terminal/textmods/mods.cpp src/terminal/render/Color.h src/terminal/textmods/Mod.h src/terminal/textmods/TextState.h src/terminal/textmods/mods.h
-bin/terminal.textmods.RenderState.o: src/terminal/textmods/RenderState.cpp src/terminal/textmods/RenderState.h src/terminal/textmods/TextState.h
+bin/terminal.textmods.RenderState.o: src/terminal/textmods/RenderState.cpp src/terminal/render/Color.h src/terminal/textmods/RenderState.h src/terminal/textmods/TextState.h
 bin/terminal.textmods.TextState.o: src/terminal/textmods/TextState.cpp src/terminal/textmods/TextState.h
 bin/terminal.util.error.o: src/terminal/util/error.cpp src/terminal/util/error.h
 bin/terminal.util.singleton.o: src/terminal/util/singleton.cpp src/terminal/util/singleton.h

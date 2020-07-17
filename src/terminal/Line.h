@@ -2,6 +2,7 @@
 #define ETERMAL_LINE_H_INCLUDED
 
 #include <string>
+#include <vector>
 #include <limits>
 
 namespace etm {
@@ -10,6 +11,32 @@ namespace etm {
         typedef char value_type;
         typedef std::basic_string<value_type> string_t;
         typedef string_t::size_type size_type;
+
+        class iterator {
+            Line *parent;
+            size_type index; // Actual index
+        public:
+            // Constructor should only ever be invoked
+            // by the parent (!!!)
+            // `index` is a (valid) starting index
+            // (that is, it's been corrected).
+            // `parent` is the controlling parent Line object.
+            iterator(Line *parent, size_type index);
+
+            // Returns true if the iterator is pointing
+            // to a valid index
+            bool valid();
+
+            void operator-=(size_type distance);
+            void operator--();
+            void operator++();
+            value_type &operator*();
+
+            // Gets the internal index that the
+            // iterator points to
+            size_type getIndex();
+        };
+
     private:
         string_t string;
         size_type defactoSize;
@@ -25,6 +52,10 @@ namespace etm {
         static constexpr size_type max = std::numeric_limits<size_type>::max() / 2;
         Line();
         value_type &operator[](size_type index);
+
+        // Get iterator to the last element        
+        iterator last();
+
         size_type size();
         void append(value_type c);
         // Inserts at `index`, pushing forward the last occupant.
@@ -54,7 +85,7 @@ namespace etm {
         bool hasStartSpace();
 
         // dejure accessors
-        value_type getDejure(size_type index);
+        value_type &getDejure(size_type index);
         size_type dejureSize();
     };
 }

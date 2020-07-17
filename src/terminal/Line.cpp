@@ -5,6 +5,51 @@
 
 #include "env.h"
 
+
+etm::Line::iterator::iterator(Line *parent, size_type index):
+    parent(parent), index(index)
+{
+}
+
+bool etm::Line::iterator::valid() {
+    // Don't check greater than zero too because it's unsigned
+    return index < parent->dejureSize();
+}
+
+void etm::Line::iterator::operator-=(size_type distance) {
+    for (size_type i = 0; i < distance && valid(); i++) {
+        operator--();
+    }
+}
+void etm::Line::iterator::operator--() {
+    index--;
+    // "If pos is equal to the string length, the
+    // function returns a reference to the null character
+    // that follows the last character in the string (which
+    // should not be modified)."
+    // - http://www.cplusplus.com/reference/string/basic_string/operator[]/
+    // 
+    // We're fine not doing bounds checks, so long as the caller
+    // always checks valid() before de/incrementing
+    if (parent->getDejure(index) == env::CONTROL_CHAR_END) {
+        index -= env::CONTROL_BLOCK_SIZE + 1;
+    }
+}
+void etm::Line::iterator::operator++() {
+    index++;
+    if (parent->getDejure(index) == env::CONTROL_CHAR_END) {
+        index += env::CONTROL_BLOCK_SIZE + 1;
+    }
+}
+
+etm::Line::value_type &etm::Line::iterator::operator*() {
+    return parent->getDejure(index);
+}
+
+etm::Line::size_type etm::Line::iterator::getIndex() {
+    return index;
+}
+
 etm::Line::size_type etm::Line::findDefactoSize(const string_t &string) {
     return findDefactoSize(string.begin(), string.end());
 }
@@ -12,7 +57,7 @@ etm::Line::size_type etm::Line::findDefactoSize(const string_t &string) {
 etm::Line::size_type etm::Line::findDefactoSize(const string_t::const_iterator &start, const string_t::const_iterator &end) {
     size_type size = end - start;
     for (string_t::const_iterator it = start; it < end; ++it) {
-        if (*it == env::CONTROL_CHAR) {
+        if (*it == env::CONTROL_CHAR_START) {
             it += env::CONTROL_BLOCK_SIZE;
             size -= env::CONTROL_BLOCK_SIZE;
         }
@@ -29,13 +74,13 @@ etm::Line::Line():
 etm::Line::size_type etm::Line::correctIndex(size_type index) {
     size_type i = 0;
     for (size_type cIndex = 0; cIndex < index; i++) {
-        if (string[i] == env::CONTROL_CHAR) {
+        if (string[i] == env::CONTROL_CHAR_START) {
             i += env::CONTROL_BLOCK_SIZE;
         } else {
             cIndex++;
         }
     }
-    while (i < string.size() && string[i] == env::CONTROL_CHAR) {
+    while (i < string.size() && string[i] == env::CONTROL_CHAR_START) {
         i += env::CONTROL_BLOCK_SIZE + 1;
     }
     return i;
@@ -51,6 +96,16 @@ etm::Line::value_type &etm::Line::operator[](size_type index) {
     }
     return string[correctIndex(index)];
 }
+
+
+etm::Line::iterator etm::Line::last() {
+    size_type index = string.size() - 1;
+    while (index == env::CONTROL_CHAR_END) {
+        index -= env::CONTROL_BLOCK_SIZE + 1;
+    }
+    return iterator(this, index);
+}
+
 etm::Line::size_type etm::Line::size() {
     return defactoSize;
 }
@@ -124,7 +179,7 @@ bool etm::Line::hasStartSpace() {
     return startSpace;
 }
 
-etm::Line::value_type etm::Line::getDejure(size_type index) {
+etm::Line::value_type &etm::Line::getDejure(size_type index) {
     return string[index];
 }
 etm::Line::size_type etm::Line::dejureSize() {
