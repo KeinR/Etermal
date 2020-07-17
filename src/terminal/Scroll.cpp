@@ -52,6 +52,7 @@ bool etm::Scroll::scroll(float value) {
     std::cout << "alignBuffer = " << alignBuffer << std::endl;
     if (alignBuffer >= align) {
         // Flush
+        std::cout << "change by = " << (align * std::floor(alignBuffer / align)) << std::endl;
         offset = std::min(
             offset + align * std::floor(alignBuffer / align),
             maxOffset
@@ -60,8 +61,11 @@ bool etm::Scroll::scroll(float value) {
         return true;
     } else if (alignBuffer <= -align) {
         // Flush
+        // NOTE: We use ceil because APPARENTLY
+        // floor and ceil aren't aligned to signs, ie,
+        // floor goes most negative, ceil most positive.
         offset = std::max(
-            offset + align * std::floor(alignBuffer / align),
+            offset + align * std::ceil(alignBuffer / align),
             0.0f
         );
         alignBuffer = std::fmod(alignBuffer, -align);

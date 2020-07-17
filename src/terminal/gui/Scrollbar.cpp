@@ -1,5 +1,7 @@
 #include "Scrollbar.h"
 
+#include <iostream>
+
 #include "../Scroll.h"
 
 etm::Scrollbar::Scrollbar(Resources *res, Scroll &scroll):
@@ -90,7 +92,7 @@ void etm::Scrollbar::mouseClick(bool isPressed, float mouseX, float mouseY) {
 }
 void etm::Scrollbar::mouseMove(float mouseX, float mouseY) {
     if (dragging) {
-        scroll->scroll(mouseY - dragY);
+        scroll->scroll((mouseY - dragY)  * scroll->getMaxOffset() / (bar.getHeight() - slider.getHeight()));
         dragY = mouseY;
         calcSliderY();
     } else if (sliderHovering) {
