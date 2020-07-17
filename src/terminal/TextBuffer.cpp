@@ -86,6 +86,9 @@ void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
 void etm::TextBuffer::clear() {
     lines.clear();
     modifierBlocks.clear();
+    textCache.clear();
+    newline();
+    jumpCursor();
 }
 
 void etm::TextBuffer::setDefForeGColor(const Color &color) {
@@ -231,11 +234,9 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
             // Check less than while deincrementing because unsigned
             Line::iterator it(lastLine.last());
             it -= 2;
-            std::cout << "iterator valid off the bat: " << it.valid() << std::endl;
             for (; it.valid(); --it) {
                 if (*it == ' ') {
                     const line_index_t index = it.getIndex();
-                    std::cout << "WRAP AT INDEX " << index << std::endl;
                     ++it;
                     // Move the last word from the last line to the next
                     // line via recursion
@@ -244,8 +245,6 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
                     }
 
                     lastLine.erase(index+1);
-                    std::cout << "index = " << index << std::endl;
-                    std::cout << "last line size " << lastLine.size() << std::endl;
                     break;
                 }
             }
@@ -289,7 +288,7 @@ void etm::TextBuffer::eraseAtCursor() {
             return;
         }
     }
-    if (column >= cursorMin.column && column < lines[row].size()) {
+    if ((column >= cursorMin.column || row > cursorMin.row) && row >= cursorMin.row && column < lines[row].size()) {
         if (cursorAtEnd()) {
             doTrunc();
             jumpCursor();
@@ -447,15 +446,6 @@ void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextSt
 
 void etm::TextBuffer::render(int x, int y) {
 
-    if (cursorEnabled && displayCursor) {
-        // Assume that the primitive shader was already set by
-        // the terminal
-        dispCursor.setX(static_cast<int>(cursor.column * charWidth()));
-        dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));
-        dispCursor.setHeight(charHeight());
-        dispCursor.render();
-    }
-
     res->bindTextShader();
 
     lines_number_t start = std::floor(scroll->getOffset() / charHeight());
@@ -507,5 +497,16 @@ void etm::TextBuffer::render(int x, int y) {
         }
         model.x = 0;
         model.y += charHeight();
+    }
+
+    // Unfortunately, we have to render the cursor after,
+    // triggering another shader change else
+    // the text background will hide it :(
+    if (cursorEnabled && displayCursor) {
+        res->bindPrimitiveShader();
+        dispCursor.setX(x + static_cast<int>(cursor.column * charWidth()));
+        dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));
+        dispCursor.setHeight(charHeight());
+        dispCursor.render();
     }
 }

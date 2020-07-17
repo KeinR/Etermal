@@ -70,11 +70,6 @@ void etm::Shell::input(const std::string &commandString) {
         }
     }
 
-    // temp
-    // if (commandString == "clear") {
-    //     terminal->clear();
-    // }
-
     terminal->displayPrompt();
     terminal->flush(); // Make sure it's flushed
     terminal->setTakeInput(true);
