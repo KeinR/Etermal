@@ -161,10 +161,6 @@ void etm::Line::copyTo(string_t &str) {
     str.insert(str.end(), string.begin(), string.end());
 }
 
-void etm::Line::reserve(size_type size) {
-    string.reserve(size);
-}
-
 void etm::Line::setNewline(bool value) {
     newline = value;
 }

@@ -76,8 +76,6 @@ namespace etm {
 
         void copyTo(string_t &str);
 
-        void reserve(size_type size);
-
         void setNewline(bool value);
         void setStartSpace(bool value);
 

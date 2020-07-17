@@ -42,13 +42,11 @@ etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
 
 void etm::TextBuffer::newline() {
     lines.emplace_back();
-    lines.back().reserve(width);
 }
 
 void etm::TextBuffer::insertNewline(line_index_t row) {
     row++;
     lines.insert(lines.begin() + row, line_t());
-    lines[row].reserve(width);
 }
 
 bool etm::TextBuffer::cursorAtEnd() {
