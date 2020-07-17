@@ -50,8 +50,16 @@ int main() {
         etm::Terminal term;
         terminal = &term;
 
+        GLFWcursor* ibeam = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
+
         term.setMaxWidth(700);
         term.setMaxHeight(700);
+        term.setCursorDefault([window]()->void{
+            glfwSetCursor(window, NULL);
+        });
+        term.setCursorIBeam([window, ibeam]()->void{
+            glfwSetCursor(window, ibeam);
+        });
 
         etm::Shell shell;
 

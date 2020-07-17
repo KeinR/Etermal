@@ -79,6 +79,25 @@ void etm::Terminal::flushInputBuffer() {
     }
 }
 
+void etm::Terminal::setCursorDefault(const winActionCB_t &callback) {
+    windowSetCursorDefault = callback;
+}
+void etm::Terminal::setCursorIBeam(const winActionCB_t &callback) {
+    windowSetCursorIBeam = callback;
+}
+void etm::Terminal::setHovering(bool value) {
+    if (hovering != value) {
+        hovering = value;
+        if (hovering) {
+            if (windowSetCursorIBeam) {
+                windowSetCursorIBeam();
+            }
+        } else if (windowSetCursorDefault) {
+            windowSetCursorDefault();
+        }
+    }
+}
+
 void etm::Terminal::clear() {
     display.clear();
 }
@@ -303,6 +322,7 @@ void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) 
 }
 void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
     scrollbar.mouseMove(mouseX, mouseY);
+    setHovering(background.hasPoint(mouseX, mouseY));
 }
 
 void etm::Terminal::render() {

@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <memory>
+#include <functional>
 
 #include "util/enums.h"
 #include "util/Timer.h"
@@ -30,6 +31,7 @@ namespace etm {
     class Terminal: public ETerminal {
     public:
         typedef std::deque<TermInput*> inputRequests_t;
+        typedef std::function<void()> winActionCB_t;
     private:
         std::unique_ptr<Resources> resources;
 
@@ -65,6 +67,11 @@ namespace etm {
 
         EShell *shell;
 
+        winActionCB_t windowSetCursorDefault;
+        winActionCB_t windowSetCursorIBeam;
+        // Is the mouse hovering over the terminal input area?
+        bool hovering;
+
         void displayWelcome();
 
         void flushInputBuffer();
@@ -84,6 +91,10 @@ namespace etm {
         Terminal();
         Terminal(Terminal &&other) = delete; // Temp
         Terminal &operator=(Terminal &&other) = delete;
+
+        void setCursorDefault(const winActionCB_t &callback);
+        void setCursorIBeam(const winActionCB_t &callback);
+        void setHovering(bool value);
 
         void clear() override;
 
