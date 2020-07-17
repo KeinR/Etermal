@@ -12,7 +12,7 @@
 #include "Resources.h"
 #include "TextBuffer.h"
 #include "gui/Rectangle.h"
-#include "../shell/ETerminal.h"
+#include "../ETerminal.h"
 #include "Scroll.h"
 #include "gui/Scrollbar.h"
 

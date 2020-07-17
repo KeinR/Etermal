@@ -5,8 +5,8 @@
 
 #include "render/glfw.h"
 #include "util/util.h" // TEMP
-#include "../shell/TermInput.h"
-#include "../shell/EShell.h"
+#include "../TermInput.h"
+#include "../EShell.h"
 #include "State.h"
 #include "env.h"
 

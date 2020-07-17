@@ -1,6 +1,6 @@
 #include "Shell.h"
 
-#include "ETerminal.h"
+#include "../ETerminal.h"
 
 static void makeLowercase(std::string &str) {
     for (char &c : str) {
