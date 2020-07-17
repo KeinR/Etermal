@@ -64,6 +64,11 @@ int etm::TextBuffer::charHeight() {
     return res->getFont().getCharHeight();
 }
 
+bool etm::TextBuffer::isStartSpace(Line::value_type c, lines_number_t row) {
+                        // because it's unsigned
+    return c == ' ' && row - 1 < lines.size() && lines[row - 1][lines[row - 1].size() - 1] != ' ';
+}
+
 void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
     modifierBlocks.push_back(mod);
     modifierBlocks_t::size_type index = modifierBlocks.size() - 1;
@@ -213,12 +218,14 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
 
 void etm::TextBuffer::doAppend(Line::value_type c) {
 
-    if (c == '\n') {
+    if (!lines.size()) {
+        newline();
+        doAppend(c);
+    } else if (c == '\n') {
+        std::string str;
+        lines.back().copyTo(str);
         lines.back().setNewline(true);
         newline();
-    } else if (!lines.size()) {
-        newline();
-        lines.back().append(c);
     } else if (lines.back().size() + 1 > width) {
         newline(); // Warning: refs invalidated after call!
         line_t &lastLine = lines[lines.size() - 2];
@@ -247,6 +254,8 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
                 }
             }
             append(c);
+        } else if (isStartSpace(c, lines.size() - 1)) {
+            nextLine.setStartSpace(true);
         } else {
             // Prevent stack overflow from width of 0...
             // should never happen, but I like to have a reason
@@ -268,6 +277,10 @@ void etm::TextBuffer::write(lines_number_t row, line_index_t column, Line::value
         lines[row].setNewline(false);
         lines[row].append(c);
         reformat(row, column);
+    } else if (column == 0 && c != ' ' && lines[row].hasStartSpace()) {
+        // Reveal the space char, then overwrite it
+        lines[row].setStartSpace(false);
+        insert(0, row, c);
     } else {
         lines[row][column] = c;
     }
@@ -277,11 +290,11 @@ void etm::TextBuffer::eraseAtCursor() {
     lines_number_t row = cursor.row;
     line_index_t column = cursor.column - 1;
     // Because it's unsigned it underflows to big number
-    if (column > lines[row].size()) {
+    if (column >= lines[row].size()) {
         row--;
         // Because it's unsigned it underflows to big number
         if (row < lines.size() && row >= cursorMin.row) {
-            column = lines[row].size();
+            column = lines[row].size() - 1;
         } else {
             return;
         }
@@ -311,9 +324,14 @@ void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
         // instead it deleted the newline
         lines[row].setNewline(false);
         reformat(row, column);
+    } else if (column == 0 && lines[row].hasStartSpace()) {
+        lines[row].setStartSpace(false);
+        reformat(row - 1 < row ? row - 1 : 0, 0);
     } else {
         lines[row].eraseChar(column);
-        reformat(row, column-1);
+        // unsigned madness
+        reformat(row - 1 < row ? row - 1 : 0, 0);
+        // reformat(row, 0);
     }
 
 }
@@ -339,13 +357,20 @@ void etm::TextBuffer::doTrunc() {
 
     if (lines.size()) {
         if (!lines.back().size()) {
-            // If line empty, delete it
-            if (lines.size() > 1) {
-                // Only if this isn't the last line
-                lines.pop_back();
+            if (!lines.back().hasStartSpace()) {
+                // If line empty, delete it
+                if (lines.size() > 1) {
+                    // Only if this isn't the last line
+                    lines.pop_back();
+                } else {
+                    // This is the last line and it has no chars.
+                    // Deny everything.
+                    return;
+                }
             } else {
-                // This is the last line and it has no chars.
-                // Deny everything.
+                // If empty with the startspace, just "delete" the
+                // start space instead and be done with this
+                lines.back().setStartSpace(false);
                 return;
             }
         }
@@ -367,13 +392,31 @@ void etm::TextBuffer::doTrunc() {
 }
 
 void etm::TextBuffer::insertAtCursor(Line::value_type c) {
-    if (cursorAtEnd()) {
-        filterChar(c);
-        doAppend(c);
-    } else {
-        insert(cursor.row, cursor.column, c);
+    if (lines.size()) {
+        int cursorMove = 1;
+        if (cursorAtEnd()) {
+            filterChar(c);
+            doAppend(c);
+        } else {
+            if (cursor.column == lines.back().size()) {
+                // Already asserted that this isn't the last line
+                // with cursorAtEnd()
+                cursor.row++;
+                if (lines[cursor.row].hasStartSpace()) {
+                    lines[cursor.row].setStartSpace(false);
+                    lines[cursor.row].insert(0, ' ');
+                    lines[cursor.row].insert(0, c);
+                    reformat(cursor.row - 1, 0);
+                    cursorMove = 2;
+                } else {
+                    insert(cursor.row + 1, 0, c);
+                }
+            } else {
+                insert(cursor.row, cursor.column, c);
+            }
+        }
+        moveCursorCollumnWrap(cursorMove);
     }
-    moveCursorCollumnWrap(1);
 }
 
 void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::value_type c) {
@@ -398,6 +441,10 @@ void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::valu
         } else {
             insertNewline(row);
         }
+    } else if (isStartSpace(c, row) && column == 0 && !lines[row].hasStartSpace()) {
+        lines[row].setStartSpace(true);
+        // because unsigned
+        reformat(row - 1 < row ? row - 1 : 0, 0);
     } else {
         lines[row].insert(column, c);
         if (lines[row].size() > width) {
@@ -410,7 +457,14 @@ void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::valu
 void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
     Line::string_t buffer(lines[row].substr(column));
     lines[row].erase(column);
+    if (lines[row].hasNewline()) {
+        buffer.push_back('\n');
+        lines[row].setNewline(false);
+    }
     for (lines_number_t r = row+1; r < lines.size(); r++) {
+        if (lines[r].hasStartSpace()) {
+            buffer.push_back(' ');
+        }
         lines[r].copyTo(buffer);
         if (lines[r].hasNewline()) {
             buffer.push_back('\n');

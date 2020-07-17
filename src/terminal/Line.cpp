@@ -92,7 +92,6 @@ etm::Line::value_type &etm::Line::operator[](size_type index) {
         std::cerr << "correctIndex(index) = " << correctIndex(index) << std::endl;
         std::cerr << "string.size() = " << string.size() << std::endl;
         std::cout << "string == \"" << string << "\"" << std::endl;
-        exit(32);
     }
     return string[correctIndex(index)];
 }
@@ -133,16 +132,16 @@ void etm::Line::eraseChar(size_type index) {
     defactoSize--;
 }
 void etm::Line::appendStr(const string_t &str) {
-    string.insert(string.end(), str.begin(), str.end());
+    string += str;
     defactoSize += findDefactoSize(str);
 }
 void etm::Line::appendOther(const Line &other) {
     newline |= other.newline;
     if (other.startSpace) {
-        append(value_type(' '));
+        append(' ');
     }
+    string += other.string;
     defactoSize += other.defactoSize;
-    appendStr(other.string);
 }
 void etm::Line::popBack() {
     string.pop_back();

@@ -92,6 +92,9 @@ namespace etm {
         void doErase(lines_number_t row, line_index_t column);
         void doTrunc();
 
+        // Returns true if a line would qualify for a start space
+        bool isStartSpace(Line::value_type c, lines_number_t row);
+
         // Bind texture for char
         void bindChar(Line::value_type c);
 
