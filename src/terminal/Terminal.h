@@ -181,6 +181,13 @@ namespace etm {
 
         // Renders to the current context
         void render();
+
+        // Gets/sets if the terminal is focused by the user,
+        // as determined by the terminal (mouse clicks).
+        // Useful for determining where
+        // a copy/paste is targeted
+        bool isFocused();
+        void setFocused(bool val);
     };
 }
 

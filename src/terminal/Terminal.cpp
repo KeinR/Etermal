@@ -354,6 +354,7 @@ void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) 
 }
 void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {
     scrollbar.mouseClick(isPressed, mouseX, mouseY);
+    focused = background.hasPoint(mouseX, mouseY);
 }
 void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
     scrollbar.mouseMove(mouseX, mouseY);
@@ -391,4 +392,12 @@ void etm::Terminal::render() {
             true
         );
     }
+}
+
+bool etm::Terminal::isFocused() {
+    return focused;
+}
+
+void etm::Terminal::setFocused(bool val) {
+    focused = val;
 }

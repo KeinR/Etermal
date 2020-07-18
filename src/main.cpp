@@ -116,28 +116,35 @@ void mouseScroll(GLFWwindow* window, double xoffset, double yoffset) {
     );
 }
 
-void keyPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (action == GLFW_RELEASE) return;
 
-    switch (key) {
-        case GLFW_KEY_ENTER:
-            terminal->inputActionKey(etm::actionKey::ENTER);
-            break;
-        case GLFW_KEY_BACKSPACE:
-            terminal->inputActionKey(etm::actionKey::BACKSPACE);
-            break;
-        case GLFW_KEY_UP:
-            terminal->inputActionKey(etm::actionKey::UP);
-            break;
-        case GLFW_KEY_DOWN:
-            terminal->inputActionKey(etm::actionKey::DOWN);
-            break;
-        case GLFW_KEY_LEFT:
-            terminal->inputActionKey(etm::actionKey::LEFT);
-            break;
-        case GLFW_KEY_RIGHT:
-            terminal->inputActionKey(etm::actionKey::RIGHT);
-            break;
+    if (terminal->isFocused()) {
+        switch (key) {
+            case GLFW_KEY_ENTER:
+                terminal->inputActionKey(etm::actionKey::ENTER);
+                break;
+            case GLFW_KEY_BACKSPACE:
+                terminal->inputActionKey(etm::actionKey::BACKSPACE);
+                break;
+            case GLFW_KEY_UP:
+                terminal->inputActionKey(etm::actionKey::UP);
+                break;
+            case GLFW_KEY_DOWN:
+                terminal->inputActionKey(etm::actionKey::DOWN);
+                break;
+            case GLFW_KEY_LEFT:
+                terminal->inputActionKey(etm::actionKey::LEFT);
+                break;
+            case GLFW_KEY_RIGHT:
+                terminal->inputActionKey(etm::actionKey::RIGHT);
+                break;
+            case GLFW_KEY_V:
+                if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL) {
+                    terminal->inputString(glfwGetClipboardString(window));
+                }
+                break;
+        }
     }
 }
 
