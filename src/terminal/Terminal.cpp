@@ -29,7 +29,7 @@ etm::Terminal::Terminal():
     setBackgroundColor(0x0f0f0f);
     setTextColor(0xffffff);
 
-    scrollbar.setWidth(20);
+    scrollbar.setWidth(22);
     scrollbar.setSideMargin(2);
     scrollbar.setSliderColor(0xbababa);
     scrollbar.setBarColor(0xf5f5f5);
@@ -226,11 +226,11 @@ void etm::Terminal::setY(float y) {
     updatePosition();
 }
 void etm::Terminal::setMaxWidth(float width) {
-    viewport.width = width;
+    viewport.width = resources->getFont().getCharWidth() * std::floor(width / resources->getFont().getCharWidth());
     updatePosition();
 }
 void etm::Terminal::setMaxHeight(float height) {
-    viewport.height = height;
+    viewport.height = resources->getFont().getCharHeight() * std::floor(height / resources->getFont().getCharHeight());
     updatePosition();
 }
 

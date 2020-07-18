@@ -504,7 +504,7 @@ void etm::TextBuffer::render(int x, int y) {
     lines_number_t end = std::min(
         lines.size(),
         static_cast<lines_number_t>(
-            start + scroll->getNetHeight() / charHeight() + 1
+            start + scroll->getNetHeight() / charHeight()
         )
     );
 
@@ -554,7 +554,7 @@ void etm::TextBuffer::render(int x, int y) {
     // Unfortunately, we have to render the cursor after,
     // triggering another shader change else
     // the text background will hide it :(
-    if (cursorEnabled && displayCursor) {
+    if (cursorEnabled && displayCursor && cursor.row < end) {
         res->bindPrimitiveShader();
         dispCursor.setX(x + static_cast<int>(cursor.column * charWidth()));
         dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));

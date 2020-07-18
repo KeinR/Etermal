@@ -37,6 +37,9 @@ namespace etm {
 
         // Returns true if actually scrolled
         bool scroll(float ammount);
+        // Scrolls by a certain align.
+        // Basically calls scroll(ammount * align)
+        void scrollByAlign(int ammount);
         // Scroll to max offset
         void jump();
     };

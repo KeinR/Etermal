@@ -52,7 +52,6 @@ bool etm::Scroll::scroll(float value) {
     std::cout << "alignBuffer = " << alignBuffer << std::endl;
     if (alignBuffer >= align) {
         // Flush
-        std::cout << "change by = " << (align * std::floor(alignBuffer / align)) << std::endl;
         offset = std::min(
             offset + align * std::floor(alignBuffer / align),
             maxOffset
@@ -72,6 +71,10 @@ bool etm::Scroll::scroll(float value) {
         return true;
     }
     return false;
+}
+
+void etm::Scroll::scrollByAlign(int ammount) {
+    scroll(ammount * align);
 }
 
 void etm::Scroll::jump() {

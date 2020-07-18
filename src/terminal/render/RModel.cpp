@@ -1,24 +1,20 @@
-#include "Model.h"
+#include "RModel.h"
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <cmath>
 
 #include "glfw.h"
 #include "../shader/Shader.h"
 
-etm::Model::Model(): Model(0.0f, 0.0f, 0.0f, 0.0f) {
+etm::RModel::RModel(): RModel(0.0f, 0.0f, 0.0f, 0.0f, 0.0f) {
 }
-etm::Model::Model(float x, float y, float width, float height):
-    x(x), y(y), width(width), height(height) {
-}
-
-bool etm::Model::hasPoint(float x, float y) {
-    return this->x <= x && x <= this->x + width &&
-            this->y <= y && y <= this->y + height;
+etm::RModel::RModel(float x, float y, float width, float height, float rotation):
+    x(x), y(y), width(width), height(height), rotation(rotation) {
 }
 
-void etm::Model::set(const shader::Shader &shader) {
+void etm::RModel::set(const shader::Shader &shader) {
     glm::mat4 model(1.0f);
 
     // 0=x, 1=y, 2=width, 3=height
@@ -34,6 +30,8 @@ void etm::Model::set(const shader::Shader &shader) {
     // Convert width and height to OpenGL-readable
     // clamped floats, 0-1
     model = glm::scale(model, glm::vec3(width / viewport[2], height / viewport[3], 0.0f));
+
+    model = glm::rotate(model, glm::radians(std::fmod(rotation, 360.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
 
     glUniformMatrix4fv(shader.getModel(), 1, GL_FALSE, glm::value_ptr(model));
 }
