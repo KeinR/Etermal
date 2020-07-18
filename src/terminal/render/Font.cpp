@@ -10,6 +10,7 @@
 etm::Font::Font(Resources *res, FontLibrary &lib, const std::string &path): res(res) {
     FT_Error error = FT_New_Face(lib.get(), path.c_str(), 0, &face);
     if (error != FT_Err_Ok) {
+        face = nullptr;
         res->postError(
             "etm::Font::Font(Resources*,FontLibrary&,const std::string&)",
             "Failed to load font @\"" + path + "\" as new face",
