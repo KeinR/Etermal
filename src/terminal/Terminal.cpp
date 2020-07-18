@@ -14,6 +14,9 @@
 #include "textmods/Mod.h"
 #include "textmods/mods.h"
 
+static constexpr int BOTTOM_MARGIN = 7;
+
+
 static void defaultErrorCallback(const etm::termError &error);
 
 void defaultErrorCallback(const etm::termError &error) {
@@ -256,7 +259,8 @@ void etm::Terminal::setMaxWidth(float width) {
     updatePosition();
 }
 void etm::Terminal::setMaxHeight(float height) {
-    viewport.height = resources->getFont().getCharHeight() * std::floor(height / resources->getFont().getCharHeight());
+    viewport.height = resources->getFont().getCharHeight() * std::floor((height - BOTTOM_MARGIN) / resources->getFont().getCharHeight());
+    viewport.height += BOTTOM_MARGIN;
     updatePosition();
 }
 
@@ -276,7 +280,7 @@ void etm::Terminal::updatePosition() {
     scrollbar.setY(viewport.y);
     scrollbar.setHeight(viewport.height);
 
-    scroll.setNetHeight(viewport.height);
+    scroll.setNetHeight(viewport.height - BOTTOM_MARGIN);
 
     display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
 }
@@ -339,7 +343,6 @@ void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) 
     if (viewport.hasPoint(mouseX, mouseY)) {
         if (scroll.scroll(-yOffset * scrollSensitivity)) {
             scrollbar.update();
-            std::cout << "scrolling" << std::endl;
         }
     }
 }
@@ -369,9 +372,7 @@ void etm::Terminal::render() {
     // After scrollbar renders, the text shader is set
     // due to the rendering of the triangle textures,
     // so display doesn't need to set it.
-    assertGLErr("Terminal.cpp:94");
     display.render(viewport.x, viewport.y - scroll.getOffset());
-    assertGLErr("Terminal.cpp:96");
 
     state.restore();
 
