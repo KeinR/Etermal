@@ -4,15 +4,21 @@
 #include <iostream>
 #include <vector>
 
-#include "../util/error.h"
+#include "../Resources.h"
 #include "glfw.h"
 
-etm::Font::Font(FontLibrary &lib, const std::string &path) {
+etm::Font::Font(Resources *res, FontLibrary &lib, const std::string &path): res(res) {
     FT_Error error = FT_New_Face(lib.get(), path.c_str(), 0, &face);
     if (error != FT_Err_Ok) {
-        throw fe_error("etm::Font::Font(FontLibrary&, const std::string&): Failed to load font @\"" + path + "\" as new face: " + std::to_string(error));
+        res->postError(
+            "etm::Font::Font(Resources*,FontLibrary&,const std::string&)",
+            "Failed to load font @\"" + path + "\" as new face",
+            error,
+            true
+        );
+    } else {
+        setSize(16);
     }
-    setSize(16);
 }
 etm::Font::~Font() {
     free();
@@ -87,7 +93,13 @@ etm::Texture etm::Font::renderChar(char c) {
 
         return tex;
     } else {
-        throw fe_error("Failed to load glyph: " + std::to_string(error));
+        res->postError(
+            "Font::renderChar(char)",
+            std::string("Failed to load char '") + c + "'",
+            error,
+            false
+        );
+        return Texture();
     }
 }
 

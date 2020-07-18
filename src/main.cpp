@@ -4,7 +4,7 @@
 #include "../src/shell/Shell.h"
 
 #include "../src/terminal/Terminal.h"
-#include "../src/terminal/util/util.h"
+#include "../src/terminal/util/debug.h"
 #include "../src/terminal/util/enums.h"
 
 #define GLFW_DLL

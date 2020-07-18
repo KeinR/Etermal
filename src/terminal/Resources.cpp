@@ -4,10 +4,11 @@
 #include <iostream>
 
 #include "render/ftype.h"
-#include "util/error.h"
+#include "util/termError.h"
 #include "render/glfw.h"
 #include "render/Model.h"
 #include "render/Color.h"
+#include "Terminal.h"
 
 static void initRectangle(etm::Buffer &buffer);
 
@@ -19,11 +20,19 @@ void initRectangle(etm::Buffer &buffer) {
 etm::Resources::Resources(Terminal &terminal):
     terminal(&terminal),
     rectangle(initRectangle),
-    font(fontLib, "C:\\Windows\\Fonts\\lucon.ttf")
+    textShader(this),
+    primitiveShader(this),
+    currentShader(nullptr),
+    fontLib(this),
+    font(this, fontLib, "C:\\Windows\\Fonts\\lucon.ttf")
 {
     genRectangle();
     genTriangle();
     bindPrimitiveShader(); // Default setting to avoid unfortunate events
+}
+
+void etm::Resources::postError(const std::string &location, const std::string &message, int code, bool severe) {
+    terminal->postError(termError(location, message, code, severe));
 }
 
 void etm::Resources::genRectangle() {
@@ -65,6 +74,10 @@ void etm::Resources::genTriangle() {
     // Ammout of MSAA
     constexpr int MSAA = 5;
 
+    // Model and color of the arrow
+    Model model(sampleWidth / 4, sampleWidth / 4, sampleWidth / 2, sampleHeight / 2);
+    Color color(1.0f, 1.0f, 1.0f, 1.0f);
+
     // Initialize the buffer
     Buffer triangleBuffer;
     float vertices[6] = {
@@ -91,7 +104,13 @@ void etm::Resources::genTriangle() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, triangle.get(), 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        throw fe_error("Resources::genTriangle(): Failed to complete framebuffer 0");
+        postError(
+            "Resources::genTriangle()",
+            "Failed to complete framebuffer #0",
+            glCheckFramebufferStatus(GL_FRAMEBUFFER),
+            false
+        );
+        goto clean_FB;
     }
 
     // The framebuffer that does the multisampling
@@ -108,7 +127,13 @@ void etm::Resources::genTriangle() {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, MSAAFramebufferColorObj);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        throw fe_error("Resources::genTriangle(): Failed to complete framebuffer 1");
+        postError(
+            "Resources::genTriangle()",
+            "Failed to complete framebuffer #1",
+            glCheckFramebufferStatus(GL_FRAMEBUFFER),
+            false
+        );
+        goto clean_MSAAFB;
     }
 
     // Render to the MSAA framebuffer so that we can get
@@ -121,8 +146,6 @@ void etm::Resources::genTriangle() {
 
     bindPrimitiveShader();
 
-    Model model(sampleWidth / 4, sampleWidth / 4, sampleWidth / 2, sampleHeight / 2);
-    Color color(1.0f, 1.0f, 1.0f, 1.0f);
     color.set(getShader());
     model.set(getShader());
 
@@ -140,8 +163,10 @@ void etm::Resources::genTriangle() {
     );
 
     // Cleanup
+    clean_MSAAFB:
     glDeleteRenderbuffers(1, &MSAAFramebufferColorObj);
     glDeleteFramebuffers(1, &MSAAFramebuffer);
+    clean_FB:
     glDeleteFramebuffers(1, &framebuffer);
 
 

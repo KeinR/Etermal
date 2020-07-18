@@ -1,10 +1,8 @@
-#include "util.h"
+#include "debug.h"
 
 #include <iostream>
 
 #include "../render/glfw.h"
-
-static const char *getGLErrorStr(GLenum error);
 
 void etm::assertGLErr(const char *location) {
     GLenum error = glGetError();
@@ -14,7 +12,7 @@ void etm::assertGLErr(const char *location) {
     }
 }
 
-const char *getGLErrorStr(GLenum error) {
+const char *etm::getGLErrorStr(int error) {
     switch (error) {
         case GL_NO_ERROR: return "GL_NO_ERROR";
         case GL_INVALID_ENUM: return "GL_INVALID_ENUM";

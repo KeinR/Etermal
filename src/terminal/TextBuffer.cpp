@@ -5,7 +5,6 @@
 
 #include "gui/Rectangle.h"
 #include "Resources.h"
-#include "util/util.h" // TEMP
 #include "Scroll.h"
 #include "env.h"
 #include "textmods/TextState.h"

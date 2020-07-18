@@ -7,8 +7,6 @@
 
 #include "util/enums.h"
 #include "util/Timer.h"
-// #include "gui/TextInput.h"
-// #include "gui/ScrollBox.h"
 #include "Resources.h"
 #include "TextBuffer.h"
 #include "gui/Rectangle.h"
@@ -16,11 +14,13 @@
 #include "Scroll.h"
 #include "gui/Scrollbar.h"
 
-namespace etm { 
+namespace etm {
     // ../shell/EShell
     class EShell;
     // ../shell/TermInput
     class TermInput;
+    // util/termError
+    class termError;
 }
 
 /*
@@ -32,7 +32,12 @@ namespace etm {
     public:
         typedef std::deque<TermInput*> inputRequests_t;
         typedef std::function<void()> winActionCB_t;
+        // Param 1 is the location, 2 is the message, and 3 is the error code
+        // (only sometimes applicable)
+        typedef std::function<void(const termError&)> errCallback_t;
     private:
+        errCallback_t errorCallback;
+
         std::unique_ptr<Resources> resources;
 
         Model viewport;
@@ -89,12 +94,20 @@ namespace etm {
         // NOTE: THE DESIRED CONTEXT MUST BE CURRENT WHEN IT IS INITIALIZED!!!
         // FAILURE TO DO SO WILL RESULT IN BAD THIGNS HAPPENING
         Terminal();
+        // Important to set it during resource creation
+        Terminal(const errCallback_t &errorCallback);
         Terminal(Terminal &&other) = delete; // Temp
         Terminal &operator=(Terminal &&other) = delete;
+
+        void postError(const termError &error);
 
         void setCursorDefault(const winActionCB_t &callback);
         void setCursorIBeam(const winActionCB_t &callback);
         void setHovering(bool value);
+        // Set the error callback.
+        // The parameter to the callback is stack allocated,
+        // so if you want to save it, copy it.
+        void setErrorCallback(const errCallback_t &callback);
 
         void clear() override;
 

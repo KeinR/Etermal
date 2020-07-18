@@ -1,12 +1,16 @@
 #include "FontLibrary.h"
 
-#include "../util/util.h"
-#include "../util/error.h"
+#include "../Resources.h"
 
-etm::FontLibrary::FontLibrary() {
+etm::FontLibrary::FontLibrary(Resources *res) {
     FT_Error error = FT_Init_FreeType(&lib);
     if (error != FT_Err_Ok) {
-        throw etm::fe_error("etm::FontLibrary::FontLibrary(): Failed to create freetype library: " + std::to_string(error));
+        res->postError(
+            "etm::FontLibrary::FontLibrary()",
+            "Failed to create freetype library",
+            error,
+            true
+        );
     }
 }
 etm::FontLibrary::~FontLibrary() {

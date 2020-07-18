@@ -3,6 +3,7 @@
 
 namespace etm {
     void assertGLErr(const char *location);
+    const char *getGLErrorStr(int error);
 }
 
 #endif

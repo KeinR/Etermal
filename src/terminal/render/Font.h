@@ -7,15 +7,19 @@
 #include "FontLibrary.h" // TEMP, do forward
 #include "Texture.h"
 
+// ../Resources
+namespace etm { class Resources; }
+
 namespace etm {
     class Font {
+        Resources *res;
         FT_Face face;
         int charWidth;
         int charHeight;
         void free();
         void calcCharSize();
     public:
-        Font(FontLibrary &lib, const std::string &path);
+        Font(Resources *res, FontLibrary &lib, const std::string &path);
         // Font(Font &&other) = delete;
         ~Font();
         // FT_Face getFace();

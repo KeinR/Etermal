@@ -34,7 +34,6 @@ namespace etm {
         // Deinitialize and free resources
         void deInit();
         void steal(Texture &other);
-        void copy(const Texture &other);
     public:
         // Takes default tparam
         Texture();
@@ -42,9 +41,7 @@ namespace etm {
         Texture(const tparam &params);
         ~Texture();
         Texture(Texture &&other);
-        Texture(const Texture &other);
         Texture &operator=(Texture &&other);
-        Texture &operator=(const Texture &other);
 
         // Gets the id of the underlying OpenGL buffer
         unsigned int get();

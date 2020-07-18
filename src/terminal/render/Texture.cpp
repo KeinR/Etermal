@@ -1,9 +1,6 @@
 #include "Texture.h"
 
-#include <iostream> // DEBUG
 #include <string>
-
-#include "../util/error.h"
 
 #include "glfw.h"
 
@@ -46,41 +43,11 @@ void etm::Texture::steal(Texture &other) {
     other.buffer = 0;
 }
 
-void etm::Texture::copy(const Texture &other) {
-    // Get metadata from other's texture buffer and
-    // copy the texture data in other's buffer to this's
-    other.bind();
-    GLint width, height, format;
-    glGetTexLevelParameteriv(TEXTURE_TYPE, 0, GL_TEXTURE_WIDTH, &width);
-    glGetTexLevelParameteriv(TEXTURE_TYPE, 0, GL_TEXTURE_HEIGHT, &height);
-    glGetTexLevelParameteriv(TEXTURE_TYPE, 0, GL_TEXTURE_INTERNAL_FORMAT, &format);
-    GLint channels;
-    switch (format) {
-        case GL_RGBA: channels = 4; break;
-        case GL_RGB: channels = 3; break;
-        case GL_RG: channels = 2; break;
-        case GL_RED: channels = 1; break;
-        default: throw fe_error("Texture encountered unexpected image format while copying: " + std::to_string(format));
-    }
-    const GLint length = channels * width * height;
-    data_t *copyBuffer = new data_t[length];
-    glGetTexImage(TEXTURE_TYPE, 0, format, TEXTURE_PIXEL_TYPE, copyBuffer);
-    setData(format, width, height, copyBuffer);
-    delete[] copyBuffer;
-}
-
 etm::Texture::Texture(Texture &&other) {
     steal(other);
 }
-etm::Texture::Texture(const Texture &other) {
-    copy(other);
-}
 etm::Texture &etm::Texture::operator=(Texture &&other) {
     steal(other);
-    return *this;
-}
-etm::Texture &etm::Texture::operator=(const Texture &other) {
-    copy(other);
     return *this;
 }
 

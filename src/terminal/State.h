@@ -23,7 +23,11 @@ namespace etm {
         GLint unpackAlign;
     public:
         State();
+        // Store the current state
+        void store();
+        // Set the desired state
         void set();
+        // Restore the stored state
         void restore();
     };
 }

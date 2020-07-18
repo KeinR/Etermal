@@ -9,8 +9,12 @@
 #include "shader/Text.h"
 
 namespace etm {
+    // shader/Shader
     class Shader;
+    // Terminal
     class Terminal;
+    // util/termError
+    class termError;
 }
 
 namespace etm {
@@ -31,6 +35,8 @@ namespace etm {
         void genTriangle();
     public:
         Resources(Terminal &terminal);
+
+        void postError(const std::string &location, const std::string &message, int code, bool severe);
 
         void setTerminal(Terminal &terminal);
         Terminal &getTerminal();

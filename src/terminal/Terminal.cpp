@@ -3,8 +3,9 @@
 #include <iostream>
 #include <cmath>
 
+#include "util/termError.h"
 #include "render/glfw.h"
-#include "util/util.h" // TEMP
+#include "util/debug.h"
 #include "../TermInput.h"
 #include "../EShell.h"
 #include "State.h"
@@ -13,7 +14,23 @@
 #include "textmods/Mod.h"
 #include "textmods/mods.h"
 
-etm::Terminal::Terminal():
+static void defaultErrorCallback(const etm::termError &error);
+
+void defaultErrorCallback(const etm::termError &error) {
+    std::cerr
+        << "---------------------------\n"
+        << "ETERMAL::TERMINAL::ERROR:\n"
+        << "location = " << error.location << "\n"
+        << "code = 0x" << std::hex << error.code << std::dec << " (dec = " << error.code << ")" << "\n"
+        << "severe = " << (error.severe ? "TRUE" : "FALSE") << "\n"
+        << "message = \"" << error.message << "\"\n"
+        << "---------------------------\n";
+}
+
+etm::Terminal::Terminal(): Terminal(defaultErrorCallback) {
+}
+etm::Terminal::Terminal(const errCallback_t &errorCallback):
+    errorCallback(errorCallback),
     resources(new Resources(*this)),
     viewport(0, 0, 400, 400),
     scrollbar(resources.get(), scroll),
@@ -79,6 +96,12 @@ void etm::Terminal::flushInputBuffer() {
     }
 }
 
+void etm::Terminal::postError(const termError &error) {
+    if (errorCallback) {
+        errorCallback(error);
+    }
+}
+
 void etm::Terminal::setCursorDefault(const winActionCB_t &callback) {
     windowSetCursorDefault = callback;
 }
@@ -96,6 +119,9 @@ void etm::Terminal::setHovering(bool value) {
             windowSetCursorDefault();
         }
     }
+}
+void etm::Terminal::setErrorCallback(const errCallback_t &callback) {
+    errorCallback = callback;
 }
 
 void etm::Terminal::clear() {
@@ -327,6 +353,7 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 
 void etm::Terminal::render() {
     State state;
+    state.store();
     state.set();
 
     // Run animiations
@@ -336,9 +363,7 @@ void etm::Terminal::render() {
     }
 
     // Render
-    assertGLErr("Terminal.cpp:91");
     resources->bindPrimitiveShader();
-    assertGLErr("Terminal.cpp:92");
     background.render();
     scrollbar.render();
     // After scrollbar renders, the text shader is set
@@ -348,6 +373,15 @@ void etm::Terminal::render() {
     display.render(viewport.x, viewport.y - scroll.getOffset());
     assertGLErr("Terminal.cpp:96");
 
-
     state.restore();
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        resources->postError(
+            "Terminal::render()",
+            std::string("OpenGL error - ") + getGLErrorStr(error),
+            error,
+            true
+        );
+    }
 }

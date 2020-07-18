@@ -5,6 +5,8 @@
 
 #include "../util/singleton.h"
 
+namespace etm { class Resources; }
+
 /*
 * Shaders, useful little programs that process data
 * before it's rendered.
@@ -37,7 +39,7 @@ namespace etm::shader {
         void steal(Shader &other);
     public:
         // Throws in instance of "fe_error" if fail
-        Shader(const char *vertexData, int vertexLen, const char *fragData, int fragLen);
+        Shader(Resources *res, const char *vertexData, int vertexLen, const char *fragData, int fragLen);
         virtual ~Shader() = 0;
 
         // Sets this shader as current

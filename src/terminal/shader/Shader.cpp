@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include "../render/glfw.h"
-#include "../util/error.h"
+#include "../Resources.h"
 
 // Compiles the given shader and returns a handle to the OpenGL object.
 // Throws an instance of gl_error if failed
@@ -15,20 +15,32 @@ static GLuint compileShader(GLenum type, const char *data, int length, std::stri
 // Throws an instance of gl_error if failed
 static GLuint linkShaders(GLuint vertObject, GLuint fragObject, std::string &error);
 
-etm::shader::Shader::Shader(const char *vertData, int vertLen, const char *fragData, int fragLen) {
+etm::shader::Shader::Shader(Resources *res, const char *vertData, int vertLen, const char *fragData, int fragLen) {
     std::string error;
     GLuint vertShader = compileShader(GL_VERTEX_SHADER, vertData, vertLen, error);
     GLuint fragShader = compileShader(GL_FRAGMENT_SHADER, fragData, fragLen, error);
     if (error.size()) {
         glDeleteShader(vertShader);
-        throw fe_error(error);
+        res->postError(
+            "shader::Shader::Shader(Resources*,const char*,int,const char*,int)",
+            "Failed to compile shaders: " + error,
+            0,
+            true
+        );
+        goto cleanup;
     }
     shader = linkShaders(vertShader, fragShader, error);
+    if (error.size()) {
+        res->postError(
+            "shader::Shader::Shader(Resources*,const char*,int,const char*,int)",
+            "Failed to link shaders: " + error,
+            0,
+            true
+        );
+    }
+    cleanup:
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
-    if (error.size()) {
-        throw fe_error(error);
-    }
 }
 etm::shader::Shader::~Shader() {
     free();

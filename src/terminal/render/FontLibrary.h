@@ -2,15 +2,16 @@
 #define ETERMAL_FONTLIBRARY_H_INCLUDED
 
 #include "../util/singleton.h"
-
 #include "ftype.h"
-// class FT_Library;
+
+// ../Resources
+namespace etm { class Resources; }
 
 namespace etm {
     class FontLibrary: public singleton {
         FT_Library lib;
     public:
-        FontLibrary();
+        FontLibrary(Resources *res);
         ~FontLibrary();
         FT_Library get();
     };
