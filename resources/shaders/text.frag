@@ -10,6 +10,6 @@ uniform sampler2D Tex;
 
 void main()
 {
-	float alpha = float(texture(Tex, texturePos));
+	float alpha = texture(Tex, texturePos).r;
 	FragColor = vec4(backgroundColor * vec3(1 - alpha) + foregroundColor * vec3(alpha), alpha);
 }

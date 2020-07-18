@@ -38,8 +38,8 @@ namespace etm {
             Scrollbar *parent;
             Color bgColor;
             Color arrowColor;
-            Button button;
             Triangle arrow;
+            Button button;
             int directionMod;
             float arrowSize;
             bool pressed;

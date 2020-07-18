@@ -1,6 +1,6 @@
 include objects.mk
 CFLAGS = -Wall -g -Iextern `pkg-config --cflags freetype2`
-LIBS = -lglfw3dll -lfreetype.dll
+LIBS = -lglfw3dll -lfreetype.dll -lstb
 CC = g++
 
 MK = g++ $(CFLAGS)

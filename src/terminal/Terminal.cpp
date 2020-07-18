@@ -341,6 +341,9 @@ void etm::Terminal::render() {
     assertGLErr("Terminal.cpp:92");
     background.render();
     scrollbar.render();
+    // After scrollbar renders, the text shader is set
+    // due to the rendering of the triangle textures,
+    // so display doesn't need to set it.
     assertGLErr("Terminal.cpp:94");
     display.render(viewport.x, viewport.y - scroll.getOffset());
     assertGLErr("Terminal.cpp:96");

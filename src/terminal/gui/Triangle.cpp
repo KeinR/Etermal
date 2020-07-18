@@ -20,8 +20,11 @@ void etm::Triangle::setHeight(float height) {
 void etm::Triangle::setRotation(float degrees) {
     model.rotation = degrees;
 }
-void etm::Triangle::setColor(const Color &color) {
-    this->color = color;
+void etm::Triangle::setBackColor(const Color &color) {
+    backgroundColor = color;
+}
+void etm::Triangle::setForeColor(const Color &color) {
+    foregroundColor = color;
 }
 
 float etm::Triangle::getX() {
@@ -42,6 +45,7 @@ float etm::Triangle::getRotation() {
 
 void etm::Triangle::render() {
     model.set(res->getShader());
-    color.set(res->getShader());
+    backgroundColor.setBackground(res->getShader());
+    foregroundColor.setForeground(res->getShader());
     res->renderTriangle();
 }

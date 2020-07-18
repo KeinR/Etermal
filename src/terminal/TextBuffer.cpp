@@ -498,7 +498,11 @@ void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextSt
 
 void etm::TextBuffer::render(int x, int y) {
 
-    res->bindTextShader();
+    // "After scrollbar renders, the text shader is set
+    // due to the rendering of the triangle textures,
+    // so display doesn't need to set it."
+    // - Comment right after the scrollbar render call in Terminal
+    // res->bindTextShader();
 
     lines_number_t start = std::floor(scroll->getOffset() / charHeight());
     lines_number_t end = std::min(

@@ -17,7 +17,7 @@ namespace etm {
         // Initialize with values
         Model(float x, float y, float width, float height);
 
-        bool hasPoint(float x, float y);
+        bool hasPoint(float x, float y) const;
 
         void set(const shader::Shader &shader);
     };

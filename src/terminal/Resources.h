@@ -4,6 +4,7 @@
 #include "render/Buffer.h"
 #include "render/Font.h"
 #include "render/FontLibrary.h"
+#include "render/Texture.h"
 #include "shader/Primitive.h"
 #include "shader/Text.h"
 
@@ -17,7 +18,7 @@ namespace etm {
         Terminal *terminal;
 
         Buffer rectangle;
-        Buffer triangle;
+        Texture triangle;
 
         shader::Text textShader;
         shader::Primitive primitiveShader;

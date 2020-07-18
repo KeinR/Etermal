@@ -45,6 +45,10 @@ namespace etm {
         Texture(const Texture &other);
         Texture &operator=(Texture &&other);
         Texture &operator=(const Texture &other);
+
+        // Gets the id of the underlying OpenGL buffer
+        unsigned int get();
+
         // Sets this texture as current, so that it'll be used in
         // whatever texture slot is active (via glActiveTexture(...))
         void bind() const;
@@ -53,6 +57,7 @@ namespace etm {
         // `width` and `height` are the dimensions of the texture/imaeg, and `data` is a pointer
         // to the raw data
         void setData(int format, unsigned int width, unsigned int height, const data_t *data);
+        void setData(int textureType, int format, unsigned int width, unsigned int height, const data_t *data);
 
         // Resets the filtering and wrapping parameters to their defaults
         void setDefaultParams();

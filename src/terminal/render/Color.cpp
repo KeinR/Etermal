@@ -9,7 +9,10 @@ static etm::Color::value_t valify(float p) {
     return std::round(p * 255);
 }
 
-etm::Color::Color(): color{0.0f, 0.0f, 0.0f, 1.0f} {
+etm::Color::Color(): Color(0.0f, 0.0f, 0.0f, 1.0f) {
+}
+etm::Color::Color(prop_t r, prop_t b, prop_t g, prop_t a):
+    color{r, b, g, a} {
 }
 etm::Color::Color(hex_t hex, value_t alpha) {
     setHex(hex, alpha);

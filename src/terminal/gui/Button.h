@@ -11,11 +11,11 @@ namespace etm { class Resources; }
 namespace etm {
     class Button {
     public:
-        typedef std::function<void(Button&)> callback_t;
+        typedef std::function<void()> callback_t;
     private:
         Resources *res;
 
-        Rectangle area;
+        Model area;
         bool hovering;
 
         callback_t onMousePress;
@@ -30,7 +30,6 @@ namespace etm {
         void setY(float y);
         void setWidth(float width);
         void setHeight(float height);
-        void setColor(const Color &color);
 
         float getX();
         float getY();

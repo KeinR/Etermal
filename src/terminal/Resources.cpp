@@ -1,7 +1,13 @@
 #include "Resources.h"
 
+// TEMP
+#include <iostream>
+
 #include "render/ftype.h"
 #include "util/error.h"
+#include "render/glfw.h"
+#include "render/Model.h"
+#include "render/Color.h"
 
 static void initRectangle(etm::Buffer &buffer);
 
@@ -10,14 +16,9 @@ void initRectangle(etm::Buffer &buffer) {
     buffer.setParam(1, 2, 4, 2);
 }
 
-void initTriangle(etm::Buffer &buffer) {
-    buffer.setParam(0, 2, 2, 0);
-}
-
 etm::Resources::Resources(Terminal &terminal):
     terminal(&terminal),
     rectangle(initRectangle),
-    triangle(initTriangle),
     font(fontLib, "C:\\Windows\\Fonts\\lucon.ttf")
 {
     genRectangle();
@@ -44,18 +45,113 @@ void etm::Resources::genRectangle() {
 }
 
 void etm::Resources::genTriangle() {
+    // Store caller state
+    GLint program;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    GLint readBuff, writeBuff, renderBuff;
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &readBuff);
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &writeBuff);
+    glGetIntegerv(GL_RENDERBUFFER_BINDING, &renderBuff);
+    GLfloat clearColor[4];
+    glGetFloatv(GL_COLOR_CLEAR_VALUE, clearColor);
+
+    glDisable(GL_DEPTH_TEST);
+
+    // Size of the texture
+    constexpr int sampleWidth = 20;
+    constexpr int sampleHeight = 20;
+    // Ammout of MSAA
+    constexpr int MSAA = 5;
+
+    // Initialize the buffer
+    Buffer triangleBuffer;
     float vertices[6] = {
         0,  1.0,
         -1.0, -1.0,
         1.0,  -1.0
     };
-
     unsigned int indices[3] = {
         0, 1, 2
     };
+    triangleBuffer.setVerticies(6, vertices);
+    triangleBuffer.setIndices(3, indices);
+    triangleBuffer.setParam(0, 2, 2, 0);
 
-    triangle.setVerticies(6, vertices);
-    triangle.setIndices(3, indices);
+    // Initialize output texture - important that we do linear filtering
+    triangle.setParams({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR});
+    triangle.setData(GL_RED, sampleWidth, sampleHeight, NULL);
+
+    // The output framebuffer, wraps the output texture
+    unsigned int framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    // Attach output texture to framebuffer
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, triangle.get(), 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        throw fe_error("Resources::genTriangle(): Failed to complete framebuffer 0");
+    }
+
+    // The framebuffer that does the multisampling
+    unsigned int MSAAFramebuffer;
+    glGenFramebuffers(1, &MSAAFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, MSAAFramebuffer);
+    // Attach a render buffer that stores texture metadata - 
+    // most importantly, the number of MSAA samples
+    unsigned int MSAAFramebufferColorObj;
+    glGenRenderbuffers(1, &MSAAFramebufferColorObj);
+    glBindRenderbuffer(GL_RENDERBUFFER, MSAAFramebufferColorObj);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, MSAA, GL_RED, sampleWidth, sampleHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, MSAAFramebufferColorObj);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        throw fe_error("Resources::genTriangle(): Failed to complete framebuffer 1");
+    }
+
+    // Render to the MSAA framebuffer so that we can get
+    // some anti-aliasing done
+    glBindFramebuffer(GL_FRAMEBUFFER, MSAAFramebuffer);
+
+    glViewport(0, 0, sampleWidth, sampleHeight);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    bindPrimitiveShader();
+
+    Model model(sampleWidth / 4, sampleWidth / 4, sampleWidth / 2, sampleHeight / 2);
+    Color color(1.0f, 1.0f, 1.0f, 1.0f);
+    color.set(getShader());
+    model.set(getShader());
+
+    triangleBuffer.render();
+
+    // Downscale the multisampled image from the `MSAAFramebuffer`
+    // to the output `framebuffer`
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, MSAAFramebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+    glBlitFramebuffer(
+        0, 0, sampleWidth, sampleHeight, // src rectangle
+        0, 0, sampleWidth, sampleHeight, // dst rectangle
+        GL_COLOR_BUFFER_BIT, // buffer mask/target
+        GL_LINEAR // scale filter
+    );
+
+    // Cleanup
+    glDeleteRenderbuffers(1, &MSAAFramebufferColorObj);
+    glDeleteFramebuffers(1, &MSAAFramebuffer);
+    glDeleteFramebuffers(1, &framebuffer);
+
+
+    // Restore caller state
+    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+    glUseProgram(program);
+    glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, readBuff);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, writeBuff);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderBuff);
 }
 
 void etm::Resources::setTerminal(Terminal &terminal) {
@@ -69,7 +165,8 @@ void etm::Resources::renderRectangle() {
     rectangle.render();
 }
 void etm::Resources::renderTriangle() {
-    triangle.render();
+    triangle.bind();
+    renderRectangle();
 }
 
 void etm::Resources::bindTextShader() {

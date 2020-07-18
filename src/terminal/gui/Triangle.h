@@ -11,7 +11,8 @@ namespace etm {
     class Triangle {
         Resources *res;
         RModel model;
-        Color color;
+        Color backgroundColor;
+        Color foregroundColor;
     public:
         Triangle(Resources *res);
 
@@ -20,7 +21,8 @@ namespace etm {
         void setWidth(float width);
         void setHeight(float height);
         void setRotation(float degrees);
-        void setColor(const Color &color);
+        void setBackColor(const Color &color);
+        void setForeColor(const Color &color);
 
         float getX();
         float getY();

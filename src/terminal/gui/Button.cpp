@@ -1,35 +1,32 @@
 #include "Button.h"
 
-etm::Button::Button(Resources *res): area(res), hovering(false) {
+etm::Button::Button(Resources *res): hovering(false) {
 }
 
 void etm::Button::setX(float x) {
-    area.setX(x);
+    area.x = x;
 }
 void etm::Button::setY(float y) {
-    area.setY(y);
+    area.y = y;
 }
 void etm::Button::setWidth(float width) {
-    area.setWidth(width);
+    area.width = width;
 }
 void etm::Button::setHeight(float height) {
-    area.setHeight(height);
-}
-void etm::Button::setColor(const Color &color) {
-    area.setColor(color);
+    area.height = height;
 }
 
 float etm::Button::getX() {
-    return area.getX();
+    return area.x;
 }
 float etm::Button::getY() {
-    return area.getY();
+    return area.y;
 }
 float etm::Button::getWidth() {
-    return area.getWidth();
+    return area.width;
 }
 float etm::Button::getHeight() {
-    return area.getHeight();
+    return area.height;
 }
 
 void etm::Button::setOnMousePress(const callback_t &callback) {
@@ -49,10 +46,10 @@ void etm::Button::mouseClick(bool isPressed, float mouseX, float mouseY) {
     if (area.hasPoint(mouseX, mouseY)) {
         if (isPressed) {
             if (onMousePress) {
-                onMousePress(*this);
+                onMousePress();
             }
         } else if (onMouseRelease) {
-            onMouseRelease(*this);
+            onMouseRelease();
         }
     }
 }
@@ -61,15 +58,11 @@ void etm::Button::mouseMove(float mouseX, float mouseY) {
         if (!hovering) {
             hovering = true;
             if (onMouseEnter) {
-                onMouseEnter(*this);
+                onMouseEnter();
             }
         }
     } else if (hovering && onMouseLeave) {
         hovering = false;
-        onMouseLeave(*this);
+        onMouseLeave();
     }
-}
-
-void etm::Button::render() {
-    area.render();
 }

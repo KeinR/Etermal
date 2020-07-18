@@ -84,6 +84,10 @@ etm::Texture &etm::Texture::operator=(const Texture &other) {
     return *this;
 }
 
+unsigned int etm::Texture::get() {
+    return buffer;
+}
+
 void etm::Texture::bind() const {
     glBindTexture(TEXTURE_TYPE, buffer);
 }
@@ -91,6 +95,10 @@ void etm::Texture::bind() const {
 void etm::Texture::setData(int format, unsigned int width, unsigned int height, const data_t *data) {
     bind();
     glTexImage2D(TEXTURE_TYPE, 0, format, width, height, 0, format, TEXTURE_PIXEL_TYPE, data);
+}
+void etm::Texture::setData(int textureType, int format, unsigned int width, unsigned int height, const data_t *data) {
+    bind();
+    glTexImage2D(textureType, 0, format, width, height, 0, format, TEXTURE_PIXEL_TYPE, data);
 }
 
 void etm::Texture::setDefaultParams() {

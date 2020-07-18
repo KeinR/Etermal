@@ -13,7 +13,7 @@ etm::Model::Model(float x, float y, float width, float height):
     x(x), y(y), width(width), height(height) {
 }
 
-bool etm::Model::hasPoint(float x, float y) {
+bool etm::Model::hasPoint(float x, float y) const {
     return this->x <= x && x <= this->x + width &&
             this->y <= y && y <= this->y + height;
 }

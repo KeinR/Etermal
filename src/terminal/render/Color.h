@@ -26,6 +26,7 @@ namespace etm {
         // Default initialization
         // 0, 0, 0, 255 by default; ie, "opaque black"
         Color();
+        Color(prop_t r, prop_t b, prop_t g, prop_t a = 1.0f);
         // Init with hex and optional alpha
         Color(hex_t hex, value_t alpha = 0xFF);
 
