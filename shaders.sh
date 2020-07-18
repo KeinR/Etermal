@@ -13,8 +13,7 @@ function comp {
 #endif
 EOF
     sed -i\
-        -e 's/unsigned char/static const char/g'\
-        -e 's/unsigned int/static int/g'\
+        -e 's/unsigned/static const/g'\
         -e 's/  /    /g'\
         ${1}.h
 }
