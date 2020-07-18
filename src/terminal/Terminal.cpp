@@ -33,7 +33,8 @@ void defaultErrorCallback(const etm::termError &error) {
 etm::Terminal::Terminal(): Terminal(defaultErrorCallback) {
 }
 etm::Terminal::Terminal(const errCallback_t &errorCallback):
-    errorCallback(errorCallback),
+    // Make sure that the provided callback is valid
+    errorCallback(errorCallback ? errorCallback : defaultErrorCallback),
     resources(new Resources(*this)),
     viewport(0, 0, 400, 400),
     scrollbar(resources.get(), scroll),
@@ -68,10 +69,6 @@ void etm::Terminal::displayWelcome() {
     dispText("Etermal v0.1\n");
     flush();
 }
-void etm::Terminal::displayPrompt() {
-    dispText("\nuser@terminal ~\n$ ");
-    flush();
-}
 
 void etm::Terminal::prepareInput() {
     display.jumpCursor();
@@ -88,10 +85,17 @@ void etm::Terminal::flushInputBuffer() {
     if (inputRequests.size()) {
         inputRequests.front()->terminalInput(inputBuffer);
         inputRequests.pop_front();
-    } else {
+    } else if (shell != nullptr) {
         // Print the default prompt, etc.
         std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
         shell->input(inputBuffer);
+    } else {
+        resources->postError(
+            "Terminal::flushInputBuffer()",
+            "Shell is nullptr (not set)",
+            0,
+            false
+        );
     }
     inputBuffer.clear();
     if (acceptInput()) {
@@ -100,9 +104,7 @@ void etm::Terminal::flushInputBuffer() {
 }
 
 void etm::Terminal::postError(const termError &error) {
-    if (errorCallback) {
-        errorCallback(error);
-    }
+    errorCallback(error);
 }
 
 void etm::Terminal::setCursorDefault(const winActionCB_t &callback) {
@@ -124,7 +126,9 @@ void etm::Terminal::setHovering(bool value) {
     }
 }
 void etm::Terminal::setErrorCallback(const errCallback_t &callback) {
-    errorCallback = callback;
+    if (callback) {
+        errorCallback = callback;
+    }
 }
 
 void etm::Terminal::clear() {

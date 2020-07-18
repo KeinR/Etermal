@@ -21,10 +21,12 @@ namespace etm {
         int code;
         // If the error is severe or not.
         // Severe errors indicate there's a problem
-        // that affects the entire terminal, and
-        // as a result the terminal may be unstable.
-        // low severity errors, while bad, can be ignored
-        // if you have to.
+        // that affects the entire terminal, that the
+        // function that raised the error cannot contain
+        // negative side effects.
+        // Non-severe errors are ones that, for the most part,
+        // are contained by the raiser, allowing the normal function
+        // of the rest of the code.
         bool severe;
         termError(const std::string &location, const std::string &message, int code, bool severe) noexcept;
         const char *what() const noexcept override;

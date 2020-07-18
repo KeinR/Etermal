@@ -1,13 +1,34 @@
 #include "Shell.h"
 
-#include "../ETerminal.h"
+#include <iostream>
 
-static void makeLowercase(std::string &str) {
+#include "../ETerminal.h"
+#include "shellError.h"
+
+static void makeLowercase(std::string &str);
+static void defaultErrorCallback(const etm::shellError &error);
+static std::string defaultNoCommandCallback(const std::string &command);
+
+void makeLowercase(std::string &str) {
     for (char &c : str) {
         if ('A' <= c && c <= 'Z') {
             c |= 0x20;
         }
     }
+}
+
+void defaultErrorCallback(const etm::shellError &error) {
+    std::cerr
+        << "---------------------------\n"
+        << "ETERMAL::SHELL::ERROR:\n"
+        << "location = " << error.location << "\n"
+        << "severe = " << (error.severe ? "TRUE" : "FALSE") << "\n"
+        << "message = \"" << error.message << "\"\n"
+        << "---------------------------\n";
+}
+
+std::string defaultNoCommandCallback(const std::string &command) {
+    return "\e[fd13400;Error\e[F: Command not found: " + command + "\n";
 }
 
 etm::Shell::Command::Command() {
@@ -16,7 +37,40 @@ etm::Shell::Command::Command(const ArgFilter &filter, const callback_t &callback
     filter(filter), callback(callback) {
 }
 
-etm::Shell::Shell(): terminal(nullptr), flags(flag::none) {
+etm::Shell::Shell(): Shell(defaultErrorCallback) {
+}
+etm::Shell::Shell(const errCallback_t &callback):
+    terminal(nullptr),
+    flags(flag::none),
+    prompt("\nuser@terminal ~\n$ ")
+{
+    setErrorCallback(callback);
+    setNoCommandCallback(defaultNoCommandCallback);
+}
+
+void etm::Shell::setErrorCallback(const errCallback_t &callback) {
+    if (callback) {
+        errorCallback = callback;
+    }
+}
+void etm::Shell::setNoCommandCallback(const noCommandCallback_t &callback) {
+    if (callback) {
+        noCommandCallback = callback;
+    }
+}
+
+etm::Shell::errCallback_t etm::Shell::getErrorCallback() {
+    return errorCallback;
+}
+etm::Shell::noCommandCallback_t etm::Shell::getNoCommandCallback() {
+    return noCommandCallback;
+}
+
+void etm::Shell::setPrompt(const std::string &str) {
+    prompt = str;
+}
+std::string etm::Shell::getPrompt() {
+    return prompt;
 }
 
 bool etm::Shell::flagSet(flag::type f) {
@@ -29,11 +83,21 @@ void etm::Shell::setFlags(flag::type flags) {
 
 void etm::Shell::setTerminal(ETerminal &terminal) {
     this->terminal = &terminal;
-    terminal.displayPrompt();
-    terminal.setTakeInput(true);
+    prepTerminal();
 }
 void etm::Shell::input(const std::string &commandString) {
+    // Defend against undefined behavior
+    if (terminal == nullptr) {
+        postError(
+            "Shell::input(const std::string&)",
+            "Cannot recieve input, terminal is nullptr (not set)",
+            false
+        );
+        return;
+    }
+
     terminal->setTakeInput(false);
+
     std::vector<std::string> params;
     bool waiting = true;
     bool inString = false;
@@ -63,15 +127,30 @@ void etm::Shell::input(const std::string &commandString) {
         if (loc != aliasMap.end()) {
             Command &com = commands[loc->second];
             Args args;
-            std::string error = com.filter.filter(params, args);
-            com.callback(*this, *terminal, args);
+            std::string error;
+            const bool failed = com.filter.filter(params, args, error);
+            if (failed) {
+                terminal->dispText(error);
+                terminal->dispText(com.filter.getUsage());
+                if (!com.filter.getErrorHandle().doFail()) {
+                    terminal->flush();
+                    com.callback(*this, *terminal, args);
+                }
+            } else {
+                com.callback(*this, *terminal, args);
+            }
         } else {
-            terminal->dispText("\x1b[fd13400;Command not found:\x1b[r " + params[0] + "\n");
+            terminal->dispText(noCommandCallback(params[0]));
         }
     }
 
-    terminal->displayPrompt();
-    terminal->flush(); // Make sure it's flushed
+    // Does flushing for us
+    prepTerminal();
+}
+
+void etm::Shell::prepTerminal() {
+    terminal->dispText(prompt);
+    terminal->flush();
     terminal->setTakeInput(true);
 }
 
@@ -89,3 +168,6 @@ void etm::Shell::alias(const std::string &name) {
     }
 }
 
+void etm::Shell::postError(const std::string &location, const std::string &message, bool severe) {
+    errorCallback(shellError(location, message, severe));
+}

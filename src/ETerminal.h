@@ -12,8 +12,6 @@ namespace etm {
         // Does the shell want any input right now?
         // Will still fulfill input requests (requestInput(...))
         virtual void setTakeInput(bool value) = 0;
-        // Show the default input prompt
-        virtual void displayPrompt() = 0;
 
         // Clears the screen
         virtual void clear() = 0;

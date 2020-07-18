@@ -107,6 +107,7 @@ namespace etm {
         // Set the error callback.
         // The parameter to the callback is stack allocated,
         // so if you want to save it, copy it.
+        // Denies callbacks that have an empty funciton (are not callable)
         void setErrorCallback(const errCallback_t &callback);
 
         void clear() override;
@@ -126,8 +127,6 @@ namespace etm {
         // And send it to the shell.
         // Will still fulfill input requests
         void setTakeInput(bool value) override;
-
-        void displayPrompt() override;
 
         // Each call adds `callback` to the input queue.
         // Each time input is entered, the callback is called
