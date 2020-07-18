@@ -292,6 +292,8 @@ void etm::Terminal::updatePosition() {
 void etm::Terminal::inputChar(char c) {
     if (acceptInput()) {
         doInputChar(c);
+        scroll.jump();
+        scrollbar.update();
     }
 }
 void etm::Terminal::doInputChar(char c) {
