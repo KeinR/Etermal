@@ -209,6 +209,9 @@ int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
 
 void etm::Terminal::flush() {
     constexpr char ESCAPE = '\x1b';
+
+    display.prepare();
+
     for (std::string::size_type i = 0; i < displayBuffer.size(); i++) {
         // Escape char
                                         // 1 for the [, 1 for the spec (b/f)
@@ -226,7 +229,6 @@ void etm::Terminal::flush() {
                     mod = std::make_shared<tm::RevBackground>();
                     break;
                 case 'F':
-                    std::cout << "SET MOD" << std::endl;
                     mod = std::make_shared<tm::RevForeground>();
                     break;
                 case 'r':
@@ -234,7 +236,6 @@ void etm::Terminal::flush() {
                     break;
             }
             if (mod) {
-                std::cout << "add" << std::endl;
                 display.pushMod(mod);
                 i = fi;
             } else {
@@ -428,4 +429,8 @@ bool etm::Terminal::isFocused() {
 
 void etm::Terminal::setFocused(bool val) {
     focused = val;
+}
+
+std::string etm::Terminal::getTextSelection() {
+    return display.getSelectionText();
 }

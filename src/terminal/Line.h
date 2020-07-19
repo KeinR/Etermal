@@ -27,14 +27,26 @@ namespace etm {
             // to a valid index
             bool valid();
 
+            bool operator<(const iterator &other);
+            bool operator<=(const iterator &other);
+            bool operator>(const iterator &other);
+            bool operator>=(const iterator &other);
+            bool operator==(const iterator &other);
+
+            iterator operator-(size_type distance);
+            iterator operator+(size_type distance);
             void operator-=(size_type distance);
+            void operator+=(size_type distance);
             void operator--();
             void operator++();
             value_type &operator*();
 
             // Gets the internal index that the
-            // iterator points to
-            size_type getIndex();
+            // iterator points to.
+            // Note that this is the dejure index,
+            // and using it yourself could give unpredictable
+            // results...
+            size_type getIndex() const;
         };
 
     private:
@@ -44,6 +56,8 @@ namespace etm {
         bool startSpace;
         // Correct the defacto index to get the dejure index
         size_type correctIndex(size_type index);
+        // Erase from defacto index
+        void doErase(size_type index);
     public:
 
         static size_type findDefactoSize(const string_t &string);
@@ -55,6 +69,8 @@ namespace etm {
 
         // Get iterator to the last element        
         iterator last();
+        // Get iterator to the first element
+        iterator begin();
 
         size_type size();
         void append(value_type c);
@@ -63,6 +79,7 @@ namespace etm {
         void prependStr(const string_t &str);
         // Erases to end, starting with `index`
         void erase(size_type index);
+        void erase(const iterator &start);
         // Erases single char
         void eraseChar(size_type index);
         void appendStr(const string_t &str);

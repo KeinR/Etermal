@@ -101,6 +101,7 @@ namespace etm {
         bool outOfBounds(lines_number_t row, line_index_t column);
         void doErase(lines_number_t row, line_index_t column);
         void doTrunc();
+        void doInsert(lines_number_t row, line_index_t column, Line::value_type c);
 
         // Returns true if a line would qualify for a start space
         bool isStartSpace(Line::value_type c, lines_number_t row);
@@ -202,13 +203,19 @@ namespace etm {
         // Called by insertAtCursor
         void insert(lines_number_t row, line_index_t column, Line::value_type c);
 
+        // Initialize the start and endpoint of the selection zone
         void initSelection(lines_number_t row, line_index_t column);
+        // Change the location of the endpoint; can be any value,
+        // although you'd take care to std::min your values as the parameters
+        // are unsigned
         void setSelectionEnd(lines_number_t row, line_index_t column);
+        // Gets the text highlighted by the selection;
+        // used only really when copying text
+        std::string getSelectionText();
 
-        // Prepares the buffer for textual modification.
-        // Should be called before any call that modifies
-        // text, like append(...), trunc(), erase(...),
-        // eraseAtCursor(), you get the idea.
+        // Prepares the buffer for textual appendations (append(...)).
+        // append(...) does not call this method, because appends
+        // can be chained with flushes.
         void prepare();
 
         // ---Assumes that the primitive shader has already been set---

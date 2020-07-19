@@ -139,6 +139,11 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods) {
             case GLFW_KEY_RIGHT:
                 terminal->inputActionKey(etm::actionKey::RIGHT);
                 break;
+            case GLFW_KEY_C:
+                if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL) {
+                    glfwSetClipboardString(window, terminal->getTextSelection().c_str());
+                }
+                break;
             case GLFW_KEY_V:
                 if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL) {
                     terminal->inputString(glfwGetClipboardString(window));

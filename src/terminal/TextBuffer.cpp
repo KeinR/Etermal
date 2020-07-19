@@ -241,15 +241,15 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
             it -= 2;
             for (; it.valid(); --it) {
                 if (*it == ' ') {
-                    const line_index_t index = it.getIndex();
                     ++it;
+                    const Line::iterator eraseOffset = it;
                     // Move the last word from the last line to the next
                     // line via recursion
                     for (; it.valid(); ++it) {
                         append(*it);
                     }
 
-                    lastLine.erase(index+1);
+                    lastLine.erase(eraseOffset);
                     break;
                 }
             }
@@ -270,6 +270,7 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
 void etm::TextBuffer::write(lines_number_t row, line_index_t column, Line::value_type c) {
     if (outOfBounds(row, column)) return;
     filterChar(c);
+    prepare();
 
     if (column == lines[row].size()-1 && lines[row].hasNewline() && c != '\n') {
         // If was the last char and the line was broken manually,
@@ -280,7 +281,7 @@ void etm::TextBuffer::write(lines_number_t row, line_index_t column, Line::value
     } else if (column == 0 && c != ' ' && lines[row].hasStartSpace()) {
         // Reveal the space char, then overwrite it
         lines[row].setStartSpace(false);
-        insert(0, row, c);
+        doInsert(0, row, c);
     } else {
         lines[row][column] = c;
     }
@@ -301,9 +302,11 @@ void etm::TextBuffer::eraseAtCursor() {
     }
     if ((column >= cursorMin.column || row > cursorMin.row) && row >= cursorMin.row && column < lines[row].size()) {
         if (cursorAtEnd()) {
+            prepare();
             doTrunc();
             jumpCursor();
         } else {
+            // Didn't explicitly check that was in bounds
             erase(row, column);
             cursor.column = column;
             cursor.row = row;
@@ -313,6 +316,7 @@ void etm::TextBuffer::eraseAtCursor() {
 
 void etm::TextBuffer::erase(lines_number_t row, line_index_t column) {
     if (!outOfBounds(row, column)) {
+        prepare();
         doErase(row, column);
     }
 }
@@ -346,6 +350,7 @@ void etm::TextBuffer::append(Line::value_type c) {
 }
 
 void etm::TextBuffer::trunc() {
+    prepare();
     const bool moveCursor = cursorAtEnd();
     doTrunc();
     if (moveCursor) {
@@ -392,10 +397,11 @@ void etm::TextBuffer::doTrunc() {
 }
 
 void etm::TextBuffer::insertAtCursor(Line::value_type c) {
+    prepare();
     if (lines.size()) {
+        filterChar(c);
         int cursorMove = 1;
         if (cursorAtEnd()) {
-            filterChar(c);
             doAppend(c);
         } else {
             if (cursor.column == lines.back().size()) {
@@ -420,8 +426,13 @@ void etm::TextBuffer::insertAtCursor(Line::value_type c) {
 }
 
 void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::value_type c) {
-    if (outOfBounds(row, column)) return;
-    filterChar(c);
+    if (!outOfBounds(row, column)) {
+        filterChar(c);
+        prepare();
+        insert(row, column, c);
+    }
+}
+void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, Line::value_type c) {
 
     if (c == '\n') {
         if (!lines[row].hasNewline()) {            
@@ -516,6 +527,62 @@ void etm::TextBuffer::setSelectionEnd(lines_number_t row, line_index_t column) {
         dfSelectStart = &selectStart;
         dfSelectEnd = &selectEnd;
     }
+}
+
+std::string etm::TextBuffer::getSelectionText() {
+    std::string buffer;
+    if (dfSelectStart->row == dfSelectEnd->row) {
+        // Midsection
+        for (
+            Line::iterator it = lines[dfSelectStart->row].begin() + dfSelectStart->column,
+            end = it + (dfSelectEnd->column - dfSelectStart->column);
+            it.valid() && it < end;
+            ++it
+            )
+        {
+            buffer.push_back(*it);
+        }
+    } else {
+        // End of first line
+        for (
+            Line::iterator it = lines[dfSelectStart->row].begin() + dfSelectStart->column;
+            it.valid();
+            ++it
+            )
+        {
+            buffer.push_back(*it);
+        }
+        if (lines[dfSelectStart->row].hasNewline()) {
+            buffer.push_back('\n');
+        }
+        // Every line in-between
+        for (lines_number_t l = dfSelectStart->row + 1; l < dfSelectEnd->row; l++) {
+            if (lines[l].hasStartSpace()) {
+                buffer.push_back(' ');
+            }
+            for (Line::iterator it = lines[l].begin(); it.valid(); ++it) {
+                buffer.push_back(*it);
+            }
+            if (lines[l].hasNewline()) {
+                buffer.push_back('\n');
+            }
+        }
+        // Start of last line
+        if (lines[dfSelectEnd->row].hasStartSpace()) {
+            buffer.push_back(' ');
+        }
+        for (
+            Line::iterator it = lines[dfSelectEnd->row].begin(),
+            end = it + dfSelectEnd->column;
+            it.valid() && it < end;
+            ++it
+            )
+        {
+            buffer.push_back(*it);
+        }
+    }
+
+    return buffer;
 }
 
 void etm::TextBuffer::prepare() {

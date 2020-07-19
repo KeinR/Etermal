@@ -196,6 +196,9 @@ namespace etm {
         // a copy/paste is targeted
         bool isFocused();
         void setFocused(bool val);
+
+        // Get the currently highlighted selection
+        std::string getTextSelection();
     };
 }
 
