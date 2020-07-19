@@ -73,9 +73,9 @@ void etm::TextBuffer::deleteLastLine() {
     }
     lines.pop_back();
     // Order of the mod blocks is the same as the lines
-    // modifierBlocks_t::iterator it = modifierBlocks.end();
-    // std::advance(it, -countCtrl);
-    // modifierBlocks.erase(it, modifierBlocks.end());
+    modifierBlocks_t::iterator it = modifierBlocks.end();
+    std::advance(it, -countCtrl);
+    modifierBlocks.erase(it, modifierBlocks.end());
 }
 
 void etm::TextBuffer::deleteFirstLine() {
@@ -88,10 +88,9 @@ void etm::TextBuffer::deleteFirstLine() {
     }
     lines.erase(lines.begin());
     // Order of the mod blocks is the same as the lines
-    // modifierBlocks_t::iterator it = modifierBlocks.begin();
-    // std::advance(it, countCtrl);
-    // modifierBlocks.erase(modifierBlocks.begin(), it);
-    std::cout << "countCtrl = " << countCtrl << std::endl;
+    modifierBlocks_t::iterator it = modifierBlocks.begin();
+    std::advance(it, countCtrl);
+    modifierBlocks.erase(modifierBlocks.begin(), it);
 }
 
 bool etm::TextBuffer::cursorAtEnd() {
