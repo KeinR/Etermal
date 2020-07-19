@@ -3,12 +3,9 @@
 
 #include <vector>
 #include <string>
-#include <map>
 #include <memory>
 
 #include "gui/Rectangle.h"
-#include "render/Model.h"
-#include "render/Texture.h"
 #include "render/Color.h"
 #include "Line.h"
 
@@ -17,8 +14,6 @@
 namespace etm {
     // Resources
     class Resources;
-    // Line
-    class Line;
     // render/Font
     class Font;
     // Scroll
@@ -48,7 +43,6 @@ namespace etm {
         };
 
     private:
-        typedef std::map<Line::value_type, Texture> textCache_t;
 
         Resources *res;
         // Tells what parts of self should render.
@@ -78,9 +72,6 @@ namespace etm {
         bool cursorEnabled;
         bool displayCursor;
 
-        // Must be cleared upon font change
-        textCache_t textCache;
-
         // Default fore/back ground colors
         Color defForegroundColor;
         Color defBackgroundColor;
@@ -105,9 +96,6 @@ namespace etm {
 
         // Returns true if a line would qualify for a start space
         bool isStartSpace(Line::value_type c, lines_number_t row);
-
-        // Bind texture for char
-        void bindChar(Line::value_type c);
 
         // Wrappers for calls to
         // res->getFont().getCharWidth() and

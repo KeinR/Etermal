@@ -89,7 +89,7 @@ void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
 void etm::TextBuffer::clear() {
     lines.clear();
     modifierBlocks.clear();
-    textCache.clear();
+    res->getFont().clearCache();
     newline();
     jumpCursor();
 }
@@ -487,16 +487,6 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
     }
 }
 
-void etm::TextBuffer::bindChar(Line::value_type c) {
-    textCache_t::iterator loc = textCache.find(c);
-    if (loc != textCache.end()) {
-        loc->second.bind();
-    } else {
-        textCache[c] = res->getFont().renderChar(c);
-        textCache[c].bind();
-    }
-}
-
 void etm::TextBuffer::clampPos(pos &p, lines_number_t row, line_index_t column) {
     if (lines.size()) {
         if (row < lines.size()) {
@@ -664,7 +654,7 @@ void etm::TextBuffer::render(int x, int y) {
                 applyMod(c, line, state);
                 c += env::CONTROL_BLOCK_SIZE;
             } else {
-                bindChar(chr);
+                res->getFont().bindChar(chr);
                 model.set(res->getShader());
                 res->renderRectangle();
                 model.x += charWidth();

@@ -6,6 +6,7 @@
 
 #include "../Resources.h"
 #include "glfw.h"
+#include "FontLibrary.h"
 
 etm::Font::Font(Resources *res, FontLibrary &lib, const std::string &path): res(res) {
     FT_Error error = FT_New_Face(lib.get(), path.c_str(), 0, &face);
@@ -36,16 +37,15 @@ void etm::Font::calcCharSize() {
     charHeight = face->size->metrics.height / 64;   
 }
 
-// FT_Face etm::Font::getFace() {
-//     return face;
-// }
-
 void etm::Font::setSize(unsigned int size) {
     FT_Set_Pixel_Sizes(face, 0, size);
     calcCharSize();
+    clearCache();
 }
-etm::Texture etm::Font::renderChar(char c) {
+etm::Texture etm::Font::makeCharTexture(char c) {
     constexpr int channels = 1;
+
+    Texture result;
 
     FT_Error error = FT_Load_Char(face, c, FT_LOAD_RENDER);
     if (error == FT_Err_Ok) {
@@ -89,10 +89,8 @@ etm::Texture etm::Font::renderChar(char c) {
             }
         }
 
-        Texture tex;
-        tex.setData(GL_RED, charWidth, charHeight, data.data());
+        result.setData(GL_RED, charWidth, charHeight, data.data());
 
-        return tex;
     } else {
         res->postError(
             "Font::renderChar(char)",
@@ -100,10 +98,24 @@ etm::Texture etm::Font::renderChar(char c) {
             error,
             false
         );
-        return Texture();
+    }
+
+    return result;
+}
+
+void etm::Font::bindChar(char c) {
+    textCache_t::iterator loc = textCache.find(c);
+    if (loc != textCache.end()) {
+        loc->second.bind();
+    } else {
+        textCache[c] = makeCharTexture(c);
+        textCache[c].bind();
     }
 }
 
+void etm::Font::clearCache() {
+    textCache.clear();
+}
 
 int etm::Font::getCharWidth() {
     return charWidth;
