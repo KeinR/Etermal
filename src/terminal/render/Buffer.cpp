@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "glfw.h"
+#include "opengl.h"
 
 etm::Buffer::Buffer(initfunc_t initFunc) {
     setInit(initFunc);

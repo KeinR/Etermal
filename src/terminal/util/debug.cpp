@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "../render/glfw.h"
+#include "../render/opengl.h"
 
 void etm::assertGLErr(const char *location) {
     GLenum error = glGetError();

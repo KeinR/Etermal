@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "../shader/Shader.h"
-#include "../render/glfw.h"
+#include "../render/opengl.h"
 
 static etm::Color::value_t valify(float p) {
     return std::round(p * 255);

@@ -5,7 +5,7 @@
 
 #include "render/ftype.h"
 #include "util/termError.h"
-#include "render/glfw.h"
+#include "render/opengl.h"
 #include "render/Model.h"
 #include "render/Color.h"
 #include "Terminal.h"

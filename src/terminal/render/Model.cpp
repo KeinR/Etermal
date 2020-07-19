@@ -4,7 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "glfw.h"
+#include "opengl.h"
 #include "../shader/Shader.h"
 
 etm::Model::Model(): Model(0.0f, 0.0f, 0.0f, 0.0f) {

@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cmath>
 
-#include "glfw.h"
+#include "opengl.h"
 #include "../shader/Shader.h"
 
 etm::RModel::RModel(): RModel(0.0f, 0.0f, 0.0f, 0.0f, 0.0f) {

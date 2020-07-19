@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "glfw.h"
+#include "opengl.h"
 
 // def'd to be extra safe
 #define TEXTURE_TYPE GL_TEXTURE_2D

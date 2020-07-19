@@ -2,7 +2,7 @@
 #define ETERMAL_STATE_H_INCLUDED
 
 #include "util/singleton.h"
-#include "render/glfw.h"
+#include "render/opengl.h"
 
 // render/Model
 namespace etm { class Model; }

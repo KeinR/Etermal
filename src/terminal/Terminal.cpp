@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "util/termError.h"
-#include "render/glfw.h"
+#include "render/opengl.h"
 #include "util/debug.h"
 #include "../TermInput.h"
 #include "../EShell.h"

@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 
-#include "../render/glfw.h"
+#include "../render/opengl.h"
 #include "../Resources.h"
 #include "../util/termError.h"
 

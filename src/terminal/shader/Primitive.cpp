@@ -1,6 +1,6 @@
 #include "Primitive.h"
 
-#include "../render/glfw.h"
+#include "../render/opengl.h"
 #include "../Resources.h"
 
 #define MODEL "Model"

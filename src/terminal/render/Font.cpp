@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "../Resources.h"
-#include "glfw.h"
+#include "opengl.h"
 #include "FontLibrary.h"
 
 etm::Font::Font(Resources *res, FontLibrary &lib, const std::string &path): res(res) {
