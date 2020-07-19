@@ -601,7 +601,14 @@ etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line 
     int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_DATA_BYTES);
     for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_DATA_BYTES; i < end; i++) {
         shift -= 8;
-        value |= static_cast<int>(line.getDejure(i)) << shift;
+        // Really fucking weird.
+        // static_cast<int>(char) will return the char WITH THE SIGN.
+        // so -128 will be -128.
+        // WHAT.
+        // Well I guess it makes sense from a static_cast perspective.
+        // I was used to the reinterpret_cast kinda' deal from Java,
+        // or whatever it uses.
+        value |= static_cast<env::type>(static_cast<unsigned char>(line.getDejure(i))) << shift;
     }
     return modifierBlocks[value];
 }
