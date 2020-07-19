@@ -31,6 +31,7 @@ etm::TextBuffer::pos::pos(lines_number_t row, line_index_t column):
 etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
     res(res), scroll(&scroll),
     width(width), dispCursor(res),
+    dfSelectStart(&selectStart), dfSelectEnd(&selectEnd),
     cursorEnabled(false), displayCursor(false)
 {
     setDefForeGColor(0xffffff);
@@ -485,6 +486,46 @@ void etm::TextBuffer::bindChar(Line::value_type c) {
     }
 }
 
+void etm::TextBuffer::clampPos(pos &p, lines_number_t row, line_index_t column) {
+    if (lines.size()) {
+        if (row < lines.size()) {
+            p.row = row;
+            p.column = std::min(column, lines[p.row].size());
+        } else {
+            p.row = lines.size() - 1;
+            p.column = lines[p.row].size();
+        }
+    } else {
+        p.row = 0;
+        p.column = 0;
+    }
+}
+
+void etm::TextBuffer::initSelection(lines_number_t row, line_index_t column) {
+    clampPos(selectStart, row, column);
+    selectEnd = selectStart;
+    // Order of select start/end don't matter now, as they're the same
+}
+void etm::TextBuffer::setSelectionEnd(lines_number_t row, line_index_t column) {
+    clampPos(selectEnd, row, column);
+    // If the end is before the start, swap the two
+    if (selectEnd.row < selectStart.row || (selectEnd.row == selectStart.row && selectEnd.column < selectStart.column)) {
+        dfSelectStart = &selectEnd;
+        dfSelectEnd = &selectStart;
+    } else {
+        dfSelectStart = &selectStart;
+        dfSelectEnd = &selectEnd;
+    }
+}
+
+void etm::TextBuffer::prepare() {
+    // Remove selection
+    selectStart.row = 0;
+    selectStart.column = 0;
+    selectEnd.row = 0;
+    selectEnd.column = 0;
+}
+
 void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state) {
     int value = 0;
     int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_DATA_BYTES);
@@ -534,11 +575,23 @@ void etm::TextBuffer::render(int x, int y) {
         lookbehind.decLine();
     }
 
-    tm::RenderState state(res->getShader(), lookbehind.getBack(), lookbehind.getFore());
+    tm::RenderState state(
+        res->getShader(),
+        lookbehind.getBack(),
+        lookbehind.getFore(),
+        selectStart.row < start && start < selectEnd.row
+    );
 
     for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
-        for (line_index_t c = 0; c < line.dejureSize(); c++) {
+        if (r == dfSelectStart->row && 0 == dfSelectStart->column) {
+            state.setInverted(true);
+        }
+        // Can be the same, in which case they negate each-other
+        if (r == dfSelectEnd->row && 0 == dfSelectEnd->column) {
+            state.setInverted(false);
+        }
+        for (line_index_t c = 0, cc = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
             if (chr == env::CONTROL_CHAR_START) {
                 applyMod(c, line, state);
@@ -548,6 +601,16 @@ void etm::TextBuffer::render(int x, int y) {
                 model.set(res->getShader());
                 res->renderRectangle();
                 model.x += charWidth();
+
+                cc++;
+
+                if (r == dfSelectStart->row && cc == dfSelectStart->column) {
+                    state.setInverted(true);
+                }
+                // Can be the same, in which case they negate each-other
+                if (r == dfSelectEnd->row && cc == dfSelectEnd->column) {
+                    state.setInverted(false);
+                }
             }
         }
         model.x = 0;
@@ -557,6 +620,9 @@ void etm::TextBuffer::render(int x, int y) {
     // Unfortunately, we have to render the cursor after,
     // triggering another shader change else
     // the text background will hide it :(
+                                        // cuz' unsigned, also
+                                        // cursor can only ever be
+                                        // at or past the end
     if (cursorEnabled && displayCursor && cursor.row < end) {
         res->bindPrimitiveShader();
         dispCursor.setX(x + static_cast<int>(cursor.column * charWidth()));

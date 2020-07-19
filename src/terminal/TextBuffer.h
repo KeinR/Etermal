@@ -42,6 +42,7 @@ namespace etm {
         struct pos {
             lines_number_t row;
             line_index_t column;
+            // Zero init
             pos();
             pos(lines_number_t row, line_index_t column);
         };
@@ -61,6 +62,15 @@ namespace etm {
         pos cursor;
         pos cursorMin;
         Rectangle dispCursor; // Cursor display
+
+        // Selection range, for copying text.
+        // Characters in this range have inverted colors
+        // (background/foreground swapped)
+        pos selectStart;
+        pos selectEnd;
+        // Pointers to the _actual_ start and end
+        pos *dfSelectStart;
+        pos *dfSelectEnd;
 
         // Cursor's enabled state is manually controlled.
         // The display state is intended to be controlled through
@@ -105,6 +115,9 @@ namespace etm {
         int charHeight();
 
         void applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state);
+
+        // Clamp the position given
+        void clampPos(pos &p, lines_number_t row, line_index_t column);
 
     public:
         // Create text buffer with width
@@ -188,6 +201,15 @@ namespace etm {
         void insertAtCursor(Line::value_type c);
         // Called by insertAtCursor
         void insert(lines_number_t row, line_index_t column, Line::value_type c);
+
+        void initSelection(lines_number_t row, line_index_t column);
+        void setSelectionEnd(lines_number_t row, line_index_t column);
+
+        // Prepares the buffer for textual modification.
+        // Should be called before any call that modifies
+        // text, like append(...), trunc(), erase(...),
+        // eraseAtCursor(), you get the idea.
+        void prepare();
 
         // ---Assumes that the primitive shader has already been set---
         void render(int x, int y);

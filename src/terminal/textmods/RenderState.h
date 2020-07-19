@@ -19,8 +19,13 @@ namespace etm::tm {
         const Color *const defBackgroundColor;
         const Color *foregroundColor;
         const Color *const defForegroundColor;
+        bool inverted;
+
+        // Actually "do" the operations, no checks
+        void doSetBack(const Color &color);
+        void doSetFore(const Color &color);
     public:
-        RenderState(shader::Shader &shader, const Color &defBackgroundColor, const Color &defForegroundColor);
+        RenderState(shader::Shader &shader, const Color &defBackgroundColor, const Color &defForegroundColor, bool startInverted);
 
         // Sets default background color, constant
         void setDefBack() override;
@@ -31,6 +36,9 @@ namespace etm::tm {
         void setBack(const Color &color) override;
         // Set the foreground color
         void setFore(const Color &color) override;
+
+        // Set inversion status of foreground and background colors
+        void setInverted(bool val);
     };
 }
 

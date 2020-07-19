@@ -77,6 +77,12 @@ namespace etm {
         // Is the mouse hovering over the terminal input area?
         bool hovering;
 
+        // Is the mouse dragging?
+        bool dragging;
+        // Coordinates of the last drag location
+        float dragX;
+        float dragY;
+
         void displayWelcome();
 
         void flushInputBuffer();
@@ -88,6 +94,8 @@ namespace etm {
         // i is set to the last character of the hex.
         // Will stop prematurely if the hex is truncated
         int readHexFromStr(std::string &str, std::string::size_type &i);
+        // Maps screen coordinates to text coordinates
+        void mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column);
     public:
 
         // Initializes with the current context.

@@ -26,11 +26,14 @@ namespace etm::tm {
         // Set the foreground color
         void setFore(const Color &color) override;
 
+        // Returns true if the lookbehind can terminate;
+        // Encountered a change in the background and foreground
         bool bothSet();
         const Color &getBack();
         const Color &getFore();
         // Decriment current line number by 1
         void decLine();
+
     };
 }
 

@@ -45,7 +45,10 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     takeInput(false),
     escapeNext(false),
     cursorBlink(500),
-    shell(nullptr)
+    shell(nullptr),
+    dragging(false),
+    dragX(0.0f),
+    dragY(0.0f)
 {
     setBackgroundColor(0x0f0f0f);
     setTextColor(0xffffff);
@@ -354,11 +357,36 @@ void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) 
 }
 void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {
     scrollbar.mouseClick(isPressed, mouseX, mouseY);
-    focused = background.hasPoint(mouseX, mouseY);
+    if (isPressed) {
+        focused = background.hasPoint(mouseX, mouseY);
+        dragging = focused;
+
+        if (dragging) {
+            TextBuffer::lines_number_t row;
+            TextBuffer::line_index_t column;
+            mapCoords(mouseX, mouseY, row, column);
+            display.initSelection(row, column);
+        }
+    } else {
+        dragging = false;
+    }
 }
 void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
     scrollbar.mouseMove(mouseX, mouseY);
     setHovering(background.hasPoint(mouseX, mouseY));
+    if (dragging) {
+        TextBuffer::lines_number_t row;
+        TextBuffer::line_index_t column;
+        mapCoords(mouseX, mouseY, row, column);
+        display.setSelectionEnd(row, column);
+    }
+}
+
+void etm::Terminal::mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column) {
+    row = std::max(std::floor((y - viewport.y + scroll.getOffset()) / resources->getFont().getCharHeight()), 0.0f);
+    column = std::max(std::floor((x - viewport.x) / resources->getFont().getCharWidth()), 0.0f);
+    std::cout << "row = " << row << std::endl;
+    std::cout << "column = " << column << std::endl;
 }
 
 void etm::Terminal::render() {
