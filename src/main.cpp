@@ -60,6 +60,7 @@ int main() {
         term.setCursorIBeam([window, ibeam]()->void{
             glfwSetCursor(window, ibeam);
         });
+        term.setMaxLines(200);
 
         etm::Shell shell;
 

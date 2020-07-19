@@ -165,6 +165,10 @@ namespace etm {
         // max width and height
         void setFontSize(unsigned int size);
 
+        // Set the maximum number of lines kept in memory.
+        // If the limit is exceed, will remove oldest lines
+        void setMaxLines(TextBuffer::lines_number_t count);
+
         // Position elemnts according to coords
         void updatePosition();
 
