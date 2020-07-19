@@ -51,6 +51,8 @@ namespace etm::env {
     constexpr unsigned int CONTROL_BLOCK_SIZE = 5;
     // Number of bytes used to record offsets for control blocks
     constexpr unsigned int CONTROL_BLOCK_DATA_BYTES = 4;
+    // A value large enough to hold the control block index
+    typedef int type;
 }
 
 #endif

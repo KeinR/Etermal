@@ -32,7 +32,8 @@ namespace etm {
         typedef std::vector<line_t> lines_t;
         typedef lines_t::size_type lines_number_t;
 
-        typedef std::vector<std::shared_ptr<tm::Mod>> modifierBlocks_t;
+        typedef std::shared_ptr<tm::Mod> mod_t;
+        typedef std::vector<mod_t> modifierBlocks_t;
 
         struct pos {
             lines_number_t row;
@@ -94,6 +95,10 @@ namespace etm {
         void doTrunc();
         void doInsert(lines_number_t row, line_index_t column, Line::value_type c);
 
+        // Deletes the last line.
+        // Assumes that lines.size() > 0
+        void deleteLastLine();
+
         // Returns true if a line would qualify for a start space
         bool isStartSpace(Line::value_type c, lines_number_t row);
 
@@ -103,7 +108,7 @@ namespace etm {
         int charWidth();
         int charHeight();
 
-        void applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state);
+        mod_t &getMod(Line::size_type ctrlIndex, Line &line);
 
         // Clamp the position given
         void clampPos(pos &p, lines_number_t row, line_index_t column);

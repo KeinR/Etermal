@@ -49,6 +49,19 @@ void etm::TextBuffer::insertNewline(line_index_t row) {
     lines.insert(lines.begin() + row, line_t());
 }
 
+void etm::TextBuffer::deleteLastLine() {
+    int countCtrl = 0;
+    for (line_index_t i = 0; i < lines.back().dejureSize(); i++) {
+        if (lines.back().getDejure(i) == env::CONTROL_CHAR_START) {
+            i += env::CONTROL_BLOCK_SIZE;
+            countCtrl++;
+        }
+    }
+    lines.pop_back();
+    // Order of the mod blocks is the same as the lines
+    modifierBlocks.erase(modifierBlocks.end() - countCtrl, modifierBlocks.end());
+}
+
 bool etm::TextBuffer::cursorAtEnd() {
     return cursor.row == lines.size() - 1 && cursor.column == lines[cursor.row].size();
 }
@@ -366,7 +379,7 @@ void etm::TextBuffer::doTrunc() {
                 // If line empty, delete it
                 if (lines.size() > 1) {
                     // Only if this isn't the last line
-                    lines.pop_back();
+                    deleteLastLine();
                 } else {
                     // This is the last line and it has no chars.
                     // Deny everything.
@@ -385,11 +398,11 @@ void etm::TextBuffer::doTrunc() {
             // Delete line if empty and last line didn't force
             // a newline break.
             if (!lines.back().size()) {
-                lines.pop_back();
+                deleteLastLine();
             } else if (width - lines[lines.size()-2].size() >= lines.back().size()) {
                 // Move data, as it can sort-of reverse-wrap back to the previous line
                 lines[lines.size()-2].appendOther(lines.back());
-                lines.pop_back();
+                deleteLastLine();
             }
         }
     }
@@ -583,14 +596,14 @@ void etm::TextBuffer::prepare() {
     selectEnd.column = 0;
 }
 
-void etm::TextBuffer::applyMod(Line::size_type ctrlIndex, Line &line, tm::TextState &state) {
-    int value = 0;
+etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line &line) {
+    env::type value = 0;
     int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_DATA_BYTES);
     for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_DATA_BYTES; i < end; i++) {
         shift -= 8;
         value |= static_cast<int>(line.getDejure(i)) << shift;
     }
-    modifierBlocks[value]->run(state);
+    return modifierBlocks[value];
 }
 
 void etm::TextBuffer::render(int x, int y) {
@@ -625,7 +638,7 @@ void etm::TextBuffer::render(int x, int y) {
         for (line_index_t c = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
             if (chr == env::CONTROL_CHAR_START) {
-                applyMod(c, line, lookbehind);
+                getMod(c, line)->run(lookbehind);
                 c += env::CONTROL_BLOCK_SIZE;
             }
         }
@@ -651,7 +664,7 @@ void etm::TextBuffer::render(int x, int y) {
         for (line_index_t c = 0, cc = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
             if (chr == env::CONTROL_CHAR_START) {
-                applyMod(c, line, state);
+                getMod(c, line)->run(state);
                 c += env::CONTROL_BLOCK_SIZE;
             } else {
                 res->getFont().bindChar(chr);
