@@ -2,12 +2,14 @@
 #define ETERMAL_TEXTBUFFER_H_INCLUDED
 
 #include <vector>
+#include <map>
 #include <string>
 #include <memory>
 
 #include "gui/Rectangle.h"
 #include "render/Color.h"
 #include "Line.h"
+#include "env.h"
 
 #include "textmods/Mod.h"
 
@@ -33,7 +35,7 @@ namespace etm {
         typedef lines_t::size_type lines_number_t;
 
         typedef std::shared_ptr<tm::Mod> mod_t;
-        typedef std::vector<mod_t> modifierBlocks_t;
+        typedef std::map<env::type, mod_t> modifierBlocks_t;
 
         struct pos {
             lines_number_t row;
@@ -49,6 +51,11 @@ namespace etm {
         // Tells what parts of self should render.
         // A very useful optimization.
         Scroll *scroll;
+
+        // The max number of lines allowed.
+        // If this limit is exceeded, will start
+        // deleting the first lines.
+        lines_number_t maxNumberLines;
 
         lines_t lines;
         line_index_t width;
@@ -78,7 +85,11 @@ namespace etm {
         Color defBackgroundColor;
 
         modifierBlocks_t modifierBlocks;
+        env::type blockId;
 
+        // Checks if the number of lines is valid,
+        // and truncates the lines if not.
+        void checkNumberLines();
         // Construct a new line
         void newline();
         // Inserts a newline after the given row
@@ -95,6 +106,9 @@ namespace etm {
         void doTrunc();
         void doInsert(lines_number_t row, line_index_t column, Line::value_type c);
 
+        // Deletes the first line.
+        // Assumes that lines.size() > 0
+        void deleteFirstLine();
         // Deletes the last line.
         // Assumes that lines.size() > 0
         void deleteLastLine();
@@ -120,6 +134,9 @@ namespace etm {
         void pushMod(const std::shared_ptr<tm::Mod> &mod);
 
         void clear();
+
+        // Set the max lines that will be kep in memory
+        void setMaxLines(lines_number_t count);
 
         void setDefForeGColor(const Color &color);
         void setDefBackGColor(const Color &color);

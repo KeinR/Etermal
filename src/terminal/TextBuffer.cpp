@@ -2,14 +2,16 @@
 
 #include <iostream>
 #include <cmath>
+#include <iterator>
 
 #include "gui/Rectangle.h"
 #include "Resources.h"
 #include "Scroll.h"
-#include "env.h"
 #include "textmods/TextState.h"
 #include "textmods/RenderState.h"
 #include "textmods/Lookbehind.h"
+
+constexpr etm::TextBuffer::lines_number_t DEF_MAX_NUMBER_LINES = 1000; 
 
 // Check if the char is valid (ie not a reserved
 // one).
@@ -30,9 +32,11 @@ etm::TextBuffer::pos::pos(lines_number_t row, line_index_t column):
 
 etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
     res(res), scroll(&scroll),
+    maxNumberLines(DEF_MAX_NUMBER_LINES),
     width(width), dispCursor(res),
     dfSelectStart(&selectStart), dfSelectEnd(&selectEnd),
-    cursorEnabled(false), displayCursor(false)
+    cursorEnabled(false), displayCursor(false),
+    blockId(0)
 {
     setDefForeGColor(0xffffff);
     setDefBackGColor(0x000000);
@@ -40,13 +44,23 @@ etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
     setCursorWidth(1);
 }
 
+void etm::TextBuffer::checkNumberLines() {
+    while (lines.size() > maxNumberLines) {
+        deleteFirstLine();
+        // Decrement cursor to account for loss of rows
+        cursorMin.row--;
+        cursor.row--;
+    }
+}
+
 void etm::TextBuffer::newline() {
     lines.emplace_back();
+    checkNumberLines();
 }
 
 void etm::TextBuffer::insertNewline(line_index_t row) {
-    row++;
-    lines.insert(lines.begin() + row, line_t());
+    lines.insert(lines.begin() + row + 1, line_t());
+    checkNumberLines();
 }
 
 void etm::TextBuffer::deleteLastLine() {
@@ -59,7 +73,25 @@ void etm::TextBuffer::deleteLastLine() {
     }
     lines.pop_back();
     // Order of the mod blocks is the same as the lines
-    modifierBlocks.erase(modifierBlocks.end() - countCtrl, modifierBlocks.end());
+    // modifierBlocks_t::iterator it = modifierBlocks.end();
+    // std::advance(it, -countCtrl);
+    // modifierBlocks.erase(it, modifierBlocks.end());
+}
+
+void etm::TextBuffer::deleteFirstLine() {
+    int countCtrl = 0;
+    for (line_index_t i = 0; i < lines.front().dejureSize(); i++) {
+        if (lines.front().getDejure(i) == env::CONTROL_CHAR_START) {
+            i += env::CONTROL_BLOCK_SIZE;
+            countCtrl++;
+        }
+    }
+    lines.erase(lines.begin());
+    // Order of the mod blocks is the same as the lines
+    // modifierBlocks_t::iterator it = modifierBlocks.begin();
+    // std::advance(it, countCtrl);
+    // modifierBlocks.erase(modifierBlocks.begin(), it);
+    std::cout << "countCtrl = " << countCtrl << std::endl;
 }
 
 bool etm::TextBuffer::cursorAtEnd() {
@@ -83,20 +115,20 @@ bool etm::TextBuffer::isStartSpace(Line::value_type c, lines_number_t row) {
 }
 
 void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
-    modifierBlocks.push_back(mod);
-    modifierBlocks_t::size_type index = modifierBlocks.size() - 1;
+    modifierBlocks[blockId] = mod;
     Line::string_t str;
     str.push_back(env::CONTROL_CHAR_START);
     int shift = 8 * env::CONTROL_BLOCK_DATA_BYTES;
     for (unsigned int n = 0; n < env::CONTROL_BLOCK_DATA_BYTES; n++) {
         shift -= 8;
-        str.push_back(static_cast<Line::value_type>((index >> shift) & 0xff));
+        str.push_back(static_cast<Line::value_type>((blockId >> shift) & 0xff));
     }
     str.push_back(env::CONTROL_CHAR_END);
     if (!lines.size()) {
         newline();
     }
     lines.back().appendControl(str);
+    blockId++;
 }
 
 void etm::TextBuffer::clear() {
@@ -105,6 +137,10 @@ void etm::TextBuffer::clear() {
     res->getFont().clearCache();
     newline();
     jumpCursor();
+}
+
+void etm::TextBuffer::setMaxLines(lines_number_t count) {
+    maxNumberLines = count;
 }
 
 void etm::TextBuffer::setDefForeGColor(const Color &color) {
@@ -195,13 +231,6 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
 void etm::TextBuffer::jumpCursor() {
     cursor.row = lines.size() - 1;
     cursor.column = lines[cursor.row].size();
-
-    // long size = static_cast<long>(sizeof(Line) * lines.capacity() + sizeof(std::vector<Line>));
-    // for (Line &l : lines) {
-    //     size += static_cast<long>(l.string.capacity() * sizeof(Line::value_type));
-    // }
-
-    // std::cout << "MEMORY USAGE: " << (size / 1e6) << std::endl;
 }
 void etm::TextBuffer::setCursorEnabled(bool val) {
     cursorEnabled = val;
@@ -442,7 +471,7 @@ void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::valu
     if (!outOfBounds(row, column)) {
         filterChar(c);
         prepare();
-        insert(row, column, c);
+        doInsert(row, column, c);
     }
 }
 void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, Line::value_type c) {

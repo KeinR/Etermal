@@ -278,6 +278,10 @@ void etm::Terminal::setFontSize(unsigned int size) {
     updatePosition();
 }
 
+void etm::Terminal::setMaxLines(TextBuffer::lines_number_t count) {
+    display.setMaxLines(count);
+}
+
 void etm::Terminal::updatePosition() {
     background.setX(viewport.x);
     background.setY(viewport.y);
