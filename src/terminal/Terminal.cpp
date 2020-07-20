@@ -15,9 +15,6 @@
 #include "textmods/Mod.h"
 #include "textmods/mods.h"
 
-static constexpr int BOTTOM_MARGIN = 7;
-
-
 static void defaultErrorCallback(const etm::termError &error);
 
 void defaultErrorCallback(const etm::termError &error) {
@@ -37,7 +34,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     // Make sure that the provided callback is valid
     errorCallback(errorCallback ? errorCallback : defaultErrorCallback),
     resources(new Resources(*this)),
-    viewport(0, 0, 400, 400),
+    viewport(0, 0, 0, 0),
     scrollbar(resources.get(), scroll),
     scrollSensitivity(25.0f),
     display(resources.get(), scroll, 30),
@@ -49,8 +46,8 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     shell(nullptr),
     dragging(false)
 {
-    setBackgroundColor(0x0f0f0f);
-    setTextColor(0xffffff);
+    setBackgroundColor(0x080808);
+    setTextColor(0xf0f0f0);
 
     scrollbar.setWidth(22);
     scrollbar.setSideMargin(2);
@@ -266,13 +263,22 @@ void etm::Terminal::setY(float y) {
     viewport.y = y;
     updatePosition();
 }
-void etm::Terminal::setMaxWidth(float width) {
-    viewport.width = resources->getFont().getCharWidth() * std::floor(width / resources->getFont().getCharWidth());
+
+void etm::Terminal::setWidth(int width) {
+    viewport.width = width;
     updatePosition();
 }
-void etm::Terminal::setMaxHeight(float height) {
-    viewport.height = resources->getFont().getCharHeight() * std::floor((height - BOTTOM_MARGIN) / resources->getFont().getCharHeight());
-    viewport.height += BOTTOM_MARGIN;
+void etm::Terminal::setHeight(int height) {
+    viewport.height = height;
+    updatePosition();
+}
+void etm::Terminal::setColumns(int columns) {
+    viewport.width = resources->getFont().getCharWidth() * columns;
+    updatePosition();
+}
+void etm::Terminal::setRows(int rows, int margin) {
+    viewport.height = resources->getFont().getCharHeight() * rows;
+    viewport.height += margin;
     updatePosition();
 }
 
@@ -296,7 +302,7 @@ void etm::Terminal::updatePosition() {
     scrollbar.setY(viewport.y);
     scrollbar.setHeight(viewport.height);
 
-    scroll.setNetHeight(viewport.height - BOTTOM_MARGIN);
+    scroll.setNetHeight(viewport.height - (static_cast<int>(viewport.height) % resources->getFont().getCharHeight()));
 
     display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
 }

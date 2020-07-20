@@ -36,16 +36,16 @@ const char *etm::ArgFilter::datatypeToString(datatype val) {
 etm::ArgFilter::DefaultErrorHandle::DefaultErrorHandle() {
 }
 std::string etm::ArgFilter::DefaultErrorHandle::badDatatype(int position, const std::string &data, datatype expectedType) {
-    return "Expected \"" + data + "\" to be of " + datatypeToString(expectedType) + " type @" + std::to_string(position);
+    return "Expected \"" + data + "\" to be of " + datatypeToString(expectedType) + " type @" + std::to_string(position) + "\n";
 }
 std::string etm::ArgFilter::DefaultErrorHandle::noParam(int position, const std::string &lastFlag, datatype expectedType) {
-    return "Expected parameter after \"" + lastFlag + "\" @" + std::to_string(position);
+    return "Expected parameter after \"" + lastFlag + "\" @" + std::to_string(position) + "\n";
 }
 std::string etm::ArgFilter::DefaultErrorHandle::badFlag(int position, const std::string &badFlag) {
-    return "Unknown flag \"" + badFlag + "\" @" + std::to_string(position);
+    return "Unknown flag \"" + badFlag + "\" @" + std::to_string(position) + "\n";
 }
 std::string etm::ArgFilter::DefaultErrorHandle::internalError(int position, const std::string &errMsg) {
-    return "Internal error \"" + errMsg + "\" @" + std::to_string(position);
+    return "Internal error \"" + errMsg + "\" @" + std::to_string(position) + "\n";
 }
 bool etm::ArgFilter::DefaultErrorHandle::doFailfast() {
     return true;

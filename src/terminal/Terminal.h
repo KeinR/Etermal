@@ -45,8 +45,6 @@ namespace etm {
         std::unique_ptr<Resources> resources;
 
         Model viewport;
-        int maxWidth;
-        int maxHeight;
 
         Scroll scroll;
         Scrollbar scrollbar;
@@ -236,8 +234,10 @@ namespace etm {
         */
         void setY(float y);
 
-        void setMaxWidth(float width);
-        void setMaxHeight(float height);
+        void setWidth(int width);
+        void setHeight(int height);
+        void setRows(int rows, int margin = 7);
+        void setColumns(int columns);
 
         /**
         * Sets the font pixel size.

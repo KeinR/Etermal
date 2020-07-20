@@ -52,8 +52,9 @@ int main() {
 
         GLFWcursor* ibeam = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
 
-        term.setMaxWidth(700);
-        term.setMaxHeight(700);
+        term.setWidth(700);
+        term.setHeight(700);
+        // term.setRows(10, 5);
         term.setCursorDefault([window]()->void{
             glfwSetCursor(window, NULL);
         });
@@ -68,6 +69,17 @@ int main() {
 
         term.setShell(shell);
         shell.setTerminal(term);
+
+        etm::ArgFilter clearFilter;
+        clearFilter.setUsage("Usage: clear\n");
+        shell.addCommand("clear", clearFilter, [](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
+            terminal.clear();
+        });
+        etm::ArgFilter exitFilter;
+        exitFilter.setUsage("Usage: clear\n");
+        shell.addCommand("exit", exitFilter, [window](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
+            glfwSetWindowShouldClose(window, true);
+        });
 
         std::cout << "created" << std::endl;
 
