@@ -95,7 +95,7 @@ namespace etm {
         // Inserts a newline after the given row
         void insertNewline(line_index_t row);
         bool cursorAtEnd();
-        void doAppend(Line::value_type c);
+        void doAppend(const Line::codepoint &c);
         // Re-appends all chars after and including row and column to re-format the text
         void reformat(lines_number_t row, line_index_t column);
         void checkCursorCollumn();
@@ -104,7 +104,7 @@ namespace etm {
         bool outOfBounds(lines_number_t row, line_index_t column);
         void doErase(lines_number_t row, line_index_t column);
         void doTrunc();
-        void doInsert(lines_number_t row, line_index_t column, Line::value_type c);
+        void doInsert(lines_number_t row, line_index_t column, const Line::codepoint &c);
 
         // Deletes the first line.
         // Assumes that lines.size() > 0
@@ -114,7 +114,7 @@ namespace etm {
         void deleteLastLine();
 
         // Returns true if a line would qualify for a start space
-        bool isStartSpace(Line::value_type c, lines_number_t row);
+        bool isStartSpace(const Line::codepoint &c, lines_number_t row);
 
         // Wrappers for calls to
         // res->getFont().getCharWidth() and
@@ -126,6 +126,9 @@ namespace etm {
 
         // Clamp the position given
         void clampPos(pos &p, lines_number_t row, line_index_t column);
+
+        // Gets the text in range, start inclusive end->column exclusive
+        std::string getTextFromRange(const pos &start, const pos &end);
 
     public:
         // Create text buffer with width
@@ -191,9 +194,6 @@ namespace etm {
         void setWidth(line_index_t width);
         line_index_t getWidth();
 
-        // Overwrites character at row, column.
-        // Does nothing if out of bounds.
-        void write(lines_number_t row, line_index_t column, Line::value_type c);
         // Erases the character before the cursor, and deincrements the
         // cursor's index.
         // If the column is zero, will erase the last char on the next line.
@@ -202,16 +202,17 @@ namespace etm {
         // Erases character at row, column.
         // If out of bounds, does nothing.
         void erase(lines_number_t row, line_index_t column);
-        // Adds the char to the end of the buffer
-        void append(Line::value_type c);
+        // Adds the char to the end of the buffer.
+        // Params describe the range for the codepoint, inclusive-exclusive
+        void append(Line::codepoint c);
         // Removes the last char
         void trunc();
 
         // Insert the char where the cursor is,
         // and moves it forward by one
-        void insertAtCursor(Line::value_type c);
+        void insertAtCursor(Line::codepoint c);
         // Called by insertAtCursor
-        void insert(lines_number_t row, line_index_t column, Line::value_type c);
+        void insert(lines_number_t row, line_index_t column, Line::codepoint c);
 
         // Initialize the start and endpoint of the selection zone
         void initSelection(lines_number_t row, line_index_t column);
@@ -222,6 +223,9 @@ namespace etm {
         // Gets the text highlighted by the selection;
         // used only really when copying text
         std::string getSelectionText();
+        // Gets the text after the min cursor point, aka the
+        // text from the input area
+        std::string pollInput();
 
         // Prepares the buffer for textual appendations (append(...)).
         // append(...) does not call this method, because appends

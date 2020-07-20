@@ -54,6 +54,7 @@ void etm::Line::iterator::operator+=(size_type distance) {
 }
 void etm::Line::iterator::operator--() {
     index--;
+    index -= utf8::lookbehind(parent->getString(), index);
     // "If pos is equal to the string length, the
     // function returns a reference to the null character
     // that follows the last character in the string (which
@@ -63,23 +64,37 @@ void etm::Line::iterator::operator--() {
     // We're fine not doing bounds checks, so long as the caller
     // always checks valid() before de/incrementing, and env::CONTROL_CHAR_END
     // and env::CONTROL_CHAR_START are never set to the null character
-    if (parent->getDejure(index) == env::CONTROL_CHAR_END) {
+    while (parent->getDejure(index) == env::CONTROL_CHAR_END) {
         index -= env::CONTROL_BLOCK_SIZE + 1;
     }
+    index -= utf8::lookbehind(parent->getString(), index);
 }
 void etm::Line::iterator::operator++() {
-    index++;
-    if (parent->getDejure(index) == env::CONTROL_CHAR_START) {
+    index += utf8::test(parent->getDejure(index));
+    while (parent->getDejure(index) == env::CONTROL_CHAR_START) {
         index += env::CONTROL_BLOCK_SIZE + 1;
     }
 }
 
-etm::Line::value_type &etm::Line::iterator::operator*() {
-    return parent->getDejure(index);
+etm::Line::codepoint etm::Line::iterator::operator*() {
+    const int size = utf8::test(parent->getDejure(index));
+    return codepoint(parent->getString().begin() + index, parent->getString().begin() + (index + size));
 }
 
 etm::Line::size_type etm::Line::iterator::getIndex() const {
     return index;
+}
+
+etm::Line::codepoint::codepoint() {
+}
+etm::Line::codepoint::codepoint(const string_t::const_iterator &start, const string_t::const_iterator &end):
+    start(start), end(end)
+{}
+bool etm::Line::codepoint::operator==(char c) const {
+    return *start == c;
+}
+bool etm::Line::codepoint::operator!=(char c) const {
+    return *start != c;
 }
 
 etm::Line::size_type etm::Line::findDefactoSize(const string_t &string) {
@@ -88,10 +103,11 @@ etm::Line::size_type etm::Line::findDefactoSize(const string_t &string) {
 
 etm::Line::size_type etm::Line::findDefactoSize(const string_t::const_iterator &start, const string_t::const_iterator &end) {
     size_type size = 0;
-    for (string_t::const_iterator it = start; it < end; ++it) {
+    for (string_t::const_iterator it = start; it < end;) {
         if (*it == env::CONTROL_CHAR_START) {
-            it += env::CONTROL_BLOCK_SIZE;
+            it += env::CONTROL_BLOCK_SIZE + 1;
         } else {
+            it += utf8::test(*it);
             size++;
         }
     }
@@ -106,10 +122,11 @@ etm::Line::Line():
 
 etm::Line::size_type etm::Line::correctIndex(size_type index) {
     size_type i = 0;
-    for (size_type cIndex = 0; cIndex < index; i++) {
+    for (size_type cIndex = 0; cIndex < index;) {
         if (string[i] == env::CONTROL_CHAR_START) {
             i += env::CONTROL_BLOCK_SIZE;
         } else {
+            i += utf8::test(string[i]);
             cIndex++;
         }
     }
@@ -145,12 +162,20 @@ etm::Line::iterator etm::Line::begin() {
 etm::Line::size_type etm::Line::size() {
     return defactoSize;
 }
-void etm::Line::append(value_type c) {
-    string.push_back(c);
+void etm::Line::appendChar(const codepoint &c) {
+    string.append(c.start, c.end);
     defactoSize++;
 }
-void etm::Line::insert(size_type index, value_type c) {
-    string.insert(string.begin() + correctIndex(index), c);
+void etm::Line::appendChar(value_type chr) {
+    string += chr;
+    defactoSize++;
+}
+void etm::Line::insertChar(size_type index, const codepoint &c) {
+    string.insert(string.begin() + correctIndex(index), c.start, c.end);
+    defactoSize++;
+}
+void etm::Line::insertChar(size_type index, value_type chr) {
+    string.insert(string.begin() + correctIndex(index), chr);
     defactoSize++;
 }
 void etm::Line::prependStr(const string_t &str) {
@@ -170,7 +195,7 @@ void etm::Line::erase(const iterator &start) {
 }
 void etm::Line::eraseChar(size_type index) {
     index = correctIndex(index);
-    string.erase(index, 1);
+    string.erase(index, utf8::test(string[index]));
     defactoSize--;
 }
 void etm::Line::appendStr(const string_t &str) {
@@ -180,14 +205,14 @@ void etm::Line::appendStr(const string_t &str) {
 void etm::Line::appendOther(const Line &other) {
     newline |= other.newline;
     if (other.startSpace) {
-        append(' ');
+        appendChar(' ');
     }
     string += other.string;
     defactoSize += other.defactoSize;
 }
 void etm::Line::popBack() {
-    string.pop_back();
-    defactoSize--;
+    std::cout << "break" << std::endl;
+    doErase(string.size() - 1 - utf8::lookbehind(string, string.size() - 1));
 }
 
 void etm::Line::appendControl(const string_t &val) {
@@ -225,4 +250,8 @@ etm::Line::value_type &etm::Line::getDejure(size_type index) {
 }
 etm::Line::size_type etm::Line::dejureSize() {
     return string.size();
+}
+
+etm::Line::string_t &etm::Line::getString() {
+    return string;
 }

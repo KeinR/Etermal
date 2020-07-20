@@ -11,16 +11,18 @@
 #include "textmods/RenderState.h"
 #include "textmods/Lookbehind.h"
 
-constexpr etm::TextBuffer::lines_number_t DEF_MAX_NUMBER_LINES = 1000; 
+static constexpr etm::TextBuffer::lines_number_t DEF_MAX_NUMBER_LINES = 1000; 
+static const std::string nullCodepointStr("\0");
+static const etm::Line::codepoint nullCodepoint(nullCodepointStr.begin(), nullCodepointStr.end());
 
 // Check if the char is valid (ie not a reserved
 // one).
 // If it's not, sets it to something that is valid.
-static void filterChar(etm::Line::value_type &c);
+static void filterChar(etm::Line::codepoint &c);
 
-void filterChar(etm::Line::value_type &c) {
+void filterChar(etm::Line::codepoint &c) {
     if (c == etm::env::CONTROL_CHAR_START || c == etm::env::CONTROL_CHAR_END) {
-        c = '\0';
+        c = nullCodepoint;
     }
 }
 
@@ -108,7 +110,7 @@ int etm::TextBuffer::charHeight() {
     return res->getFont().getCharHeight();
 }
 
-bool etm::TextBuffer::isStartSpace(Line::value_type c, lines_number_t row) {
+bool etm::TextBuffer::isStartSpace(const Line::codepoint &c, lines_number_t row) {
                         // because it's unsigned
     return c == ' ' && row - 1 < lines.size() && lines[row - 1][lines[row - 1].size() - 1] != ' ';
 }
@@ -257,12 +259,12 @@ etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
     return width;
 }
 
-void etm::TextBuffer::doAppend(Line::value_type c) {
-
+void etm::TextBuffer::doAppend(const Line::codepoint &c) {
     if (!lines.size()) {
         newline();
-        doAppend(c);
-    } else if (c == '\n') {
+    }
+
+    if (c == '\n') {
         std::string str;
         lines.back().copyTo(str);
         lines.back().setNewline(true);
@@ -301,30 +303,10 @@ void etm::TextBuffer::doAppend(Line::value_type c) {
             // Prevent stack overflow from width of 0...
             // should never happen, but I like to have a reason
             // to avoid recursion
-            nextLine.append(c);
+            nextLine.appendChar(c);
         }
     } else {
-        lines.back().append(c);
-    }
-}
-
-void etm::TextBuffer::write(lines_number_t row, line_index_t column, Line::value_type c) {
-    if (outOfBounds(row, column)) return;
-    filterChar(c);
-    prepare();
-
-    if (column == lines[row].size()-1 && lines[row].hasNewline() && c != '\n') {
-        // If was the last char and the line was broken manually,
-        // instead it deleted the newline
-        lines[row].setNewline(false);
-        lines[row].append(c);
-        reformat(row, column);
-    } else if (column == 0 && c != ' ' && lines[row].hasStartSpace()) {
-        // Reveal the space char, then overwrite it
-        lines[row].setStartSpace(false);
-        doInsert(0, row, c);
-    } else {
-        lines[row][column] = c;
+        lines.back().appendChar(c);
     }
 }
 
@@ -381,7 +363,7 @@ void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
 
 }
 
-void etm::TextBuffer::append(Line::value_type c) {
+void etm::TextBuffer::append(Line::codepoint c) {
     filterChar(c);
     const bool moveCursor = cursorAtEnd();
     doAppend(c);
@@ -437,7 +419,7 @@ void etm::TextBuffer::doTrunc() {
 
 }
 
-void etm::TextBuffer::insertAtCursor(Line::value_type c) {
+void etm::TextBuffer::insertAtCursor(Line::codepoint c) {
     prepare();
     if (lines.size()) {
         filterChar(c);
@@ -451,8 +433,8 @@ void etm::TextBuffer::insertAtCursor(Line::value_type c) {
                 cursor.row++;
                 if (lines[cursor.row].hasStartSpace()) {
                     lines[cursor.row].setStartSpace(false);
-                    lines[cursor.row].insert(0, ' ');
-                    lines[cursor.row].insert(0, c);
+                    lines[cursor.row].insertChar(0, ' ');
+                    lines[cursor.row].insertChar(0, c);
                     reformat(cursor.row - 1, 0);
                     cursorMove = 2;
                 } else {
@@ -466,14 +448,14 @@ void etm::TextBuffer::insertAtCursor(Line::value_type c) {
     }
 }
 
-void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::value_type c) {
+void etm::TextBuffer::insert(lines_number_t row, line_index_t column, Line::codepoint c) {
     if (!outOfBounds(row, column)) {
         filterChar(c);
         prepare();
         doInsert(row, column, c);
     }
 }
-void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, Line::value_type c) {
+void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, const Line::codepoint &c) {
 
     if (c == '\n') {
         if (!lines[row].hasNewline()) {            
@@ -498,7 +480,7 @@ void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, Line::va
         // because unsigned
         reformat(row - 1 < row ? row - 1 : 0, 0);
     } else {
-        lines[row].insert(column, c);
+        lines[row].insertChar(column, c);
         if (lines[row].size() > width) {
             reformat(row, column);
         }
@@ -507,6 +489,7 @@ void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, Line::va
 }
 
 void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
+    // We assume that row and column are valid, and that there are > 0 lines
     Line::string_t buffer(lines[row].substr(column));
     lines[row].erase(column);
     if (lines[row].hasNewline()) {
@@ -523,12 +506,15 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
         }
     }
     lines.erase(lines.begin() + row + 1, lines.end());
-    for (std::string::size_type i = 0; i < buffer.size(); i++) {
+    for (std::string::size_type i = 0; i < buffer.size();) {
         if (buffer[i] == env::CONTROL_CHAR_START) {
             lines.back().appendControlFromRange(buffer, i, env::CONTROL_BLOCK_SIZE + 1);
-            i += env::CONTROL_BLOCK_SIZE;
+            i += env::CONTROL_BLOCK_SIZE + 1;
         } else {
-            doAppend(buffer[i]);
+            const int size = utf8::test(buffer[i]);
+            Line::codepoint cp(buffer.begin() + i, buffer.begin() + (i + size));
+            doAppend(cp);
+            i += size;
         }
     }
 }
@@ -566,59 +552,77 @@ void etm::TextBuffer::setSelectionEnd(lines_number_t row, line_index_t column) {
 }
 
 std::string etm::TextBuffer::getSelectionText() {
+    return getTextFromRange(*dfSelectStart, *dfSelectEnd);
+}
+
+std::string etm::TextBuffer::getTextFromRange(const pos &start, const pos &stop) {
+    if (start.row > stop.row || (start.row == stop.row && start.column > stop.column)) {
+        return "";
+    }
     std::string buffer;
-    if (dfSelectStart->row == dfSelectEnd->row) {
+    if (start.row == stop.row) {
         // Midsection
         for (
-            Line::iterator it = lines[dfSelectStart->row].begin() + dfSelectStart->column,
-            end = it + (dfSelectEnd->column - dfSelectStart->column);
+            Line::iterator it = lines[start.row].begin() + start.column,
+            end = it + (stop.column - start.column);
             it.valid() && it < end;
             ++it
             )
         {
-            buffer.push_back(*it);
+            Line::codepoint c(*it);
+            buffer.append(c.start, c.end);
         }
     } else {
         // End of first line
         for (
-            Line::iterator it = lines[dfSelectStart->row].begin() + dfSelectStart->column;
+            Line::iterator it = lines[start.row].begin() + start.column;
             it.valid();
             ++it
             )
         {
-            buffer.push_back(*it);
+            Line::codepoint c(*it);
+            buffer.append(c.start, c.end);
         }
-        if (lines[dfSelectStart->row].hasNewline()) {
+        if (lines[start.row].hasNewline()) {
             buffer.push_back('\n');
         }
         // Every line in-between
-        for (lines_number_t l = dfSelectStart->row + 1; l < dfSelectEnd->row; l++) {
+        for (lines_number_t l = start.row + 1; l < stop.row; l++) {
             if (lines[l].hasStartSpace()) {
                 buffer.push_back(' ');
             }
             for (Line::iterator it = lines[l].begin(); it.valid(); ++it) {
-                buffer.push_back(*it);
+                Line::codepoint c(*it);
+                buffer.append(c.start, c.end);
             }
             if (lines[l].hasNewline()) {
                 buffer.push_back('\n');
             }
         }
         // Start of last line
-        if (lines[dfSelectEnd->row].hasStartSpace()) {
+        if (lines[stop.row].hasStartSpace()) {
             buffer.push_back(' ');
         }
         for (
-            Line::iterator it = lines[dfSelectEnd->row].begin(),
-            end = it + dfSelectEnd->column;
+            Line::iterator it = lines[stop.row].begin(),
+            end = it + stop.column;
             it.valid() && it < end;
             ++it
             )
         {
-            buffer.push_back(*it);
+            Line::codepoint c(*it);
+            buffer.append(c.start, c.end);
         }
     }
 
     return buffer;
+}
+
+std::string etm::TextBuffer::pollInput() {
+    if (!lines.size()) {
+        newline();
+    }
+    return getTextFromRange(cursorMin, pos(lines.size() - 1, lines.back().size()));
 }
 
 void etm::TextBuffer::prepare() {
@@ -701,17 +705,23 @@ void etm::TextBuffer::render(int x, int y) {
         if (r == dfSelectEnd->row && 0 == dfSelectEnd->column) {
             state.setInverted(false);
         }
-        for (line_index_t c = 0, cc = 0; c < line.dejureSize(); c++) {
+        // c is the defacto index, one representing the characters
+        // irrespective of the byte size.
+        // cc is the dejure index, the actual byte offset.
+        for (line_index_t c = 0, cc = 0; c < line.dejureSize();) {
             Line::value_type chr = line.getDejure(c);
             if (chr == env::CONTROL_CHAR_START) {
                 getMod(c, line)->run(state);
-                c += env::CONTROL_BLOCK_SIZE;
+                c += env::CONTROL_BLOCK_SIZE + 1;
             } else {
-                res->getFont().bindChar(chr);
+                const int size = utf8::test(chr);
+
+                res->getFont().bindChar(utf8::read(line.getString(), c, size));
                 model.set(res->getShader());
                 res->renderRectangle();
                 model.x += charWidth();
 
+                c += size;
                 cc++;
 
                 if (r == dfSelectStart->row && cc == dfSelectStart->column) {

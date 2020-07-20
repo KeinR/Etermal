@@ -10,6 +10,7 @@
 #include "../EShell.h"
 #include "State.h"
 #include "env.h"
+#include "Line.h"
 
 #include "textmods/Mod.h"
 #include "textmods/mods.h"
@@ -46,9 +47,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     escapeNext(false),
     cursorBlink(500),
     shell(nullptr),
-    dragging(false),
-    dragX(0.0f),
-    dragY(0.0f)
+    dragging(false)
 {
     setBackgroundColor(0x0f0f0f);
     setTextColor(0xffffff);
@@ -83,15 +82,16 @@ bool etm::Terminal::acceptInput() {
     return takeInput || inputRequests.size();
 }
 
-void etm::Terminal::flushInputBuffer() {
+void etm::Terminal::pushInput(const std::string &input) {
     display.setCursorEnabled(false);
+
     if (inputRequests.size()) {
-        inputRequests.front()->terminalInput(inputBuffer);
+        inputRequests.front()->terminalInput(input);
         inputRequests.pop_front();
     } else if (shell != nullptr) {
         // Print the default prompt, etc.
-        std::cout << "SENDING TO SHELL: " << inputBuffer << std::endl;
-        shell->input(inputBuffer);
+        std::cout << "SENDING TO SHELL: " << input << std::endl;
+        shell->input(input);
     } else {
         resources->postError(
             "Terminal::flushInputBuffer()",
@@ -100,7 +100,6 @@ void etm::Terminal::flushInputBuffer() {
             false
         );
     }
-    inputBuffer.clear();
     if (acceptInput()) {
         prepareInput();
     }
@@ -212,7 +211,7 @@ void etm::Terminal::flush() {
 
     display.prepare();
 
-    for (std::string::size_type i = 0; i < displayBuffer.size(); i++) {
+    for (std::string::size_type i = 0; i < displayBuffer.size();) {
         // Escape char
                                         // 1 for the [, 1 for the spec (b/f)
         if (displayBuffer[i] == ESCAPE && i + 2 < displayBuffer.size() && displayBuffer[i+1] == '[') {
@@ -237,15 +236,20 @@ void etm::Terminal::flush() {
             }
             if (mod) {
                 display.pushMod(mod);
-                i = fi;
-            } else {
-                display.append(displayBuffer[i]);
+                i = fi+1;
+                continue;
             }
-        } else {
-            display.append(displayBuffer[i]);
         }
+        const int size = utf8::test(displayBuffer[i]);
+        if (i + size <= displayBuffer.size()) {
+            Line::codepoint c(displayBuffer.begin() + i, displayBuffer.begin() + (i + size));
+            display.append(c);
+        }
+        i += size;
     }
+
     displayBuffer.clear();
+
     const bool jump = scroll.getOffset() + 1 >= scroll.getMaxOffset();
     scroll.setGrossHeight(display.getHeight());
     if (jump) {
@@ -297,37 +301,48 @@ void etm::Terminal::updatePosition() {
     display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
 }
 
-void etm::Terminal::inputChar(char c) {
+void etm::Terminal::inputChar(unsigned int codepoint) {
+    std::string encoded = utf8::encode(codepoint);
+    Line::codepoint c(encoded.cbegin(), encoded.cend());
+    inputChar(c);
+}
+void etm::Terminal::inputChar(const Line::codepoint &c) {
     if (acceptInput()) {
         doInputChar(c);
         scroll.jump();
         scrollbar.update();
     }
 }
-void etm::Terminal::doInputChar(char c) {
+void etm::Terminal::doInputChar(const Line::codepoint &c) {
+
     if (!escapeNext) {
-        switch (c) {
-            case '\n':
+        switch (*c.start) {
+            case '\n': {
+                std::string input = display.pollInput();
                 display.jumpCursor(); // Avoid distorted text
                 display.insertAtCursor(c);
-                flushInputBuffer();
+                pushInput(input);
                 break;
+            }
             case '\\':
                 escapeNext = true;
                 break;
             default:
                 display.insertAtCursor(c);
-                inputBuffer.push_back(c);
         }
     } else {
         display.insertAtCursor(c);
-        inputBuffer.push_back(c);
     }
 }
 void etm::Terminal::inputString(const std::string &text) {
-    for (char c : text) {
+    for (std::string::const_iterator it = text.begin(); it < text.end();) {
         if (!acceptInput()) break;
-        inputChar(c);
+        const int size = utf8::test(*it);
+        if (it + size <= text.end()) {
+            Line::codepoint c(it, it + size);
+            inputChar(c);
+        }
+        it += size;
     }
 }
 void etm::Terminal::inputActionKey(actionKey key) {

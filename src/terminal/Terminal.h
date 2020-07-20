@@ -57,7 +57,6 @@ namespace etm {
         Rectangle background;
 
         std::string displayBuffer; // Display
-        std::string inputBuffer; // User input
 
         inputRequests_t inputRequests;
 
@@ -85,9 +84,10 @@ namespace etm {
 
         void displayWelcome();
 
-        void flushInputBuffer();
+        // Pushes input to recievers (shell, etc)
+        void pushInput(const std::string &input);
         void prepareInput();
-        void doInputChar(char c);
+        void doInputChar(const Line::codepoint &c);
         bool acceptInput();
         // Expects i to be pointing to the char preceeding the hex.
         // Reads a hex that starts on i and is 3 chars long.
@@ -149,7 +149,7 @@ namespace etm {
         void clearInputRequests() override;
 
         // Inputs text to the display buffer.
-        // Will not actually display until flushed.
+        // Buffered, so will not actually display until flushed.
         void dispText(const std::string &str) override;
         // Manually pushes (flushes) the display buffer to the display
         void flush() override;
@@ -176,8 +176,9 @@ namespace etm {
 
         // All printable keys
         // inputChar/String aren't buffered.
-        // Pushes data to input func upon encountering a newline.
-        void inputChar(char c);
+        void inputChar(unsigned int codepoint);
+        void inputChar(const Line::codepoint &c);
+        // Pushes utf-8 encoded string
         void inputString(const std::string &text);
 
         // Backspace, enter, up, down, left, right keys

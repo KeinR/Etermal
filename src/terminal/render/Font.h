@@ -16,7 +16,10 @@ namespace etm {
 
 namespace etm {
     class Font {
-        typedef std::map<char,Texture> textCache_t;
+    public:
+        typedef unsigned int char_t;
+    private:
+        typedef std::map<char_t, Texture> textCache_t;
 
         Resources *res;
         FT_Face face;
@@ -29,7 +32,7 @@ namespace etm {
         void calcCharSize();
         // Generate a new texture for the char.
         // Way slow, hence use of cache
-        Texture makeCharTexture(char c);
+        Texture makeCharTexture(char_t c);
     public:
         Font(Resources *res, FontLibrary &lib, const std::string &path);
         Font(Font &&other) = delete; // TEMP
@@ -38,7 +41,7 @@ namespace etm {
         // The pixel size of the font
         void setSize(unsigned int size);
         // Binds char texture to active texture slot
-        void bindChar(char c);
+        void bindChar(char_t c);
         // Clear the character cache
         void clearCache();
         // The width and height of each char

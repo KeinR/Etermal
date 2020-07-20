@@ -13,6 +13,18 @@ namespace etm {
         typedef std::basic_string<value_type> string_t;
         typedef string_t::size_type size_type;
 
+        struct codepoint {
+            string_t::const_iterator start;
+            string_t::const_iterator end;
+            codepoint();
+            codepoint(
+                const string_t::const_iterator &start,
+                const string_t::const_iterator &end
+            );
+            bool operator==(char c) const;
+            bool operator!=(char c) const;
+        };
+
         class iterator {
             Line *parent;
             size_type index; // Actual index
@@ -40,7 +52,7 @@ namespace etm {
             void operator+=(size_type distance);
             void operator--();
             void operator++();
-            value_type &operator*();
+            codepoint operator*();
 
             // Gets the internal index that the
             // iterator points to.
@@ -74,9 +86,13 @@ namespace etm {
         iterator begin();
 
         size_type size();
-        void append(value_type c);
+        void appendChar(const codepoint &c);
+        // Append a simple ASCII char
+        void appendChar(value_type chr);
         // Inserts at `index`, pushing forward the last occupant.
-        void insert(size_type index, value_type c);
+        void insertChar(size_type index, const codepoint &c);
+        // Insert a simple ASCII char
+        void insertChar(size_type index, char c);
         void prependStr(const string_t &str);
         // Erases to end, starting with `index`
         void erase(size_type index);
@@ -85,6 +101,7 @@ namespace etm {
         void eraseChar(size_type index);
         void appendStr(const string_t &str);
         void appendOther(const Line &other);
+        // Should only be called if the size() > 0
         void popBack();
 
         void appendControl(const string_t &val);
@@ -104,6 +121,9 @@ namespace etm {
         // dejure accessors
         value_type &getDejure(size_type index);
         size_type dejureSize();
+
+        // Internalingingnz
+        string_t &getString();
     };
 }
 

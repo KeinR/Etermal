@@ -33,8 +33,8 @@ void etm::Font::free() {
 }
 
 void etm::Font::calcCharSize() {
-    charWidth = face->size->metrics.max_advance / 64;   
-    charHeight = face->size->metrics.height / 64;   
+    charWidth = std::ceil(face->size->metrics.max_advance / 64.0f);   
+    charHeight = std::ceil((face->size->metrics.ascender - face->size->metrics.descender) / 64.0f);   
 }
 
 void etm::Font::setSize(unsigned int size) {
@@ -42,7 +42,8 @@ void etm::Font::setSize(unsigned int size) {
     calcCharSize();
     clearCache();
 }
-etm::Texture etm::Font::makeCharTexture(char c) {
+etm::Texture etm::Font::makeCharTexture(char_t c) {
+    std::cout << "make char " << c << std::endl;
     constexpr int channels = 1;
 
     Texture result;
@@ -52,6 +53,7 @@ etm::Texture etm::Font::makeCharTexture(char c) {
 
         std::vector<unsigned char> data(charHeight * charWidth * channels);
         const int yShift = face->size->metrics.ascender / 64 - face->glyph->bitmap_top;
+        // const int yShift = 0;
         const int xShift = (charWidth - face->glyph->bitmap.width) / 2;
         for (unsigned int sy = 0; sy < face->glyph->bitmap.rows; sy++) {
             for (unsigned int sx = 0; sx < face->glyph->bitmap.width; sx++) {
@@ -83,7 +85,11 @@ etm::Texture etm::Font::makeCharTexture(char c) {
                     // 
                     const int insIndex = ((xShift + static_cast<int>(sx)) + (charHeight - 1 - (yShift + static_cast<int>(sy))) * charWidth) * channels;
                     for (int c = 0; c < channels; c++) {
-                        data.at(insIndex + c) = face->glyph->bitmap.buffer[srcIndex];
+                        try {
+                            data.at(insIndex + c) = face->glyph->bitmap.buffer[srcIndex];
+                        } catch (std::exception &e) {
+                            std::cout << "break" << std::endl;
+                        }
                     }
                 }
             }
@@ -94,7 +100,7 @@ etm::Texture etm::Font::makeCharTexture(char c) {
     } else {
         res->postError(
             "Font::renderChar(char)",
-            std::string("Failed to load char '") + c + "'",
+            std::string("Failed to load char '") + std::to_string(c) + "'",
             error,
             false
         );
@@ -103,7 +109,7 @@ etm::Texture etm::Font::makeCharTexture(char c) {
     return result;
 }
 
-void etm::Font::bindChar(char c) {
+void etm::Font::bindChar(char_t c) {
     textCache_t::iterator loc = textCache.find(c);
     if (loc != textCache.end()) {
         loc->second.bind();
