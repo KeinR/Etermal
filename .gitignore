@@ -35,3 +35,4 @@
 *.stackdump
 
 tests/
+docs/doxygen/

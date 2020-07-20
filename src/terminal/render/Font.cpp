@@ -85,11 +85,7 @@ etm::Texture etm::Font::makeCharTexture(char_t c) {
                     // 
                     const int insIndex = ((xShift + static_cast<int>(sx)) + (charHeight - 1 - (yShift + static_cast<int>(sy))) * charWidth) * channels;
                     for (int c = 0; c < channels; c++) {
-                        try {
-                            data.at(insIndex + c) = face->glyph->bitmap.buffer[srcIndex];
-                        } catch (std::exception &e) {
-                            std::cout << "break" << std::endl;
-                        }
+                        data.at(insIndex + c) = face->glyph->bitmap.buffer[srcIndex];
                     }
                 }
             }
