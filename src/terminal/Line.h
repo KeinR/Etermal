@@ -9,6 +9,7 @@ namespace etm {
     class Line {
     public:
         typedef char value_type;
+        typedef unsigned char u_value_type;
         typedef std::basic_string<value_type> string_t;
         typedef string_t::size_type size_type;
 
@@ -87,6 +88,7 @@ namespace etm {
         void popBack();
 
         void appendControl(const string_t &val);
+        void appendControlFromRange(const string_t &val, size_type index, size_type length);
 
         // Substring to end
         string_t substr(size_type startInc);

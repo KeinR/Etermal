@@ -87,11 +87,12 @@ etm::Line::size_type etm::Line::findDefactoSize(const string_t &string) {
 }
 
 etm::Line::size_type etm::Line::findDefactoSize(const string_t::const_iterator &start, const string_t::const_iterator &end) {
-    size_type size = end - start;
+    size_type size = 0;
     for (string_t::const_iterator it = start; it < end; ++it) {
         if (*it == env::CONTROL_CHAR_START) {
             it += env::CONTROL_BLOCK_SIZE;
-            size -= env::CONTROL_BLOCK_SIZE;
+        } else {
+            size++;
         }
     }
     return size; 
@@ -138,11 +139,7 @@ etm::Line::iterator etm::Line::last() {
 }
 
 etm::Line::iterator etm::Line::begin() {
-    size_type index = 0;
-    while (string[index] == env::CONTROL_CHAR_START) {
-        index += env::CONTROL_BLOCK_SIZE + 1;
-    }
-    return iterator(this, index);
+    return iterator(this, correctIndex(0));
 }
 
 etm::Line::size_type etm::Line::size() {
@@ -195,6 +192,10 @@ void etm::Line::popBack() {
 
 void etm::Line::appendControl(const string_t &val) {
     string += val;
+}
+
+void etm::Line::appendControlFromRange(const string_t &val, size_type index, size_type length) {
+    string.append(val, index, length);
 }
 
 etm::Line::string_t etm::Line::substr(size_type startInc) {

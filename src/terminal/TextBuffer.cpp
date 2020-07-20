@@ -523,8 +523,13 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
         }
     }
     lines.erase(lines.begin() + row + 1, lines.end());
-    for (Line::value_type &c : buffer) {
-        doAppend(c);
+    for (std::string::size_type i = 0; i < buffer.size(); i++) {
+        if (buffer[i] == env::CONTROL_CHAR_START) {
+            lines.back().appendControlFromRange(buffer, i, env::CONTROL_BLOCK_SIZE + 1);
+            i += env::CONTROL_BLOCK_SIZE;
+        } else {
+            doAppend(buffer[i]);
+        }
     }
 }
 

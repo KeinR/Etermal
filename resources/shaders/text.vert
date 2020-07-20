@@ -9,5 +9,5 @@ out vec2 texturePos;
 void main()
 {
     texturePos = texPos;
-	gl_Position = Model * vec4(aPos, 0.0, 1.0);
+    gl_Position = Model * vec4(aPos, 0.0, 1.0);
 }
