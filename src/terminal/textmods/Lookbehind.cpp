@@ -12,8 +12,8 @@ void etm::tm::Lookbehind::setDefFore() {
 }
 
 void etm::tm::Lookbehind::setBack(const Color &color) {
-                        // Later settings in a line
-                        // can overwrite previous ones
+    // If not set then       // Later settings in a line
+    // obviously want to set // can overwrite previous ones
     if (back != nullptr || backLine == thisLine) {
         back = &color;
         backLine = thisLine;
@@ -30,6 +30,7 @@ bool etm::tm::Lookbehind::bothSet() {
     return back != nullptr && fore != nullptr;
 }
 const etm::Color &etm::tm::Lookbehind::getBack() {
+    // Fallback to default if not set
     return *(back == nullptr ? defBack : back);
 }
 const etm::Color &etm::tm::Lookbehind::getFore() {

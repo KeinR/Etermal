@@ -228,7 +228,7 @@ void etm::Terminal::flush() {
                     mod = std::make_shared<tm::RevForeground>();
                     break;
                 case 'r':
-                    mod = std::make_shared<tm::RevBackFore>();
+                    mod = std::make_shared<tm::Revert>();
                     break;
             }
             if (mod) {

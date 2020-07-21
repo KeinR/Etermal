@@ -1,7 +1,5 @@
 #include "mods.h"
 
-#include <iostream>
-
 #include "TextState.h"
 
 etm::tm::Background::Background(const Color &color): color(color) {
@@ -28,9 +26,9 @@ void etm::tm::RevForeground::run(TextState &state) {
     state.setDefFore();
 }
 
-etm::tm::RevBackFore::RevBackFore() {
+etm::tm::Revert::Revert() {
 }
-void etm::tm::RevBackFore::run(TextState &state) {
+void etm::tm::Revert::run(TextState &state) {
     state.setDefBack();
     state.setDefFore();
 }

@@ -10,18 +10,33 @@ namespace etm { class Color; }
 */
 
 namespace etm::tm {
+
+    /**
+    * The state of the text as it's being processed.
+    * Modified by multible extensions of @ref Mod.
+    */
     class TextState {
     public:
         virtual ~TextState() = 0;
 
-        // Sets default background color, constant
+        /**
+        * Sets the background color to the default.
+        */
         virtual void setDefBack() = 0;
-        // Sets default foreground color, constant
+        /**
+        * Sets the foreground color to the default.
+        */
         virtual void setDefFore() = 0;
 
-        // Set the background color
+        /**
+        * Sets the background color.
+        * @param [in] color The new background color
+        */
         virtual void setBack(const Color &color) = 0;
-        // Set the foreground color
+        /**
+        * Sets the foreground color.
+        * @param [in] color The new foreground color
+        */
         virtual void setFore(const Color &color) = 0;
     };
 }
