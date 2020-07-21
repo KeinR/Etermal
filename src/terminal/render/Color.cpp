@@ -26,6 +26,8 @@ etm::Color &etm::Color::operator=(hex_t hex) {
 bool etm::Color::operator==(const Color &other) const {
     constexpr float maxDev = 1.0f / 255.0f / 2.0f;
     for (int i = 0; i < 4; i++) {
+        // Check that the difference is greater than a deviation,
+        // so as to account for floating point inaccuracies
         if (std::abs(other.color[i] - color[i]) > maxDev) {
             return false;
         }
@@ -75,7 +77,7 @@ etm::Color::hex_t etm::Color::getHex() const {
 }
 
 etm::Color::prop_t *etm::Color::get() {
-    // Important to be compatable with other thingies, ie FONT
+    // Important to be compatable with other thingies, ex OpenGL
     return color;
 }
 

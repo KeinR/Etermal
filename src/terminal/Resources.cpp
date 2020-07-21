@@ -10,16 +10,8 @@
 #include "render/Color.h"
 #include "Terminal.h"
 
-static void initRectangle(etm::Buffer &buffer);
-
-void initRectangle(etm::Buffer &buffer) {
-    buffer.setParam(0, 2, 4, 0);
-    buffer.setParam(1, 2, 4, 2);
-}
-
 etm::Resources::Resources(Terminal &terminal):
     terminal(&terminal),
-    rectangle(initRectangle),
     textShader(this),
     primitiveShader(this),
     currentShader(nullptr),
@@ -51,6 +43,8 @@ void etm::Resources::genRectangle() {
 
     rectangle.setVerticies(16, vertices);
     rectangle.setIndices(6, indices);
+    rectangle.setParam(0, 2, 4, 0);
+    rectangle.setParam(1, 2, 4, 2);
 }
 
 void etm::Resources::genTriangle() {

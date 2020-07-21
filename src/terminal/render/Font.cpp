@@ -27,13 +27,17 @@ etm::Font::~Font() {
 }
 
 void etm::Font::free() {
+    // If face is nullptr, that's a flag
+    // that it was either moved or construciton failed.
     if (face != nullptr) {
         FT_Done_Face(face);
     }
 }
 
 void etm::Font::calcCharSize() {
-    charWidth = std::ceil(face->size->metrics.max_advance / 64.0f);   
+    charWidth = std::ceil(face->size->metrics.max_advance / 64.0f);
+    // https://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_facerec
+    // "If you want the global glyph height, use ascender - descender"
     charHeight = std::ceil((face->size->metrics.ascender - face->size->metrics.descender) / 64.0f);   
 }
 
@@ -43,7 +47,7 @@ void etm::Font::setSize(unsigned int size) {
     clearCache();
 }
 etm::Texture etm::Font::makeCharTexture(char_t c) {
-    std::cout << "make char " << c << std::endl;
+    // Only one channel is needed to convey font data
     constexpr int channels = 1;
 
     Texture result;
@@ -52,8 +56,9 @@ etm::Texture etm::Font::makeCharTexture(char_t c) {
     if (error == FT_Err_Ok) {
 
         std::vector<unsigned char> data(charHeight * charWidth * channels);
+        // Move down the codepoint down by the difference between it's and the max ascender
         const int yShift = face->size->metrics.ascender / 64 - face->glyph->bitmap_top;
-        // const int yShift = 0;
+        // Center the codepoint in the texture
         const int xShift = (charWidth - face->glyph->bitmap.width) / 2;
         for (unsigned int sy = 0; sy < face->glyph->bitmap.rows; sy++) {
             for (unsigned int sx = 0; sx < face->glyph->bitmap.width; sx++) {
@@ -68,20 +73,20 @@ etm::Texture etm::Font::makeCharTexture(char_t c) {
                     // with 0,0 at the lower left corner.
                     // 
                     // (
-                    //     (ix + sx) // Add pixel x offset to the pen x offset 
+                    //     (xShift + sx) // Add pixel x offset to the pen x offset 
                     //     + // Add to offset from vertical coords
                     //     (
                     //         charHeight // Total line height
                     //         - // Remove 1 to zero-index it
                     //         1
                     //         - // Remove the y coords to get the vertically fliped index
-                    //         (iy + sy) // Add pixel y coord to the pen y coord
+                    //         (yShift + sy) // Add pixel y coord to the pen y coord
                     //     )
                     //     * // Convert from pixel coords to bitmap offset
-                    //     render.verticalStride // Offset per y
+                    //     charWidth // Offset per y
                     // )
                     // * // Multply by desired channels
-                    // render.channels // Number of channels
+                    // channels // Number of channels
                     // 
                     const int insIndex = ((xShift + static_cast<int>(sx)) + (charHeight - 1 - (yShift + static_cast<int>(sy))) * charWidth) * channels;
                     for (int c = 0; c < channels; c++) {
@@ -106,6 +111,7 @@ etm::Texture etm::Font::makeCharTexture(char_t c) {
 }
 
 void etm::Font::bindChar(char_t c) {
+    // Test cache
     textCache_t::iterator loc = textCache.find(c);
     if (loc != textCache.end()) {
         loc->second.bind();

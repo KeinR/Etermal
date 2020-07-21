@@ -2,10 +2,8 @@
 
 #include "opengl.h"
 
-etm::Buffer::Buffer(initfunc_t initFunc) {
-    setInit(initFunc);
+etm::Buffer::Buffer() {
     gen();
-    init();
 }
 
 etm::Buffer::~Buffer() {

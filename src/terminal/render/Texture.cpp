@@ -4,12 +4,13 @@
 
 #include "opengl.h"
 
-// def'd to be extra safe
+// In-use enum values for Texture.
+// def'd to be extra safe.
 #define TEXTURE_TYPE GL_TEXTURE_2D
 #define TEXTURE_PIXEL_TYPE GL_UNSIGNED_BYTE
 
-// Default parameters
-constexpr etm::Texture::tparam defaultParams{
+// Default parameters.
+constexpr etm::Texture::tparam etm::Texture::defaultParams{
     GL_CLAMP_TO_BORDER,
     GL_CLAMP_TO_BORDER,
     GL_NEAREST,
@@ -62,10 +63,6 @@ void etm::Texture::bind() const {
 void etm::Texture::setData(int format, unsigned int width, unsigned int height, const data_t *data) {
     bind();
     glTexImage2D(TEXTURE_TYPE, 0, format, width, height, 0, format, TEXTURE_PIXEL_TYPE, data);
-}
-void etm::Texture::setData(int textureType, int format, unsigned int width, unsigned int height, const data_t *data) {
-    bind();
-    glTexImage2D(textureType, 0, format, width, height, 0, format, TEXTURE_PIXEL_TYPE, data);
 }
 
 void etm::Texture::setDefaultParams() {

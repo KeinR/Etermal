@@ -21,6 +21,7 @@ bool etm::Model::hasPoint(float x, float y) const {
 void etm::Model::set(const shader::Shader &shader) {
     glm::mat4 model(1.0f);
 
+    // Translations are based off of the viewport, anyways
     // 0=x, 1=y, 2=width, 3=height
     int viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -31,9 +32,9 @@ void etm::Model::set(const shader::Shader &shader) {
     const float yPos = ((y + height / 2) / viewport[3] * 2 - 1) * -1;
     model = glm::translate(model, glm::vec3(xPos, yPos, 0.0f));
 
-    // Convert width and height to OpenGL-readable
-    // clamped floats, 0-1
+    // Convert width and height to OpenGL-readable clamped floats, 0-1
     model = glm::scale(model, glm::vec3(width / viewport[2], height / viewport[3], 0.0f));
 
+    // Set the model to the location given by the shader
     glUniformMatrix4fv(shader.getModel(), 1, GL_FALSE, glm::value_ptr(model));
 }
