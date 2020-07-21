@@ -1,13 +1,14 @@
 #include "Scrollbar.h"
 
-#include <iostream>
-
 #include "../Scroll.h"
 #include "../Resources.h"
 
-etm::Scrollbar::Arrow::Arrow(Scrollbar *parent, float arrowSize, int tickTimeMillis, int arrowWaitMillis, int directionMod):
-    parent(parent), arrow(parent->res), button(parent->res),
-    directionMod(directionMod), arrowSize(arrowSize),
+static constexpr int disabledArrowBrightness = 5;
+
+etm::Scrollbar::Arrow::Arrow(Scrollbar *parent, int tickTimeMillis, int arrowWaitMillis, int directionMod):
+    parent(parent),
+    arrow(parent->res),
+    directionMod(directionMod),
     pressed(false), active(false),
     tick(tickTimeMillis), wait(arrowWaitMillis)
 {
@@ -21,20 +22,34 @@ etm::Scrollbar::Arrow::Arrow(Scrollbar *parent, float arrowSize, int tickTimeMil
     button.setOnMousePress([this]()->void{
         arrow.setBackColor(bgColor.brighten(-0.3));
         pressed = true;
+        doScroll();
         wait.start();
     });
     button.setOnMouseRelease([this]()->void{
         if (pressed) {
+            // If we didn't check if it was pressed,
+            // then the user could press, move the mouse out
+            // of the button area, and release.
+            // This func would be called _after_ the leave
+            // func, causing the arrow to have a grayed out
+            // tint.
             arrow.setBackColor(bgColor.brighten(-0.1));
             pressed = false;
         }
     });
     if (directionMod == 1) {
+        // If facing down, flip
         arrow.setRotation(180);
     }
 }
 
+void etm::Scrollbar::Arrow::doScroll() {
+    parent->scroll->scrollByAlign(directionMod);
+    parent->update();
+}
+
 void etm::Scrollbar::Arrow::setX(float x) {
+    // Must sync the arrow and button areas
     arrow.setX(x);
     button.setX(x);
 }
@@ -70,13 +85,18 @@ void etm::Scrollbar::Arrow::setColor(const Color &color) {
 }
 void etm::Scrollbar::Arrow::setArrowColor(const Color &color) {
     arrowColor = color;
+    // If we didn't check this, given active = false
+    // later calls to set the arrow color would mess up
+    // the colors until `active` is toggled again, because
+    // input events are ignored if `active` is false
     if (active) {
         arrow.setForeColor(arrowColor);
     } else {
-        arrow.setForeColor(arrowColor.brighten(5));
+        arrow.setForeColor(arrowColor.brighten(disabledArrowBrightness));
     }
 }
 void etm::Scrollbar::Arrow::mouseClick(bool isPressed, float mouseX, float mouseY) {
+    // If not active, not point in processing events
     if (active) {
         button.mouseClick(isPressed, mouseX, mouseY);
     }
@@ -94,16 +114,20 @@ void etm::Scrollbar::Arrow::setActive(bool value) {
             arrow.setForeColor(arrowColor);
         } else {
             arrow.setBackColor(bgColor);
-            arrow.setForeColor(arrowColor.brighten(5));
+            arrow.setForeColor(arrowColor.brighten(disabledArrowBrightness));
             pressed = false;
         }
     }
 }
 
 void etm::Scrollbar::Arrow::render() {
+    // `pressed` asserts that the user is actually
+    // pressing down on the arrow, `wait`, checks
+    // that the press has been going on long enough
+    // to enable "scroll repeat" or whatever you call it,
+    // and `tick` keeps the scroll interval to a minimum.
     if (pressed && wait.hasEnded() && tick.hasEnded()) {
-        parent->scroll->scrollByAlign(directionMod);
-        parent->update();
+        doScroll();
         tick.start();
     }
     arrow.render();
@@ -112,14 +136,13 @@ void etm::Scrollbar::Arrow::render() {
 etm::Scrollbar::Scrollbar(Resources *res, Scroll &scroll):
     res(res),
     scroll(&scroll),
-    bar(res),
-    slider(res),
+    bar(res), slider(res),
     dragging(false),
     dragY(0.0d),
     showingSlider(false),
     sideMargin(1),
-    upArrow(this, 0.50f, 300, 1000, -1),
-    downArrow(this, 0.50f, 300, 1000, 1)
+    upArrow(this, 300, 1000, -1),
+    downArrow(this, 300, 1000, 1)
 {
     upArrow.setHeight(20);
     downArrow.setHeight(20);
@@ -132,6 +155,9 @@ void etm::Scrollbar::calcSliderX() {
 }
 
 void etm::Scrollbar::calcSliderY() {
+    // bar.getY() + upArrow.getHeight() // Topmost-y coordinate possible for slider
+    // + (bar.getHeight() - slider.getHeight() - upArrow.getHeight() - downArrow.getHeight()) // Max y offset from that
+    // * scroll->getOffset() / scroll->getMaxOffset() // Percent scrolled
     slider.setY(bar.getY() + upArrow.getHeight() + (bar.getHeight() - slider.getHeight() - upArrow.getHeight() - downArrow.getHeight()) * scroll->getOffset() / scroll->getMaxOffset());
 }
 
@@ -202,10 +228,13 @@ void etm::Scrollbar::setSliderColor(const Color &color) {
 }
 
 void etm::Scrollbar::update() {
-    showingSlider = scroll->getGrossHeight() > bar.getHeight();
+    // Only show the slider if there's actually available scroll
+    showingSlider = scroll->getGrossHeight() > scroll->getNetHeight();
     if (showingSlider) {
+        // The maximum height possible for the slider
         const float maxHeight = bar.getHeight() - upArrow.getHeight() - downArrow.getHeight();
-        slider.setHeight(maxHeight * maxHeight / scroll->getGrossHeight());
+        // Sync slider height with the percent of text viewable via the viewport
+        slider.setHeight(maxHeight * scroll->getNetHeight() / scroll->getGrossHeight());
         calcSliderY();
     }
     upArrow.setActive(showingSlider);
@@ -225,7 +254,9 @@ void etm::Scrollbar::mouseClick(bool isPressed, float mouseX, float mouseY) {
 }
 void etm::Scrollbar::mouseMove(float mouseX, float mouseY) {
     if (dragging) {
+        // Max y offset for the slider
         const float extraHeight = bar.getHeight() - slider.getHeight() - upArrow.getHeight() - downArrow.getHeight();
+        // Map mouse pixel distance to the proportion of the max scroll and slider offsets 
         scroll->scroll((mouseY - dragY)  * scroll->getMaxOffset() / extraHeight);
         dragY = mouseY;
         calcSliderY();

@@ -1,6 +1,6 @@
 #include "Button.h"
 
-etm::Button::Button(Resources *res): hovering(false) {
+etm::Button::Button(): hovering(false) {
 }
 
 void etm::Button::setX(float x) {
