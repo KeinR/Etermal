@@ -1,81 +1,120 @@
 #ifndef BUFFER_H_INCLUDED
 #define BUFFER_H_INCLUDED
 
-#include <cstddef>
-
-/*
-* The basic level of rendering, buffers hold references to
-* OpenGL buffers and deal with vertex data.
-* 
-* Because of how vertex array objects, (OpenGL objects that store
-* information about how to interpret vertex data), hold
-* references to specific buffers, (making it impossible to
-* re-use them for other buffers) an initialization function is
-* optionally taken by the buffer so as to allow for copy semantics.
-* This function takes the buffer itself and is supposed to initialize
-* the vertex array object of the buffer through setParam(...).
-* Yes, this does mean that copies of a buffer without a set initialization
-* function will be ill-formed, because their vertex array objects won't
-* be properly initialized!
-*/
-
 namespace etm {
+
+    /**
+    * The basic level of rendering, Buffers hold references to
+    * OpenGL buffers and deal with vertex data.
+    */
     class Buffer {
-    public:
-        // Custom initialization function
-        typedef void(*initfunc_t)(Buffer &buffer);
     private:
-        // The vertex array object
+        /// ID of the vertex array object.
         unsigned int array;
-        // The array buffer
+        /// ID of the array buffer.
         unsigned int vertices;
-        // The element array buffer
+        /// ID of the element array buffer.
         unsigned int indices;
 
-        // The number of indices contained in `indices`
+        /// The number of indices contained in @ref indices.
+        /// Used during @ref render()
         int countIndices;
 
-        // Initialization function for vertex arrays
-        // to enable copying of this object
-        initfunc_t initFunc;
-
-        void copy(const Buffer &other);
+        /**
+        * Move the contents of another Buffer into self.
+        * @param [in,out] other The target Buffer
+        */
         void steal(Buffer &other);
-        // Generate buffers & vertex array
+
+        /**
+        * Generate the buffers & vertex array.
+        */
         void gen();
-        // Delete buffers & vertex array
+
+        /**
+        * Delete the buffers & vertex array.
+        */
         void deGen();
     public:
-        // NB: If copied while init is nullptr, the copied will be ill-formed!
-        Buffer(initfunc_t init = nullptr);
+        /**
+        * Constructs a buffer object.
+        * @note Creates OpenGL buffers in the current context.
+        */
+        Buffer();
+        /**
+        * Destruct buffer.
+        * Destroys OpenGL buffers with the id's
+        * contained in @ref array, @ref verticies,
+        * and @ref indices, if it hasn't been moved. 
+        */
         ~Buffer();
+        /**
+        * Initialize with moved object.
+        * @param [in,out] other Target object
+        */
         Buffer(Buffer &&other);
-        Buffer(const Buffer &other);
+        /**
+        * Move object into `*this`.
+        * @param [in,out] other Target object
+        */
         Buffer &operator=(Buffer &&other);
-        Buffer &operator=(const Buffer &other);
 
-        // Set the initialzation function
-        void setInit(initfunc_t initFunc);
-        // Call the initialzation function - if it's set.
-        void init();
-
-        // Bind vertex array object
+        /**
+        * Bind vertex array object.
+        */
         void bindArray() const;
-        // Bind array buffer
+        /**
+        * Bind array buffer.
+        */
         void bindVert() const;
-        // Bind element array buffer
+        /**
+        * Bind element array buffer.
+        */
         void bindElem() const;
-        // Bind all
+        /**
+        * Bind all.
+        * @see bindArray()
+        * @see bindVert()
+        * @see bindElem()
+        */
         void bind() const;
 
-        // Set verticies for array buffer
+        /**
+        * Set verticies for array buffer.
+        * @param [in] count Number of verticies
+        * @param [in] data Pointer to vertex data
+        * @see vertices
+        */
         void setVerticies(int count, float *data);
-        // Set indices for element array buffer
+
+        /**
+        * Set indices for element array buffer.
+        * @param [in] count Number of indices
+        * @param [in] data Pointer to index data
+        * @see indices
+        */
         void setIndices(int count, unsigned int *data);
-        // Set parameter for vertex array object
+
+        /**
+        * Set parameter for vertex array object.
+        * @param [in] index Attribute index
+        * @param [in] size Number of values in each attribute
+        * @param [in] stride Distance travelled to get to the next attribute
+        * @param [in] offset Index of the first value
+        * @see array
+        */
         void setParam(unsigned int index, int size, int stride, int offset);
 
-        // Render the indices
+        /**
+        * Render the @ref indices with the @ref array and @ref verticies
+        * to the current framebuffer.
+        * @note @ref setVerticies(int count, float *data), 
+        * @ref setIndices(int count, unsigned int *data), and
+        * @ref setParam(unsigned int index, int size, int stride, int offset)
+        * must be called to initialize the Buffer, or else an OpenGL error may
+        * be set.
+        * @note Must be rendered in the same context it was created in.
+        */
         void render();
     };
 }
