@@ -199,6 +199,7 @@ int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
             }
         }
     }
+    i--;
     std::cout << "read hex 0x" << std::hex << result << std::dec << std::endl;
     return result;
 }
@@ -232,8 +233,12 @@ void etm::Terminal::flush() {
                     break;
             }
             if (mod) {
-                display.pushMod(mod);
                 i = fi+1;
+                // Skip optional semicolon
+                if (i < displayBuffer.size() && displayBuffer[i] == ';') {
+                    i++;
+                }
+                display.pushMod(mod);
                 continue;
             }
         }

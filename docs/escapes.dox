@@ -1,34 +1,65 @@
-Syntax emulates ansi a little.
-<ESC>[<command><arg>;
+/*!
 
-Where <ESC> is the escape char 0x1b,
-<command> is a single digit command,
-and <arg> is the argument.
+@page escape_sequences Terminal escape sequences
 
-Currently, there are two commands:
+@tableofcontents
 
-b - set background color
-f - set foreground color
+@section intro Intro
 
-For both of the above, <arg> is a
-hexidecimal number corresponding to a
-hexidecimal color code with a maximum size of
-3 bytes: first byte is the red, second blue, and
-third green (RGB).
-The semicolon is only necessary if you have truncated
-color values (ex. writing f143 as opposed to 00f143)
-and you have number values that come after that could be mistaken
-as the missing digets of the command, like in <ESC>[ffa32;123456,
-where "123456" are digets you want to be displayed.
+<a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">ANSI terminal escape sequences</a>
+are pretty cool. They allow you to color text
+and do all sorts of cool stuff.
 
-Other commands:
+Well, @ref Terminal has support for a version
+of ansi escapes that is based off of ANSI that gives
+a little more customization.
 
-B - resets background to the default
-F - resets foreground to the default
-r - resets everything to the default
+@section description Description
 
-Examples:
+@subsection syntax Syntax
 
-<ESC>[ff0b105 - sets foreground color to a nice orange
-<ESC>[fff2f00 - sets background color to a harsh red
-<ESC>[fff; - sets background color to blue. same as <ESC>[f0000ff
+The syntax emulates ANSI:
+`<ESC>[<command><arg>;`
+
+Where `<ESC>` is the escape char `0x1b`,
+`<command>` is a single digit command,
+and `<arg>` is the argument(s).
+
+Not all commands have arguments.
+
+@subsection commands Commands
+
+Commands are single letters and always come right after the bracket `[`.
+
+Command  | Parameters                        | Description                                      |
+---------| --------------------------------- | ------------------------------------------------ |
+b  | @ref hex "24-bit (RGB) Hex color value" | Sets the background color for all following text |
+f  | @ref hex "24-bit (RGB) Hex color value" | Sets the foreground color for all following text |
+B  | None                                    | Reverts the background color to the default      |
+F  | None                                    | Reverts the foreground color to the default      |
+r  | None                                    | Sets all styles to their default                 |
+
+@note Parameters can optionally be terminated early by appending a semicolon `;`.
+This can be necessary if you want to, say, use RGB values like 0x0000ff but don't
+want to have the trailing zeros, so you instead do `<ESC>[bff;`. the `ff` will be
+interpreted as `0x0000ff` (blue). You can even go further, and do `[f;`, omitting
+parameters entirely, causing the background to be set to black.
+
+@subsubsection hex Hex values
+
+Hexidecimal values can be taken as parameters for some commands.
+The way they're represented is extreamly straightforward:
+
+`0x432ff3` -> `432ff3`<br>
+`0x123456` -> `123456`
+
+As you can see, you just strip the decoration (in this case the `0x`,
+other times may be `#`).
+
+@subsection examples Examples
+
+`<ESC>[ff0b105` - sets foreground color to a nice orange
+`<ESC>[fff2f00` - sets background color to a harsh red
+`<ESC>[fff;` - sets background color to blue. same as <ESC>[f0000ff
+
+*/

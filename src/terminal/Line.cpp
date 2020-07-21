@@ -54,23 +54,22 @@ void etm::Line::iterator::operator+=(size_type distance) {
 }
 void etm::Line::iterator::operator--() {
     index--;
+    // Might underflow because unsigned
+    if (index >= parent->dejureSize()) return;
+    // Don't need to test if index is invalid after this - 
+    // utf8::lookbehind will return 0 if the new index would
+    // be invalid.
     index -= utf8::lookbehind(parent->getString(), index);
-    // "If pos is equal to the string length, the
-    // function returns a reference to the null character
-    // that follows the last character in the string (which
-    // should not be modified)."
-    // - http://www.cplusplus.com/reference/string/basic_string/operator[]/
-    // 
-    // We're fine not doing bounds checks, so long as the caller
-    // always checks valid() before de/incrementing, and env::CONTROL_CHAR_END
-    // and env::CONTROL_CHAR_START are never set to the null character
     while (parent->getDejure(index) == env::CONTROL_CHAR_END) {
         index -= env::CONTROL_BLOCK_SIZE + 1;
     }
     index -= utf8::lookbehind(parent->getString(), index);
 }
 void etm::Line::iterator::operator++() {
+    if (index >= parent->dejureSize()) return;
     index += utf8::test(parent->getDejure(index));
+    // Don't trust the offset given by the byte header.
+    if (index >= parent->dejureSize()) return;
     while (parent->getDejure(index) == env::CONTROL_CHAR_START) {
         index += env::CONTROL_BLOCK_SIZE + 1;
     }
@@ -90,10 +89,10 @@ etm::Line::codepoint::codepoint() {
 etm::Line::codepoint::codepoint(const string_t::const_iterator &start, const string_t::const_iterator &end):
     start(start), end(end)
 {}
-bool etm::Line::codepoint::operator==(char c) const {
+bool etm::Line::codepoint::operator==(value_type c) const {
     return *start == c;
 }
-bool etm::Line::codepoint::operator!=(char c) const {
+bool etm::Line::codepoint::operator!=(value_type c) const {
     return *start != c;
 }
 
@@ -137,6 +136,7 @@ etm::Line::size_type etm::Line::correctIndex(size_type index) {
 }
 etm::Line::value_type &etm::Line::operator[](size_type index) {
     if (correctIndex(index) >= string.size()) {
+        // @temp
         std::cerr << "OUT OF BOUNDS!!" << std::endl;
         std::cerr << "index = " << index << std::endl;
         std::cerr << "correctIndex(index) = " << correctIndex(index) << std::endl;
@@ -148,11 +148,12 @@ etm::Line::value_type &etm::Line::operator[](size_type index) {
 
 
 etm::Line::iterator etm::Line::last() {
+    // Account for if the last few bytes are control chars
     size_type index = string.size() - 1;
     while (string[index] == env::CONTROL_CHAR_END) {
         index -= env::CONTROL_BLOCK_SIZE + 1;
     }
-    return iterator(this, index);
+    return iterator(this, index - utf8::lookbehind(string, index));
 }
 
 etm::Line::iterator etm::Line::begin() {
@@ -195,6 +196,7 @@ void etm::Line::erase(const iterator &start) {
 }
 void etm::Line::eraseChar(size_type index) {
     index = correctIndex(index);
+    // Remove the entire codepoint
     string.erase(index, utf8::test(string[index]));
     defactoSize--;
 }
@@ -203,6 +205,8 @@ void etm::Line::appendStr(const string_t &str) {
     defactoSize += findDefactoSize(str);
 }
 void etm::Line::appendOther(const Line &other) {
+    // A line cannot have more than one newline -
+    // it just wouldn't make sense :/
     newline |= other.newline;
     if (other.startSpace) {
         appendChar(' ');
@@ -211,8 +215,7 @@ void etm::Line::appendOther(const Line &other) {
     defactoSize += other.defactoSize;
 }
 void etm::Line::popBack() {
-    std::cout << "break" << std::endl;
-    doErase(string.size() - 1 - utf8::lookbehind(string, string.size() - 1));
+    erase(last());
 }
 
 void etm::Line::appendControl(const string_t &val) {
