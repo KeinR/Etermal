@@ -2,19 +2,18 @@
 #define ETERMAL_ACTIONKEY_H_INCLUDED
 
 namespace etm {
+    /**
+    * Enums used to decribe multible
+    * non-printable keys.
+    */
     enum actionKey {
         ENTER,
         BACKSPACE,
+        // Arrow keys
         UP,
         DOWN,
         LEFT,
         RIGHT
-    };
-    struct charStyle {
-        typedef int type;
-        static constexpr type UNDERLINE = 1 << 0;
-        static constexpr type BOLD = 1 << 1;
-        static constexpr type ITALIC = 1 << 2;
     };
 }
 

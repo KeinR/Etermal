@@ -2,6 +2,12 @@
 #define ETERMAL_NOCOPY_H_INCLUDED
 
 namespace etm {
+    /**
+    * Used to label a singleton class, one that should
+    * not be copied or moved.
+    * @todo Move semantics should be implemented project wide, so
+    * as to make this class obsolete.
+    */
     class singleton {
     public:
         singleton() = default;
