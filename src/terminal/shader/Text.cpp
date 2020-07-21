@@ -3,11 +3,13 @@
 #include "../render/opengl.h"
 #include "../Resources.h"
 
-#define MODEL "Model"
-#define BACKGROUND_COLOR "backgroundColor"
-#define FOREGROUND_COLOR "foregroundColor"
-#define SAMPLER0 "Tex"
+// Names of uniforms (for lookup)
+static const char *MODEL = "Model";
+static const char *BACKGROUND_COLOR = "backgroundColor";
+static const char *FOREGROUND_COLOR = "foregroundColor";
+static const char *SAMPLER0 = "Tex";
 
+// Shaders compiled into a single header to enable embedding
 #include "../../../resources/shaders/text.h"
 
 etm::shader::Text::Text(Resources *res):

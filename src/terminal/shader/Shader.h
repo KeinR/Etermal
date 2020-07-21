@@ -7,38 +7,35 @@
 
 namespace etm { class Resources; }
 
-/*
-* Shaders, useful little programs that process data
-* before it's rendered.
-* These have to be bound to be used via use(), and when they are,
-* they're bound/used globally.
-* Since the process of getting shader uniform locations is slow,
-* a system of uniform "qualifications" is implemented, where
-* a shader will have functions designed to access possible
-* uniforms that are stored in a map, with the shader's id
-* being used as the key.
-* If the required uniform location is not found, depending on the
-* function called, an "error" value (-1) is returned, or an
-* exception is thrown. Either way, this allows code to do a runtime
-* assert that a shader has certain uniforms.
-*/
-
 namespace etm::shader {
+    /// Global type used to represent shader uniform locations
     typedef int uniform_t;
 
+    /**
+    * Extensible interface used to load and manage shaders.
+    * @see Primitive
+    * @see Text
+    */
     class Shader: public singleton {
     public:
-        // Actual shader handle/id type
+        /// Type used to store the shader program
         typedef unsigned int shader_program_t;
     private:
-        // Handle/id of OpenGL shader object
+        /// Handle/id of the wrapped OpenGL shader object
         shader_program_t shader;
-    protected:
-        // Frees all managed resources
+        /*
+        * Destroys the managed shader
+        */
         void free();
-        void steal(Shader &other);
     public:
-        // Throws in instance of "fe_error" if fail
+        /**
+        * Constructs initializes a Shader object.
+        * @param [in] res A Resources object to report errors to
+        * @param [in] vertexData Pointer to the raw vertex shader data
+        * @param [in] vertexLen length of `vertexData`
+        * @param [in] fragData Pointer to the raw fragment shader data
+        * @param [in] fragLen length of `fragData`
+        */
         Shader(Resources *res, const char *vertexData, int vertexLen, const char *fragData, int fragLen);
         virtual ~Shader() = 0;
 
@@ -47,10 +44,25 @@ namespace etm::shader {
         // Gets the handle/id of this shader
         shader_program_t get() const;
 
-        // Subclasses override these
+        /**
+        * Get the location of the shader's model uniform.
+        * @return location of the model uniform
+        */
         virtual uniform_t getModel() const = 0;
+        /**
+        * Get the location of the shader's color uniform.
+        * @return location of the color uniform
+        */
         virtual uniform_t getColor() const = 0;
+        /**
+        * Get the location of the shader's background color uniform.
+        * @return location of the background color uniform
+        */
         virtual uniform_t getBackGColor() const = 0;
+        /**
+        * Get the location of the shader's foreground color uniform.
+        * @return location of the foreground color uniform
+        */
         virtual uniform_t getForeGColor() const = 0;
     };
 }

@@ -1,19 +1,29 @@
 #include "Shader.h"
 
-#include <iostream>
 #include <string>
 #include <fstream>
 
 #include "../render/opengl.h"
 #include "../Resources.h"
-#include "../util/termError.h"
 
-// Compiles the given shader and returns a handle to the OpenGL object.
-// Throws an instance of gl_error if failed
+/**
+* Compiles the given shader and returns a handle to the OpenGL object.
+* @param [in] type The type (GL_VERTEX_SHADER/GL_FRAGMENT_SHADER)
+* @param [in] data Pointer to shader data
+* @param [in] length Length of `data`
+* @param [out] error String to dump errors. Untouched if no errors occurred.
+* @return ID of the newly created shader object, or 0 on error [<a href="http://docs.gl/es3/glCreateShader">ref</a>]
+*/
 static GLuint compileShader(GLenum type, const char *data, int length, std::string &error);
-// Links two shaders (vertex and fragment) and returns the resulting
-// shader program.
-// Throws an instance of gl_error if failed
+
+/**
+* Links two shaders (vertex and fragment) and returns the resulting
+* shader program.
+* @param [in] vertObject The vertex object
+* @param [in] fragObject The fragment object
+* @param [out] error String to dump errors. Untouched if no errors occurred.
+* @return ID of the resulting shader program, or [undefined] on error (I don't see it specified anywhere in the docs(?))
+*/
 static GLuint linkShaders(GLuint vertObject, GLuint fragObject, std::string &error);
 
 etm::shader::Shader::Shader(Resources *res, const char *vertData, int vertLen, const char *fragData, int fragLen) {

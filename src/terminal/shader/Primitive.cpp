@@ -3,9 +3,11 @@
 #include "../render/opengl.h"
 #include "../Resources.h"
 
-#define MODEL "Model"
-#define COLOR "Color"
+// Names of uniforms (for lookup)
+static const char *MODEL = "Model";
+static const char *COLOR = "Color";
 
+// Shaders compiled into a single header to enable embedding
 #include "../../../resources/shaders/primitive.h"
 
 etm::shader::Primitive::Primitive(Resources *res):
