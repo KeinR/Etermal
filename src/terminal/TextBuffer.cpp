@@ -373,9 +373,9 @@ void etm::TextBuffer::eraseAtCursor() {
                 // word that is wrapped to the next line.
                 // The cursor will however not necessarily know this,
                 // and without doing anything else it will stay in an invalid
-                // column of 59 (zero-indexed), while the length of that line
-                // is actually 55 and the position it should be in is 4
-                // characters in the 9 length word that was wrapped to the next
+                // column of 60 (zero-indexed), while the length of that line
+                // is actually 55 and the position it should be in is after the 4th
+                // character in the 9 length word that was wrapped to the next
                 // line.
 
                 cursor.column = column;
@@ -556,7 +556,9 @@ void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, const Li
 }
 
 void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
-    // We assume that row and column are valid, and that there are > 0 lines
+    // We assume that row and column are valid, and that there are > 0 lines.
+    // Copy all the data after and including the given position,
+    // then delete the lines that the data came from and re-append everything.
     Line::string_t buffer(lines[row].substr(column));
     lines[row].erase(column);
     if (lines[row].hasNewline()) {
@@ -608,7 +610,7 @@ void etm::TextBuffer::initSelection(lines_number_t row, line_index_t column) {
 }
 void etm::TextBuffer::setSelectionEnd(lines_number_t row, line_index_t column) {
     clampPos(selectEnd, row, column);
-    // If the end is before the start, swap the two
+    // If the end is before the start, swap the two.
     if (selectEnd.row < selectStart.row || (selectEnd.row == selectStart.row && selectEnd.column < selectStart.column)) {
         dfSelectStart = &selectEnd;
         dfSelectEnd = &selectStart;
@@ -688,6 +690,7 @@ std::string etm::TextBuffer::getTextFromRange(const pos &start, const pos &stop)
 std::string etm::TextBuffer::pollInput() {
     if (!lines.size()) {
         newline();
+        return "";
     }
     return getTextFromRange(cursorMin, pos(lines.size() - 1, lines.back().size()));
 }
@@ -716,16 +719,16 @@ etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line 
 
 void etm::TextBuffer::render(int x, int y) {
 
-    std::cout << "cursor.collumn = " << cursor.column << ", lines[cursor.row].size() = " << lines[cursor.row].size() << std::endl;
-
     // "After scrollbar renders, the text shader is set
     // due to the rendering of the triangle textures,
     // so display doesn't need to set it."
     // - Comment right after the scrollbar render call in Terminal
     // res->bindTextShader();
 
+    // Correct the y-offset with the scroll offset
     y -= scroll->getOffset();
 
+    // Only render the range that is visible
     lines_number_t start = std::floor(scroll->getOffset() / charHeight());
     lines_number_t end = std::min(
         lines.size(),
@@ -733,8 +736,6 @@ void etm::TextBuffer::render(int x, int y) {
             start + scroll->getNetHeight() / charHeight()
         )
     );
-
-    Model model(x, y + static_cast<int>(charHeight() * start), charWidth(), charHeight());
 
     tm::Lookbehind lookbehind(defBackgroundColor, defForegroundColor, start - 1);
 
@@ -764,6 +765,8 @@ void etm::TextBuffer::render(int x, int y) {
         selectStart.row < start && start < selectEnd.row
     );
 
+    Model model(x, y + static_cast<int>(charHeight() * start), charWidth(), charHeight());
+
     for (lines_number_t r = start; r < end; r++) {
         line_t &line = lines[r];
         if (r == dfSelectStart->row && 0 == dfSelectStart->column) {
@@ -773,9 +776,9 @@ void etm::TextBuffer::render(int x, int y) {
         if (r == dfSelectEnd->row && 0 == dfSelectEnd->column) {
             state.setInverted(false);
         }
-        // c is the defacto index, one representing the characters
+        // c is the deFacto index, one representing the characters
         // irrespective of the byte size.
-        // cc is the dejure index, the actual byte offset.
+        // cc is the deJure index, the actual byte offset.
         for (line_index_t c = 0, cc = 0; c < line.dejureSize();) {
             Line::value_type chr = line.getDejure(c);
             if (chr == env::CONTROL_CHAR_START) {

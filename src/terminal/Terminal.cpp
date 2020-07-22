@@ -145,6 +145,7 @@ void etm::Terminal::setErrorCallback(const errCallback_t &callback) {
 
 void etm::Terminal::clear() {
     display.clear();
+    displayBuffer.clear();
 }
 
 void etm::Terminal::setBackgroundColor(const Color &color) {
@@ -257,7 +258,7 @@ void etm::Terminal::flush() {
             }
             if (mod) {
                 i = fi+1;
-                // Skip optional semicolon
+                // Skip the optional semicolon
                 if (i < displayBuffer.size() && displayBuffer[i] == ';') {
                     i++;
                 }
@@ -382,6 +383,7 @@ void etm::Terminal::inputString(const std::string &text) {
     for (std::string::const_iterator it = text.begin(); it < text.end();) {
         if (!acceptInput()) break;
         const int size = utf8::test(*it);
+        // Don't trust the offset given
         if (it + size <= text.end()) {
             Line::codepoint c(it, it + size);
             inputChar(c);

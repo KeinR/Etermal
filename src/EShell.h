@@ -3,14 +3,11 @@
 
 #include <string>
 
-/*
-* Program backend, handles command processing, etc.
-*/
-
 namespace etm {
 
     /**
     * Base interface for an Etermal backend.
+    * Handles command processing.
     * @see Shell
     * @see ETerminal
     */

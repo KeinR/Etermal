@@ -9,6 +9,7 @@ namespace etm {
 
     /**
     * Base interface for an Etermal frontend.
+    * Handles the displaying of text.
     * @see Terminal
     * @see EShell
     */

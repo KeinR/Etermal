@@ -93,10 +93,13 @@ void etm::ArgFilter::addAlias(const std::string &name) {
 bool etm::ArgFilter::filter(const std::vector<std::string> &arguments, Args &out, std::string &errMsg) {
     typedef filters_t::size_type size;
 
+    // Was an error set?
     bool failed = false;
 
+    // First argument is the invokation alias
     out.setCall(arguments[0]);
 
+    // Used to keep track of which bool flags were set
     std::vector<bool> done(filters.size(), false);
 
     for (size i = 1; i < arguments.size(); i++) {
@@ -106,26 +109,25 @@ bool etm::ArgFilter::filter(const std::vector<std::string> &arguments, Args &out
             Filter &f = filters[loc->second];
             if (f.type != datatype::BOOL) {
                 if (i + 1 < arguments.size()) {
+                    std::shared_ptr<ArgData> data;
                     switch (f.type) {
                         case STRING: {
-                            out.pushArg(filters[i].name, std::make_shared<data::String>(arguments[i + 1]));
+                            data = std::make_shared<data::String>(arguments[i + 1]);
                             break;
                         }
                         case INT: {
-                            std::shared_ptr<data::Integer> data = std::make_shared<data::Integer>(arguments[i + 1]);
-                            if (!data->failed()) {
-                                out.pushArg(filters[i].name, data);
-                            } else {
+                            try {
+                                data = std::make_shared<data::Integer>(std::stoi(arguments[i + 1]));
+                            } catch (std::exception &e) {
                                 loopError = true;
                                 errMsg += errorHandle->badDatatype(i + 1, arguments[i + 1], f.type);
                             }
                             break;
                         }
                         case FLOAT: {
-                            std::shared_ptr<data::Float> data = std::make_shared<data::Float>(arguments[i + 1]);
-                            if (!data->failed()) {
-                                out.pushArg(filters[i].name, data);
-                            } else {
+                            try {
+                                std::make_shared<data::Float>(std::stof(arguments[i + 1]));
+                            } catch (std::exception &e) {
                                 loopError = true;
                                 errMsg += errorHandle->badDatatype(i + 1, arguments[i + 1], f.type);
                             }
@@ -138,20 +140,27 @@ bool etm::ArgFilter::filter(const std::vector<std::string> &arguments, Args &out
 
                     i++;
 
+                    if (!loopError) {
+                        out.pushArg(filters[i].name, data);
+                    }
+
                 } else {
                     loopError = true;
                     errMsg += errorHandle->noParam(i + 1, arguments[i], f.type);
                 }
             } else {
+                // If it's of a bool type, the presence of the flag sets it to `true`
                 done[loc->second] = true;
                 out.pushArg(filters[i].name, std::make_shared<data::Boolean>(true));
             }
         } else {
+            // The flag doesn't exist
             loopError = true;
             errMsg += errorHandle->badFlag(i, arguments[i]);
         }
 
         if (loopError) {
+            // Only stop and exit now if failfast is true
             if (errorHandle->doFailfast()) {
                 return true;
             }

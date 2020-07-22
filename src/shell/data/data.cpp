@@ -1,10 +1,17 @@
 #include "data.h"
 
 #include <exception>
-#include <limits>
 
-// Does not check very hard for errors
-static bool parseBool(const std::string &str) {
+/**
+* Does a very dumb parse for bool.
+* The point is not accuracy, but rather to get some
+* reasonable value.
+* @param [in] str The string to parse
+* @return The boolean value
+*/
+static bool parseBool(const std::string &str);
+
+bool parseBool(const std::string &str) {
     typedef std::string::size_type size;
     size start = 0;
     size end = str.size() - 1;
@@ -32,10 +39,18 @@ bool etm::data::String::getBool() noexcept {
     return parseBool(str);
 }
 int etm::data::String::getInt() noexcept {
-    return Integer(str).getInt();
+    try {
+        return std::stoi(str);
+    } catch (std::exception &e) {
+        return 0;
+    }
 }
 float etm::data::String::getFloat() noexcept {
-    return Float(str).getFloat();
+    try {
+        return std::stof(str);
+    } catch (std::exception &e) {
+        return 0.0f;
+    }
 }
 
 
@@ -55,17 +70,7 @@ float etm::data::Boolean::getFloat() noexcept {
 }
 
 
-etm::data::Integer::Integer(const std::string &source) noexcept {
-    try {
-        value = std::stoi(source);
-        parseFailed = false;
-    } catch (std::exception &e) {
-        value = 0;
-        parseFailed = true;
-    }
-}
-bool etm::data::Integer::failed() noexcept {
-    return parseFailed;
+etm::data::Integer::Integer(int value) noexcept: value(value) {
 }
 std::string etm::data::Integer::getString() noexcept {
     return std::to_string(value);
@@ -81,17 +86,7 @@ float etm::data::Integer::getFloat() noexcept {
 }
 
 
-etm::data::Float::Float(const std::string &source) noexcept {
-    try {
-        value = std::stof(source);
-        parseFailed = false;
-    } catch (std::exception &e) {
-        value = 0.0f;
-        parseFailed = true;
-    }
-}
-bool etm::data::Float::failed() noexcept {
-    return parseFailed;
+etm::data::Float::Float(float value) noexcept: value(value) {
 }
 std::string etm::data::Float::getString() noexcept {
     return std::to_string(value);

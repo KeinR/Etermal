@@ -99,6 +99,7 @@ void etm::Shell::input(const std::string &commandString) {
     terminal->setTakeInput(false);
 
     std::vector<std::string> params;
+    // If bypassing whitespace
     bool waiting = true;
     bool inString = false;
     for (char c : commandString) {
@@ -108,14 +109,11 @@ void etm::Shell::input(const std::string &commandString) {
                 waiting = false;
             }
             if (c == '\"') {
-                if (inString) {
-                    waiting = true;
-                }
                 inString = !inString;
             } else {
                 params.back().push_back(c);
             }
-        } else if (!waiting) {
+        } else {
             waiting = true;
         }
     }
@@ -123,9 +121,11 @@ void etm::Shell::input(const std::string &commandString) {
         if (flagSet(flag::nocase)) {
             makeLowercase(params[0]);
         }
+        // Check the command exists
         aliasMap_t::iterator loc = aliasMap.find(params[0]);
         if (loc != aliasMap.end()) {
             Command &com = commands[loc->second];
+            // Parse the commands
             Args args;
             std::string error;
             const bool failed = com.filter.filter(params, args, error);
@@ -155,16 +155,32 @@ void etm::Shell::prepTerminal() {
 }
 
 void etm::Shell::addCommand(const std::string &name, const ArgFilter &filter, const callback_t &callback) {
-    commands.emplace_back(filter, callback);
-    alias(name);
+    if (callback) {
+        commands.emplace_back(filter, callback);
+        alias(name);
+    } else {
+        postError(
+            "Shell::addCommand(const std::string&, const ArgFilter&, const callback_t&)",
+            "The given callback is not callable. The command \"" + name + "\" will not be added",
+            false
+        );
+    }
 }
 void etm::Shell::alias(const std::string &name) {
-    if (flagSet(flag::nocase)) {
-        std::string lower = name;
-        makeLowercase(lower);
-        aliasMap[lower] = commands.size() - 1;
+    if (commands.size() > 0) {
+        if (flagSet(flag::nocase)) {
+            std::string lower = name;
+            makeLowercase(lower);
+            aliasMap[lower] = commands.size() - 1;
+        } else {
+            aliasMap[name] = commands.size() - 1;
+        }
     } else {
-        aliasMap[name] = commands.size() - 1;
+        postError(
+            "Shell::alias(const std::string&)",
+            "There are no commands to alias",
+            false
+        );
     }
 }
 

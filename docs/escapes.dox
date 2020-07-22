@@ -10,7 +10,7 @@
 are pretty cool. They allow you to color text
 and do all sorts of cool stuff.
 
-Well, @ref Terminal has support for a version
+Well, @ref etm::Terminal "Terminal" has support for a version
 of ansi escapes that is based off of ANSI that gives
 a little more customization.
 
@@ -50,16 +50,16 @@ parameters entirely, causing the background to be set to black.
 Hexidecimal values can be taken as parameters for some commands.
 The way they're represented is extreamly straightforward:
 
-`0x432ff3` -> `432ff3`<br>
-`0x123456` -> `123456`
+`0x432ff3 -> 432ff3`<br>
+`0x123456 -> 123456`
 
 As you can see, you just strip the decoration (in this case the `0x`,
 other times may be `#`).
 
 @subsection examples Examples
 
-`<ESC>[ff0b105` - sets foreground color to a nice orange
-`<ESC>[fff2f00` - sets background color to a harsh red
-`<ESC>[fff;` - sets background color to blue. same as <ESC>[f0000ff
+`<ESC>[ff0b105` - sets foreground color to a nice orange<br>
+`<ESC>[fff2f00` - sets background color to a harsh red<br>
+`<ESC>[fff;` - sets background color to blue. same as `<ESC>[f0000ff`
 
 */

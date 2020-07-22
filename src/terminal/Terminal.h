@@ -228,7 +228,7 @@ namespace etm {
         * the callback set by @ref setCursorIBeam(const winActionCB_t &callback)
         * (if it's callable), and vice versa with the callback set by
         * @ref setCursorDefault(const winActionCB_t &callback).
-        * @param [in] callback The callback
+        * @param [in] value The value
         * @see setCursorDefault(const winActionCB_t &callback)
         * @see setCursorIBeam(const winActionCB_t &callback)
         */
@@ -375,7 +375,7 @@ namespace etm {
         * user input.
         * This function, however, takes an encoded codepoint.
         * @note Not buffered
-        * @param [in] codepoint The codepoint
+        * @param [in] c The codepoint
         * @see Line::codepoint
         * @see inputChar(unsigned int codepoint)
         * @see inputString(const std::string &text)
