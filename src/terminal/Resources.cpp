@@ -1,9 +1,5 @@
 #include "Resources.h"
 
-// TEMP
-#include <iostream>
-
-#include "render/ftype.h"
 #include "util/termError.h"
 #include "render/opengl.h"
 #include "render/Model.h"
@@ -43,12 +39,17 @@ void etm::Resources::genRectangle() {
 
     rectangle.setVerticies(16, vertices);
     rectangle.setIndices(6, indices);
+    // First param, two values, stride of 4
+    // to get to the next set, starts at index 0
     rectangle.setParam(0, 2, 4, 0);
+    // Second param, two values, stride of 4
+    // to get to the next set, starts at index 2
     rectangle.setParam(1, 2, 4, 2);
 }
 
 void etm::Resources::genTriangle() {
-    // Store caller state
+    // Store caller state.
+    // I understand that this is a little bit of a heavy operation.
     GLint program;
     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
     GLint viewport[4];
@@ -60,13 +61,17 @@ void etm::Resources::genTriangle() {
     GLfloat clearColor[4];
     glGetFloatv(GL_COLOR_CLEAR_VALUE, clearColor);
 
-    glDisable(GL_DEPTH_TEST);
-
     // Size of the texture
     constexpr int sampleWidth = 20;
     constexpr int sampleHeight = 20;
-    // Ammout of MSAA
+    // Number of MSAA samples
     constexpr int MSAA = 5;
+    // For catching errors -
+    // prevent memory leak if error
+    // callback throws by posting the error
+    // _after_ the fact.
+    std::string errorMsg;
+    int errorCode;
 
     // Model and color of the arrow
     Model model(sampleWidth / 4, sampleWidth / 4, sampleWidth / 2, sampleHeight / 2);
@@ -84,6 +89,8 @@ void etm::Resources::genTriangle() {
     };
     triangleBuffer.setVerticies(6, vertices);
     triangleBuffer.setIndices(3, indices);
+    // First param, two values, stride of 2
+    // to get to the next set, starts at index 0
     triangleBuffer.setParam(0, 2, 2, 0);
 
     // Initialize output texture - important that we do linear filtering
@@ -98,12 +105,8 @@ void etm::Resources::genTriangle() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, triangle.get(), 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        postError(
-            "Resources::genTriangle()",
-            "Failed to complete framebuffer #0",
-            glCheckFramebufferStatus(GL_FRAMEBUFFER),
-            false
-        );
+        errorMsg = "Failed to complete framebuffer #0";
+        errorCode = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         goto clean_FB;
     }
 
@@ -121,12 +124,8 @@ void etm::Resources::genTriangle() {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, MSAAFramebufferColorObj);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        postError(
-            "Resources::genTriangle()",
-            "Failed to complete framebuffer #1",
-            glCheckFramebufferStatus(GL_FRAMEBUFFER),
-            false
-        );
+        errorMsg = "Failed to complete framebuffer #0";
+        errorCode = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         goto clean_MSAAFB;
     }
 
@@ -171,6 +170,17 @@ void etm::Resources::genTriangle() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, readBuff);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, writeBuff);
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuff);
+
+    // Just in case the error callback throws,
+    // post the error after cleanup has been done.
+    if (errorMsg.size()) {
+        postError(
+            "Resources::genTriangle()",
+            errorMsg,
+            errorCode,
+            false
+        );
+    }
 }
 
 void etm::Resources::setTerminal(Terminal &terminal) {

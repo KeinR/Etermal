@@ -38,65 +38,133 @@ namespace etm {
         /// @param [in] error An object with error information
         typedef std::function<void(const termError &error)> errCallback_t;
     private:
+        /// Type used for @ref inputRequests
         typedef std::deque<TermInput*> inputRequests_t;
 
+        /// The error callback.
+        /// Recieves all erorrs; the terminal
+        /// does nothing on its own when errors
+        /// are detected (aside from calling this).
+        /// Is always callable.
         errCallback_t errorCallback;
 
+        /// The resources manager
         std::unique_ptr<Resources> resources;
 
+        /// The viewport, describes the entire area taken
+        /// up by the terminal.
+        /// @see setWidth(int width)
+        /// @see setHeight(int height)
         Model viewport;
 
+        /// Scrollbar backend, keeps track of scroll
         Scroll scroll;
+        /// Scrollbar frontend, shows scrollbar
         Scrollbar scrollbar;
-        // Factor when doing mouse scroll
+        /// Mouse scroll factor
         float scrollSensitivity;
-        // Scroll builds up until it reaches one char
-        // height...
-        // Aligns the scrolling to the text
-        float scrollBuffer;
 
+        /// The text processor
         TextBuffer display;
+        /// The terminal background
         Rectangle background;
 
-        std::string displayBuffer; // Display
+        /// UTF-8 encoded string waiting to
+        /// be pushed to the @ref display
+        std::string displayBuffer;
 
+        /// All pending input requests
         inputRequests_t inputRequests;
 
+        /// Is the terminal focused?
+        /// Not actually used anywhere by the terminal -
+        /// soley used by the client to determine if the
+        /// terminal should recieve input.
         bool focused;
-        // Should the terminal take user input?
+        /// Does the shell want user input?
+        /// If false and @ref inputRequests is empty,
+        /// ignores all user input.
         bool takeInput;
 
-        // Should the next char be escaped?
+        /// If the next character should be escaped
         bool escapeNext;
 
+        /// Cursor blink animation timer
         Timer cursorBlink;
 
+        /// The tied shell
         EShell *shell;
 
+        /// Called when the Terminal wants to set the
+        /// cursor to its default state.
         winActionCB_t windowSetCursorDefault;
+        /// Called when the Terminal wants to set the
+        /// cursor to its I-Beam state.
         winActionCB_t windowSetCursorIBeam;
-        // Is the mouse hovering over the terminal input area?
+        /// Is the mouse hovering over the terminal input area?
         bool hovering;
 
-        // Is the mouse dragging?
+        /// Is the mouse dragging?
+        /// Used to determine what text is highlighted
         bool dragging;
-        // Coordinates of the last drag location
+        /// Mouse x at the last drag location
         float dragX;
+        /// Mouse y at the last drag location
         float dragY;
 
+        /**
+        * Display the welcome text.
+        */
         void displayWelcome();
 
+        /**
+        * Tests if a codepoint is one that should be rejected
+        * from the terminal input.
+        * @param [in] c The codepoint in question
+        * @return `true` if the codepoing should be rejected.
+        */
+        bool ignoreCodepoint(const Line::codepoint &c);
+
         // Pushes input to recievers (shell, etc)
+        /**
+        * Pushes input to recievers (shell, and anyone
+        * listed in @ref inputRequests)
+        * @param [in] input The input to push
+        */
         void pushInput(const std::string &input);
+        /**
+        * Prepare the terminal for input.
+        * Configures the cursor.
+        */
         void prepareInput();
+        /**
+        * Input a codepoint to the @ref display
+        */
         void doInputChar(const Line::codepoint &c);
+        /**
+        * SHould the terminal recieve user input?
+        * Depends on if anyone wants input (shell, @ref inputRequests)
+        * @return `true` if the terminal can recieve input
+        */
         bool acceptInput();
-        // Expects i to be pointing to the char preceeding the hex.
-        // Reads a hex that starts on i and is 3 chars long.
-        // i is set to the last character of the hex.
-        // Will stop prematurely if the hex is truncated
-        int readHexFromStr(std::string &str, std::string::size_type &i);
-        // Maps screen coordinates to text coordinates
+        /**
+        * Reads a 0-24 bit hex value from a string, starting right
+        * after the provided index.
+        * Returns with the index pointing to the last character in the hex.
+        * Will stop prematurely if the hex cannot logically continue (chars
+        * that are not in the range 0-9 or a-f, hit end of string)
+        * @param [in] str The source string
+        * @param [in,out] i The index, pointing to the char right before the hex starts
+        * @return The hex value
+        */
+        int readHexFromStr(const std::string &str, std::string::size_type &i);
+        /**
+        * Maps screen coordinates to coordinates in the @ref display.
+        * @param [in] x X screen coordinate
+        * @param [in] y Y screen coordinate
+        * @param [out] row Display row
+        * @param [out] column Display column
+        */
         void mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column);
     public:
 
@@ -208,9 +276,6 @@ namespace etm {
         */
         void setShell(EShell &shell);
 
-        // Sets whether the terminal will process user input.
-        // And send it to the shell.
-        // Will still fulfill input requests
         void setTakeInput(bool value) override;
 
         void requestInput(TermInput &callback) override;
@@ -234,9 +299,47 @@ namespace etm {
         */
         void setY(float y);
 
+        /**
+        * Sets the pixel width of the terminal.
+        * This does not affect the scrollbar width or
+        * text width.
+        * @param [in] width The new width
+        * @see setColumns(int columns)
+        * @see setHeight(int height)
+        */
         void setWidth(int width);
+        /**
+        * Sets the pixel height of the terminal.
+        * This does not affect the scrollbar height or
+        * text height.
+        * @param [in] height The new height
+        * @see setRows(int rows, int margin)
+        * @see setWidth(int width)
+        */
         void setHeight(int height);
+        /**
+        * Sets the pixel height of the terminal
+        * based off of a desired number of rows,
+        * with one row being the height of a line of text.
+        * This does not affect the scrollbar height or
+        * text height.
+        * @param [in] rows The desired rows
+        * @param [in] margin Ammount of space at the bottom of the terminal,
+        * so that the input area doesn't feel so cramped.
+        * @see setHeight(int height)
+        * @see setColumns(int columns)
+        */
         void setRows(int rows, int margin = 7);
+        /**
+        * Sets the pixel width of the terminal
+        * based off of a desired number of columns,
+        * with one columns being the height of a single character.
+        * This does not affect the scrollbar width or
+        * text width.
+        * @param [in] columns The desired columns
+        * @see setWidth(int width)
+        * @see setRows(int rows, int margin)
+        */
         void setColumns(int columns);
 
         /**
@@ -256,8 +359,6 @@ namespace etm {
         * Update element positioning.
         */
         void updatePosition();
-
-        // Input events
 
         /**
         * Input a char to the terminal, typically due to
@@ -329,13 +430,12 @@ namespace etm {
         * @warning The context within which the terminal was
         * created must be the one that's active due to the way
         * OpenGL resources are tied to a particular context.
+        * @note Preserves the OpenGL state from when it was called,
+        * so you don't have to worry about preserving your own state.
+        * @see State
         */
         void render();
 
-        // Gets/sets if the terminal is focused by the user,
-        // as determined by the terminal (mouse clicks).
-        // Useful for determining where
-        // a copy/paste is targeted
         /**
         * Gets if the terminal is focused by the user.
         * 
@@ -346,8 +446,8 @@ namespace etm {
         *
         * @note Used soley by you (the user) to determine if the terminal
         * should recieve input.
-        * @see setFocused(bool val)
         * @return `true` if the terminal is focused.
+        * @see setFocused(bool val)
         */
         bool isFocused();
 
@@ -363,11 +463,14 @@ namespace etm {
         * should recieve input. If your code does not rely on the value
         * of @ref isFocused(), a call to this does nothing.
         * @param [in] val New focused status
+        * @see isFocused()
         */
         void setFocused(bool val);
 
         /**
         * Gets the text highlighted by the user.
+        * Highlight is determined by where the user clicking
+        * and dragging.
         * 
         * This is useful for copy/paste operations - which
         * is exectly what this fuction was made for.

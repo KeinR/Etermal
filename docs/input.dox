@@ -1,0 +1,16 @@
+/*!
+
+@page term_input Terminal input
+
+In most programming languages, you can type `\` to have
+something special done with the next character.
+In the Etermal Terminal, such is implemented.
+
+In the following table is described the procedures called
+when a backslash `\` is typed.
+
+char/action | parameters | action |
+------------| ---------- | ------ |
+`<ENTER>` or newline (`0x0A`) | None | The terminal doesn't flush the input, and continues to wait for more user input |
+
+*/

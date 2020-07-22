@@ -49,13 +49,14 @@ float etm::Scroll::getMaxOffset() {
 
 bool etm::Scroll::scroll(float value) {
     alignBuffer += value;
-    std::cout << "alignBuffer = " << alignBuffer << std::endl;
     if (alignBuffer >= align) {
         // Flush
         offset = std::min(
+                            // Account for overflow
             offset + align * std::floor(alignBuffer / align),
             maxOffset
         );
+        // Mod to get remaining scroll
         alignBuffer = std::fmod(alignBuffer, align);
         return true;
     } else if (alignBuffer <= -align) {

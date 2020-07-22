@@ -1,46 +1,105 @@
 #ifndef ETERMAL_SCROLL_H_INCLUDED
 #define ETERMAL_SCROLL_H_INCLUDED
 
-/*
-* Data class used to keep track of scrolling
-*/
-
 namespace etm {
+
+    /**
+    * @ref Scrollbar backend, keeps track of scrolling values.
+    */
     class Scroll {
-        // Total height of all elements
+        /// Total height of all elements if
+        /// they were to all be displayed
         int grossHeight;
-        // Actual displayed height
+        /// Actual displayable height, the
+        /// viewport height
         int netHeight;
+        /// The scroll offset, how much the
+        /// viewport has been moved down.
         float offset;
-        // Maximum scroll offset
+        /// Maximum scroll @ref offset
         float maxOffset;
 
-        // Scroll units
+        /// Minumun scroll at a time.
+        /// Until it reaches this value, the
+        /// scroll ammount builds up in the
+        /// @ref alignBuffer
         float align;
-        // Scroll unit progress
+        /// The progress towards one @ref align
         float alignBuffer;
 
+        /**
+        * Recalculate @ref maxOffset
+        */
         void recalc();
     public:
+        /**
+        * Create a new object, with values set to 0 or 1.
+        */
         Scroll();
 
         // Must be positive and not equal to zero
+        /**
+        * Set the scroll @ref align, the units in which the scrolling
+        * will happen.
+        * @note The align must be > 0
+        * @param [in] value The new @ref align
+        */
         void setAlign(float value);
 
+        /**
+        * Sets the net/viewport/displayable height
+        * of the scroll.
+        * @param [in] height The new @ref netHeight
+        */
         void setNetHeight(int height);
+        /**
+        * Sets the gross/total height of the elements.
+        * @param [in] height The new @ref grossHeight
+        */
         void setGrossHeight(int height);
 
+        /**
+        * Get the net height
+        * @return The @ref netHeight
+        */
         int getNetHeight();
+        /**
+        * Get the gross height
+        * @return The @ref grossHeight
+        */
         int getGrossHeight();
+        /**
+        * Get the current scroll y-offset
+        * that should be applied to elements.
+        * @return The scroll offset
+        */
         float getOffset();
+        /**
+        * Get the maximum possible scroll y-offset
+        * @return The max scroll offset
+        */
         float getMaxOffset();
 
         // Returns true if actually scrolled
+        /**
+        * Scroll by an ammount.
+        * Will not actually scroll until the @ref alignBuffer
+        * has been filled.
+        * @param [in] ammount The ammount of distance to scroll
+        * @return `true` if the scroll @ref offset changed
+        */
         bool scroll(float ammount);
         // Scrolls by a certain align.
         // Basically calls scroll(ammount * align)
+        /**
+        * Scroll by one entire align unit.
+        * Equivilent to `scroll(ammount * align)`
+        * @param [in] ammount Number of aligns to scroll
+        */
         void scrollByAlign(int ammount);
-        // Scroll to max offset
+        /**
+        * Set the current scroll offset to the max offset.
+        */
         void jump();
     };
 }

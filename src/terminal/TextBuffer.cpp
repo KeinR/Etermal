@@ -15,9 +15,11 @@ static constexpr etm::TextBuffer::lines_number_t DEF_MAX_NUMBER_LINES = 1000;
 static const std::string nullCodepointStr("\0");
 static const etm::Line::codepoint nullCodepoint(nullCodepointStr.begin(), nullCodepointStr.end());
 
-// Check if the char is valid (ie not a reserved
-// one).
-// If it's not, sets it to something that is valid.
+/**
+* Check if the codepoint is valid (not a reserved one)
+* If it's not valid, sets it to something that is valid.
+* @param [in,out] c The codepoint to filter
+*/
 static void filterChar(etm::Line::codepoint &c);
 
 void filterChar(etm::Line::codepoint &c) {
@@ -118,7 +120,9 @@ bool etm::TextBuffer::isStartSpace(const Line::codepoint &c, lines_number_t row)
 void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
     modifierBlocks[blockId] = mod;
     Line::string_t str;
+    // Mod/control block flag
     str.push_back(env::CONTROL_CHAR_START);
+    // Encode 32 bit unsigned integer index, `blockId`, as 4 bytes in the string
     int shift = 8 * env::CONTROL_BLOCK_DATA_BYTES;
     for (unsigned int n = 0; n < env::CONTROL_BLOCK_DATA_BYTES; n++) {
         shift -= 8;
@@ -190,6 +194,7 @@ void etm::TextBuffer::moveCursorRow(int distance) {
     cursor.column = std::min(cursor.column, lines[cursor.row].size());
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
+    // Signed value so that we can detect underflow (negatives)
     int columnTemp = static_cast<int>(cursor.column) + distance;
 
     if (columnTemp > static_cast<int>(lines[cursor.row].size())) {
@@ -204,7 +209,6 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
             }
         }
     } else if (columnTemp < 0) {
-        // columnTemp += static_cast<int>(oldCursorCollumn);
         while (columnTemp < 0) {
             if (cursor.row - 1 >= cursorMin.row) {
                 cursor.row--;
@@ -217,8 +221,8 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
         cursor.column = static_cast<line_index_t>(columnTemp);
     } else {
         cursor.column = static_cast<line_index_t>(std::max(columnTemp, 0));
-        // Wrap cursor to next line.
-        // I mean MinTTY does it so really there's no reason not to
+        // Wrap cursor to next line (if it exists) if at the end of _this_ line.
+        // I mean MinTTY does it so really I have no choice.
         if (cursor.row < lines.size() - 1 && cursor.column == lines[cursor.row].size()) {
             cursor.row++;
             cursor.column = 0;
@@ -254,6 +258,9 @@ void etm::TextBuffer::setCursorWidth(int value) {
 
 void etm::TextBuffer::setWidth(line_index_t width) {
     this->width = width;
+    if (lines.size()) {
+        reformat(0, 0);
+    }
 }
 etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
     return width;
@@ -265,8 +272,6 @@ void etm::TextBuffer::doAppend(const Line::codepoint &c) {
     }
 
     if (c == '\n') {
-        std::string str;
-        lines.back().copyTo(str);
         lines.back().setNewline(true);
         newline();
     } else if (lines.back().size() + 1 > width) {
@@ -278,10 +283,9 @@ void etm::TextBuffer::doAppend(const Line::codepoint &c) {
                                     // because it's unsigned;
                                     // check for less than zero
         if (c != ' ' && (lastLine.size() - 1 > lastLine.size() || lastLine[lastLine.size()-1] != ' ')) {
-            // -2 because we already checked that -1 wasn't a space
-            // Check less than while deincrementing because unsigned
             Line::iterator it(lastLine.last());
-            it -= 2;
+            // Don't decrement by 2 because Line::last() is the last char (Line::size() - 1) 
+            --it;
             for (; it.valid(); --it) {
                 if (*it == ' ') {
                     ++it;
@@ -289,20 +293,20 @@ void etm::TextBuffer::doAppend(const Line::codepoint &c) {
                     // Move the last word from the last line to the next
                     // line via recursion
                     for (; it.valid(); ++it) {
-                        append(*it);
+                        doAppend(*it);
                     }
 
                     lastLine.erase(eraseOffset);
                     break;
                 }
             }
-            append(c);
+            doAppend(c);
         } else if (isStartSpace(c, lines.size() - 1)) {
             nextLine.setStartSpace(true);
         } else {
-            // Prevent stack overflow from width of 0...
-            // should never happen, but I like to have a reason
-            // to avoid recursion
+            // Prevent stack overflow from `width` being 0...
+            // should never happen, but there's no reason
+            // to not desire to not not avoid recursion
             nextLine.appendChar(c);
         }
     } else {
@@ -311,28 +315,81 @@ void etm::TextBuffer::doAppend(const Line::codepoint &c) {
 }
 
 void etm::TextBuffer::eraseAtCursor() {
-    lines_number_t row = cursor.row;
-    line_index_t column = cursor.column - 1;
-    // Because it's unsigned it underflows to big number
-    if (column >= lines[row].size()) {
-        row--;
+    if (cursor.column == 0 && lines[cursor.row].hasStartSpace()) {
+        // In this case, we don't want to move backwards - 
+        // instead, we just want to delete the start space.
+
+        // This is spitting in the face of erase(...) a little
+        // bit since it already does this, but there's no real reason
+        // why we need to go through and invoke erase(...) itself,
+        // given we know what we're doing.
+        lines[cursor.row].setStartSpace(false);
+
+        // The only time when a start space can be applied is when the
+        // line is completely filled up, the last character on the last
+        // line was NOT a space nor a newline char.
+        // Once the start space is removed, there's a chance that a (possible) word
+        // on this line will conjoin with the one that terminated the last line.
+        // If it does, the size of this line will increase due to the larger word
+        // getting wrapped.
+        // Given the preconditions, it is impossible that this line could lose
+        // any size; however, it is possible that this line increases in size,
+        // if it starts with a character that isn't a space.
+        // While we could check if this line has a space and only
+        // modify the position that way, this solution feels more versitile:
+        // increment the cursor column by the line's increase in size.
+        line_index_t prevSize = lines[cursor.row].size();
+        reformat(cursor.row - 1 < cursor.row ? cursor.row - 1 : 0, 0);
+        cursor.column += lines[cursor.row].size() - prevSize;
+    } else {
+        // Check if the cursor can move back one, deleting the
+        // previous char
+        lines_number_t row = cursor.row;
+        // Erase the codepoint before the cursor
+        line_index_t column = cursor.column - 1;
         // Because it's unsigned it underflows to big number
-        if (row < lines.size() && row >= cursorMin.row) {
-            column = lines[row].size() - 1;
-        } else {
-            return;
+        if (column >= lines[row].size()) {
+            row--;
+            // Because it's unsigned it underflows to big number
+            if (row < lines.size() && row >= cursorMin.row) {
+                column = lines[row].size() - 1;
+            } else {
+                return;
+            }
         }
-    }
-    if ((column >= cursorMin.column || row > cursorMin.row) && row >= cursorMin.row && column < lines[row].size()) {
-        if (cursorAtEnd()) {
-            prepare();
-            doTrunc();
-            jumpCursor();
-        } else {
-            // Didn't explicitly check that was in bounds
-            erase(row, column);
-            cursor.column = column;
-            cursor.row = row;
+        if ((column >= cursorMin.column || row > cursorMin.row) && row >= cursorMin.row && column < lines[row].size()) {
+            if (cursorAtEnd()) {
+                // Better to just truncate if at the end
+                trunc();
+            } else {
+                // Didn't explicitly check that was in bounds,
+                // so call erase(), which does bounds checks
+                erase(row, column);
+                // If we have a situation where spaces take up
+                // 55/60 columns, and there's a word of length 4,
+                // followed by a 5 length word that's been wrapped,
+                // if the space in-between them is deleted then the 4
+                // and 5 length words will conjoin to form a 9 length
+                // word that is wrapped to the next line.
+                // The cursor will however not necessarily know this,
+                // and without doing anything else it will stay in an invalid
+                // column of 59 (zero-indexed), while the length of that line
+                // is actually 55 and the position it should be in is 4
+                // characters in the 9 length word that was wrapped to the next
+                // line.
+
+                cursor.column = column;
+                cursor.row = row;
+
+                // This is a little dangerous I'll admit, but the
+                // only situation where this would be the case
+                // would be if the wrapping changed and text was pushed
+                // to the next line.
+                if (cursor.column > lines[row].size()) {
+                    cursor.column = column - lines[row].size();
+                    cursor.row++;
+                }
+            }
         }
     }
 }
@@ -344,41 +401,42 @@ void etm::TextBuffer::erase(lines_number_t row, line_index_t column) {
     }
 }
 void etm::TextBuffer::doErase(lines_number_t row, line_index_t column) {
-    // TODO: reformating needs to be optimized
 
     if (column == lines[row].size()-1 && lines[row].hasNewline()) {
-        // If was the last char and the line was broken manually,
-        // instead it deleted the newline
+        // If was the last char and the line was broken manually:
+        // instead just delete the newline
         lines[row].setNewline(false);
         reformat(row, column);
     } else if (column == 0 && lines[row].hasStartSpace()) {
+        // Delete start space if in position.
         lines[row].setStartSpace(false);
+        // Reformat from the last line because could've
+        // made it so that a word at the end is too small
+        // to be soft wrapped.
+        // "less than self" because it's unsigned.
         reformat(row - 1 < row ? row - 1 : 0, 0);
     } else {
         lines[row].eraseChar(column);
-        // unsigned madness
         reformat(row - 1 < row ? row - 1 : 0, 0);
-        // reformat(row, 0);
     }
-
 }
 
 void etm::TextBuffer::append(Line::codepoint c) {
     filterChar(c);
-    const bool moveCursor = cursorAtEnd();
     doAppend(c);
-    if (moveCursor) {
-        jumpCursor();
-    }
+    // Cursor should always be jumpped when appending.
+    // If this is not the desired behavior (ex when
+    // reformatting), call doAppend()
+    jumpCursor();
 }
 
 void etm::TextBuffer::trunc() {
     prepare();
-    const bool moveCursor = cursorAtEnd();
     doTrunc();
-    if (moveCursor) {
-        jumpCursor();
-    }
+    // Cursor should always be jumpped when truncating.
+    // If this is not the desired behavior (ex when
+    // reformatting), call doTrunc()
+    jumpCursor();
 }
 
 void etm::TextBuffer::doTrunc() {
@@ -409,11 +467,19 @@ void etm::TextBuffer::doTrunc() {
             // a newline break.
             if (!lines.back().size()) {
                 deleteLastLine();
-            } else if (width - lines[lines.size()-2].size() >= lines.back().size()) {
-                // Move data, as it can sort-of reverse-wrap back to the previous line
+            } else if (width - lines[lines.size() - 2].size() >= lines.back().size()) {
+                // Move data if there's space, as it can sort-of reverse-wrap back to the previous line
                 lines[lines.size()-2].appendOther(lines.back());
                 deleteLastLine();
-            }
+            }// else {
+                // The content change didn't decrease the size of the
+                // line enough to cause the line to wrap back to the previous.
+                // We don't have to do a reformat(...) because the last 
+                // reformatting garuntees that the lines are wrapped properly,
+                // meaning that we don't have to worry about the effects on words
+                // disconnected from the start word, and and you can only wrap
+                // the word back if there's enough space on the last line.
+            //}
         }
     }
 
@@ -427,22 +493,25 @@ void etm::TextBuffer::insertAtCursor(Line::codepoint c) {
         if (cursorAtEnd()) {
             doAppend(c);
         } else {
-            if (cursor.column == lines.back().size()) {
-                // Already asserted that this isn't the last line
-                // with cursorAtEnd()
-                cursor.row++;
-                if (lines[cursor.row].hasStartSpace()) {
-                    lines[cursor.row].setStartSpace(false);
-                    lines[cursor.row].insertChar(0, ' ');
-                    lines[cursor.row].insertChar(0, c);
-                    reformat(cursor.row - 1, 0);
-                    cursorMove = 2;
-                } else {
-                    insert(cursor.row + 1, 0, c);
-                }
-            } else {
-                insert(cursor.row, cursor.column, c);
+            // The cursor will be stopped from resting after the
+            // last character of a line, if that line isn't the last line.
+            // Rather, it is pushed to before the first char of the next
+            // line (first index).
+            // If the last line is terminated by spaces, its size is less
+            // than the max column size, and this line is started by a non-space
+            // character, then the cursor must not move, as the space would end
+            // up inserted at the last line, and there would be no changes to the word
+            // wrapping because spaces are what induce word wrapping.
+            if (
+                lines[cursor.row].size() > 0 && lines[cursor.row][0] != ' ' &&
+                cursor.row - 1 < lines.size() && lines[cursor.row - 1].size() < width &&
+                lines[cursor.row - 1].size() > 0 && lines[cursor.row - 1][lines[cursor.row - 1].size() - 1] == ' '
+                )
+            {
+                cursorMove = 0;
             }
+
+            insert(cursor.row, cursor.column, c);
         }
         moveCursorCollumnWrap(cursorMove);
     }
@@ -481,9 +550,7 @@ void etm::TextBuffer::doInsert(lines_number_t row, line_index_t column, const Li
         reformat(row - 1 < row ? row - 1 : 0, 0);
     } else {
         lines[row].insertChar(column, c);
-        if (lines[row].size() > width) {
-            reformat(row, column);
-        }
+        reformat(row - 1 < row ? row - 1 : 0, 0);
     }
 
 }
@@ -638,13 +705,10 @@ etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line 
     int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_DATA_BYTES);
     for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_DATA_BYTES; i < end; i++) {
         shift -= 8;
-        // Really fucking weird.
+        // Note:
         // static_cast<int>(char) will return the char WITH THE SIGN.
-        // so -128 will be -128.
-        // WHAT.
-        // Well I guess it makes sense from a static_cast perspective.
-        // I was used to the reinterpret_cast kinda' deal from Java,
-        // or whatever it uses.
+        // so -128 (char) will be -128 (int).
+        // As you may know, this is annoying when doing bit manipulation.
         value |= static_cast<env::type>(static_cast<unsigned char>(line.getDejure(i))) << shift;
     }
     return modifierBlocks[value];
@@ -652,11 +716,15 @@ etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line 
 
 void etm::TextBuffer::render(int x, int y) {
 
+    std::cout << "cursor.collumn = " << cursor.column << ", lines[cursor.row].size() = " << lines[cursor.row].size() << std::endl;
+
     // "After scrollbar renders, the text shader is set
     // due to the rendering of the triangle textures,
     // so display doesn't need to set it."
     // - Comment right after the scrollbar render call in Terminal
     // res->bindTextShader();
+
+    y -= scroll->getOffset();
 
     lines_number_t start = std::floor(scroll->getOffset() / charHeight());
     lines_number_t end = std::min(

@@ -5,21 +5,24 @@
 etm::State::State() {
 }
 void etm::State::store() {
-    glGetBooleanv(GL_BLEND, &blend);
+    // All have the same z, so no depth test
+    glGetBooleanv(GL_DEPTH_TEST, &depth);
     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+    // Glyph widths can vary quite a lot
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlign);
 }
 void etm::State::set() {
-    if (blend) {
-        glDisable(GL_BLEND);
+    // Don't set if we don't have to
+    if (depth) {
+        glDisable(GL_DEPTH_TEST);
     }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
 }
 void etm::State::restore() {
-    if (blend) {
-        glEnable(GL_BLEND);
+    if (depth) {
+        glEnable(GL_DEPTH_TEST);
     }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);

@@ -65,7 +65,7 @@ int main() {
 
         etm::Shell shell;
 
-        shell.setPrompt("\n\e[B\e[f199e3d;tester@testTerminal \e[fb8b816;~\e[F\n$ ");
+        shell.setPrompt("\n\e[B\e[f199e3d;tester@\e[b4c1b4f;testTerminal\e[B \e[fb8b816;~\e[F\n$ ");
 
         term.setShell(shell);
         shell.setTerminal(term);

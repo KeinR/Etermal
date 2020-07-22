@@ -15,6 +15,10 @@
 #include "textmods/Mod.h"
 #include "textmods/mods.h"
 
+/**
+* The default error callback.
+* @param [in] error The error object
+*/
 static void defaultErrorCallback(const etm::termError &error);
 
 void defaultErrorCallback(const etm::termError &error) {
@@ -61,6 +65,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     updatePosition();
 
     displayWelcome();
+    // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
 }
 
@@ -69,9 +74,17 @@ void etm::Terminal::displayWelcome() {
     flush();
 }
 
+bool etm::Terminal::ignoreCodepoint(const Line::codepoint &c) {
+    // Basically if it's a carrige return, we don't want it.
+    return c == '\r';
+}
+
 void etm::Terminal::prepareInput() {
+    // Cursor to the end of the text
     display.jumpCursor();
+    // Lock the cursor's position so that it can't move backwards
     display.lockCursor();
+    // Show it
     display.setCursorEnabled(true);
 }
 
@@ -86,7 +99,6 @@ void etm::Terminal::pushInput(const std::string &input) {
         inputRequests.front()->terminalInput(input);
         inputRequests.pop_front();
     } else if (shell != nullptr) {
-        // Print the default prompt, etc.
         std::cout << "SENDING TO SHELL: " << input << std::endl;
         shell->input(input);
     } else {
@@ -97,6 +109,7 @@ void etm::Terminal::pushInput(const std::string &input) {
             false
         );
     }
+    // Only re-enable the cursor if there are still input requests
     if (acceptInput()) {
         prepareInput();
     }
@@ -153,7 +166,7 @@ void etm::Terminal::setShell(EShell &shell) {
 
 void etm::Terminal::setTakeInput(bool value) {
     if (takeInput != value) {
-        if (!takeInput && !inputRequests.size()) {
+        if (!acceptInput()) {
             prepareInput();
         }
         takeInput = value;
@@ -175,22 +188,30 @@ void etm::Terminal::cancelInputRequest(TermInput *callback) {
             ++it;
         }
     }
+    if (!acceptInput()) {
+        display.setCursorEnabled(false);
+    }
 }
 void etm::Terminal::clearInputRequests() {
     inputRequests.clear();
+    if (!takeInput) {
+        display.setCursorEnabled(false);
+    }
 }
 
 void etm::Terminal::dispText(const std::string &str) {
     displayBuffer += str;
 }
 
-int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
+int etm::Terminal::readHexFromStr(const std::string &str, std::string::size_type &i) {
     i++;
     int result = 0;
     for (std::string::size_type end = i + 6; i < str.size() && i < end && str[i] != ';'; i++) {
         if ('0' <= str[i] && str[i] <= '9') {
+            // Shift one hex diget to the left for every new diget we find
             result = (result * 16) + str[i] - '0';
         } else {
+            // Sets to lowercase (kinda' a hack)
             const char c = str[i] | 0x20;
             if ('a' <= c && c <= 'f') {
                 result = (result * 16) + c - 'a' + 10;
@@ -199,6 +220,7 @@ int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
             }
         }
     }
+    // Decriment so that is on the last char in the hex
     i--;
     std::cout << "read hex 0x" << std::hex << result << std::dec << std::endl;
     return result;
@@ -207,6 +229,7 @@ int etm::Terminal::readHexFromStr(std::string &str, std::string::size_type &i) {
 void etm::Terminal::flush() {
     constexpr char ESCAPE = '\x1b';
 
+    // Required when appending
     display.prepare();
 
     for (std::string::size_type i = 0; i < displayBuffer.size();) {
@@ -252,6 +275,7 @@ void etm::Terminal::flush() {
 
     displayBuffer.clear();
 
+    // Jump to end if the user is scrolled to the end
     const bool jump = scroll.getOffset() + 1 >= scroll.getMaxOffset();
     scroll.setGrossHeight(display.getHeight());
     if (jump) {
@@ -289,6 +313,7 @@ void etm::Terminal::setRows(int rows, int margin) {
 
 void etm::Terminal::setFontSize(unsigned int size) {
     resources->getFont().setSize(size);
+    // Align to char height
     scroll.setAlign(resources->getFont().getCharHeight());
     updatePosition();
 }
@@ -307,8 +332,10 @@ void etm::Terminal::updatePosition() {
     scrollbar.setY(viewport.y);
     scrollbar.setHeight(viewport.height);
 
+    // Align net height to the character height
     scroll.setNetHeight(viewport.height - (static_cast<int>(viewport.height) % resources->getFont().getCharHeight()));
 
+    // Takes number of columns
     display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
 }
 
@@ -320,31 +347,37 @@ void etm::Terminal::inputChar(unsigned int codepoint) {
 void etm::Terminal::inputChar(const Line::codepoint &c) {
     if (acceptInput()) {
         doInputChar(c);
+        // When inputting, scroll to focus on the input
+        // area, which is always at the bottom (or should be...)
         scroll.jump();
         scrollbar.update();
     }
 }
 void etm::Terminal::doInputChar(const Line::codepoint &c) {
 
-    if (!escapeNext) {
-        switch (*c.start) {
-            case '\n': {
-                std::string input = display.pollInput();
-                display.jumpCursor(); // Avoid distorted text
-                display.insertAtCursor(c);
-                pushInput(input);
-                break;
+    if (!ignoreCodepoint(c)) {
+        if (!escapeNext) {
+            switch (*c.start) {
+                case '\n': {
+                    // Don't actually include the newline
+                    // in the input
+                    std::string input = display.pollInput();
+                    display.append(c);
+                    pushInput(input);
+                    break;
+                }
+                case '\\': // Fallthrough
+                    escapeNext = true;
+                default:
+                    display.insertAtCursor(c);
             }
-            case '\\':
-                escapeNext = true;
-                break;
-            default:
-                display.insertAtCursor(c);
+        } else {
+            escapeNext = false;
+            display.insertAtCursor(c);
         }
-    } else {
-        display.insertAtCursor(c);
     }
 }
+
 void etm::Terminal::inputString(const std::string &text) {
     for (std::string::const_iterator it = text.begin(); it < text.end();) {
         if (!acceptInput()) break;
@@ -381,6 +414,7 @@ void etm::Terminal::inputActionKey(actionKey key) {
 }
 void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) {
     if (viewport.hasPoint(mouseX, mouseY)) {
+        // Negate to align properly
         if (scroll.scroll(-yOffset * scrollSensitivity)) {
             scrollbar.update();
         }
@@ -393,6 +427,7 @@ void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) 
         dragging = focused;
 
         if (dragging) {
+            // Text highlighting
             TextBuffer::lines_number_t row;
             TextBuffer::line_index_t column;
             mapCoords(mouseX, mouseY, row, column);
@@ -406,6 +441,7 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
     scrollbar.mouseMove(mouseX, mouseY);
     setHovering(background.hasPoint(mouseX, mouseY));
     if (dragging) {
+        // Text highlighting
         TextBuffer::lines_number_t row;
         TextBuffer::line_index_t column;
         mapCoords(mouseX, mouseY, row, column);
@@ -416,31 +452,37 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 void etm::Terminal::mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column) {
     row = std::max(std::floor((y - viewport.y + scroll.getOffset()) / resources->getFont().getCharHeight()), 0.0f);
     column = std::max(std::floor((x - viewport.x) / resources->getFont().getCharWidth()), 0.0f);
-    std::cout << "row = " << row << std::endl;
-    std::cout << "column = " << column << std::endl;
 }
 
 void etm::Terminal::render() {
+    // Preserve caller state (important!)
+
     State state;
     state.store();
     state.set();
 
     // Run animiations
+
     if (cursorBlink.hasEnded()) {
         display.toggleCursor();
         cursorBlink.start();
     }
 
     // Render
+
     resources->bindPrimitiveShader();
     background.render();
     scrollbar.render();
     // After scrollbar renders, the text shader is set
     // due to the rendering of the triangle textures,
     // so display doesn't need to set it.
-    display.render(viewport.x, viewport.y - scroll.getOffset());
+    display.render(viewport.x, viewport.y);
+
+    // Done rendering, resore state
 
     state.restore();
+
+    // Check for errors
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {

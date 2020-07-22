@@ -7,27 +7,44 @@
 // render/Model
 namespace etm { class Model; }
 
-/*
-* Upon construction, records the current state.
-* Upon a call to set(), sets the OpenGL states
-* desired for the terminal.
-* Upon a call to restore(), restores the previous states
-* that were recorded upon construction.
-* May not be moved or copied, as that wouldn't make sense.
-*/
-
 namespace etm {
+
+    /**
+    * Used to keep track of states desired by the terminal,
+    * set them, and restore their old values.
+    * Is a @ref singleton because copying a State class
+    * just wouldn't make any sense.
+    * @see Terminal
+    */
     class State: public singleton {
-        GLboolean blend;
+        /// GL_DEPTH_TEST toggle value
+        GLboolean depth;
+        /// GL_CURRENT_PROGRAM value
         GLint program;
+        /// GL_UNPACK_ALIGNMENT value
         GLint unpackAlign;
     public:
+        /**
+        * Construct a State.
+        * @warning Fields are in an undefined state; that
+        * is, they're default initialized.
+        */
         State();
-        // Store the current state
+        /**
+        * Store the current state into fields
+        */
         void store();
-        // Set the desired state
+        /**
+        * Sets the desired state.
+        * @note This relies on the values stored with @ref store()
+        * @see restore()
+        */
         void set();
-        // Restore the stored state
+        /**
+        * Store the state described in `*this`'s fields.
+        * @see store()
+        * @see set()
+        */
         void restore();
     };
 }
