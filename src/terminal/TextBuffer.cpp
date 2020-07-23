@@ -23,7 +23,7 @@ static const etm::Line::codepoint nullCodepoint(nullCodepointStr.begin(), nullCo
 static void filterChar(etm::Line::codepoint &c);
 
 void filterChar(etm::Line::codepoint &c) {
-    if (c == etm::env::CONTROL_CHAR_START || c == etm::env::CONTROL_CHAR_END) {
+    if (c == etm::ctrl::CONTROL_CHAR_START || c == etm::ctrl::CONTROL_CHAR_END) {
         c = nullCodepoint;
     }
 }
@@ -69,8 +69,8 @@ void etm::TextBuffer::insertNewline(line_index_t row) {
 void etm::TextBuffer::deleteLastLine() {
     int countCtrl = 0;
     for (line_index_t i = 0; i < lines.back().dejureSize(); i++) {
-        if (lines.back().getDejure(i) == env::CONTROL_CHAR_START) {
-            i += env::CONTROL_BLOCK_SIZE;
+        if (lines.back().getDejure(i) == ctrl::CONTROL_CHAR_START) {
+            i += ctrl::CONTROL_BLOCK_SIZE;
             countCtrl++;
         }
     }
@@ -81,8 +81,8 @@ void etm::TextBuffer::deleteLastLine() {
 void etm::TextBuffer::deleteFirstLine() {
     int countCtrl = 0;
     for (line_index_t i = 0; i < lines.front().dejureSize(); i++) {
-        if (lines.front().getDejure(i) == env::CONTROL_CHAR_START) {
-            i += env::CONTROL_BLOCK_SIZE;
+        if (lines.front().getDejure(i) == ctrl::CONTROL_CHAR_START) {
+            i += ctrl::CONTROL_BLOCK_SIZE;
             countCtrl++;
         }
     }
@@ -111,17 +111,17 @@ bool etm::TextBuffer::isStartSpace(const Line::codepoint &c, lines_number_t row)
 }
 
 void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
-    env::type id = modifierBlocks.add(mod);
+    ctrl::type id = modifierBlocks.add(mod);
     Line::string_t str;
     // Mod/control block flag
-    str.push_back(env::CONTROL_CHAR_START);
+    str.push_back(ctrl::CONTROL_CHAR_START);
     // Encode 32 bit unsigned integer index, `id`, as 4 bytes in the string
-    int shift = 8 * env::CONTROL_BLOCK_DATA_BYTES;
-    for (unsigned int n = 0; n < env::CONTROL_BLOCK_DATA_BYTES; n++) {
+    int shift = 8 * ctrl::CONTROL_BLOCK_DATA_BYTES;
+    for (unsigned int n = 0; n < ctrl::CONTROL_BLOCK_DATA_BYTES; n++) {
         shift -= 8;
         str.push_back(static_cast<Line::value_type>((id >> shift) & 0xff));
     }
-    str.push_back(env::CONTROL_CHAR_END);
+    str.push_back(ctrl::CONTROL_CHAR_END);
     if (!lines.size()) {
         newline();
     }
@@ -568,9 +568,9 @@ void etm::TextBuffer::reformat(lines_number_t row, line_index_t column) {
     }
     lines.erase(lines.begin() + row + 1, lines.end());
     for (std::string::size_type i = 0; i < buffer.size();) {
-        if (buffer[i] == env::CONTROL_CHAR_START) {
-            lines.back().appendControlFromRange(buffer, i, env::CONTROL_BLOCK_SIZE + 1);
-            i += env::CONTROL_BLOCK_SIZE + 1;
+        if (buffer[i] == ctrl::CONTROL_CHAR_START) {
+            lines.back().appendControlFromRange(buffer, i, ctrl::CONTROL_BLOCK_SIZE + 1);
+            i += ctrl::CONTROL_BLOCK_SIZE + 1;
         } else {
             const int size = utf8::test(buffer[i]);
             Line::codepoint cp(buffer.begin() + i, buffer.begin() + (i + size));
@@ -696,15 +696,15 @@ void etm::TextBuffer::prepare() {
 }
 
 etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line &line) {
-    env::type value = 0;
-    int shift = 8 * static_cast<int>(env::CONTROL_BLOCK_DATA_BYTES);
-    for (Line::size_type i = ctrlIndex+1, end = i + env::CONTROL_BLOCK_DATA_BYTES; i < end; i++) {
+    ctrl::type value = 0;
+    int shift = 8 * static_cast<int>(ctrl::CONTROL_BLOCK_DATA_BYTES);
+    for (Line::size_type i = ctrlIndex+1, end = i + ctrl::CONTROL_BLOCK_DATA_BYTES; i < end; i++) {
         shift -= 8;
         // Note:
         // static_cast<int>(char) will return the char WITH THE SIGN.
         // so -128 (char) will be -128 (int).
         // As you may know, this is annoying when doing bit manipulation.
-        value |= static_cast<env::type>(static_cast<unsigned char>(line.getDejure(i))) << shift;
+        value |= static_cast<ctrl::type>(static_cast<unsigned char>(line.getDejure(i))) << shift;
     }
     return modifierBlocks.get(value);
 }
@@ -742,9 +742,9 @@ void etm::TextBuffer::render(int x, int y) {
         line_t &line = lines[r];
         for (line_index_t c = 0; c < line.dejureSize(); c++) {
             Line::value_type chr = line.getDejure(c);
-            if (chr == env::CONTROL_CHAR_START) {
+            if (chr == ctrl::CONTROL_CHAR_START) {
                 getMod(c, line)->run(lookbehind);
-                c += env::CONTROL_BLOCK_SIZE;
+                c += ctrl::CONTROL_BLOCK_SIZE;
             }
         }
         lookbehind.decLine();
@@ -773,9 +773,9 @@ void etm::TextBuffer::render(int x, int y) {
         // cc is the deJure index, the actual byte offset.
         for (line_index_t c = 0, cc = 0; c < line.dejureSize();) {
             Line::value_type chr = line.getDejure(c);
-            if (chr == env::CONTROL_CHAR_START) {
+            if (chr == ctrl::CONTROL_CHAR_START) {
                 getMod(c, line)->run(state);
-                c += env::CONTROL_BLOCK_SIZE + 1;
+                c += ctrl::CONTROL_BLOCK_SIZE + 1;
             } else {
                 const int size = utf8::test(chr);
 

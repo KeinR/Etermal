@@ -7,7 +7,7 @@ namespace etm {
     /**
     * Describes encodings for control sequences.
     */
-    namespace env {
+    namespace ctrl {
         /// The start of a control sequence
         constexpr char CONTROL_CHAR_START = '\xE';
         /// The end of a control sequence

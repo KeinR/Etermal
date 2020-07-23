@@ -9,7 +9,7 @@
 #include "../TermInput.h"
 #include "../EShell.h"
 #include "State.h"
-#include "env.h"
+#include "encode.h"
 #include "Line.h"
 
 #include "textmods/Mod.h"

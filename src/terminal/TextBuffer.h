@@ -9,7 +9,7 @@
 #include "gui/Rectangle.h"
 #include "render/Color.h"
 #include "Line.h"
-#include "env.h"
+#include "encode.h"
 #include "util/IdList.h"
 #include "textmods/Mod.h"
 
