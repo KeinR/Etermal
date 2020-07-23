@@ -10,7 +10,7 @@
 #include "render/Color.h"
 #include "Line.h"
 #include "env.h"
-
+#include "util/IdList.h"
 #include "textmods/Mod.h"
 
 namespace etm {
@@ -47,7 +47,7 @@ namespace etm {
         /// modifier type
         typedef std::shared_ptr<tm::Mod> mod_t;
         /// modifier containter type
-        typedef std::map<env::type, mod_t> modifierBlocks_t;
+        typedef IdList<mod_t> modifierBlocks_t;
 
         /**
         * A position in the buffer
@@ -126,8 +126,6 @@ namespace etm {
 
         /// All the @ref TextState modifier blocks
         modifierBlocks_t modifierBlocks;
-        /// The current modifier block id
-        env::type blockId;
 
         // Checks if the number of lines is valid,
         // and truncates the lines if not.

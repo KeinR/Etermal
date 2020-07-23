@@ -39,8 +39,7 @@ etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
     maxNumberLines(DEF_MAX_NUMBER_LINES),
     width(width), dispCursor(res),
     dfSelectStart(&selectStart), dfSelectEnd(&selectEnd),
-    cursorEnabled(false), displayCursor(false),
-    blockId(0)
+    cursorEnabled(false), displayCursor(false)
 {
     setDefForeGColor(0xffffff);
     setDefBackGColor(0x000000);
@@ -76,10 +75,7 @@ void etm::TextBuffer::deleteLastLine() {
         }
     }
     lines.pop_back();
-    // Order of the mod blocks is the same as the lines
-    modifierBlocks_t::iterator it = modifierBlocks.end();
-    std::advance(it, -countCtrl);
-    modifierBlocks.erase(it, modifierBlocks.end());
+    modifierBlocks.eraseBack(countCtrl);
 }
 
 void etm::TextBuffer::deleteFirstLine() {
@@ -91,10 +87,7 @@ void etm::TextBuffer::deleteFirstLine() {
         }
     }
     lines.erase(lines.begin());
-    // Order of the mod blocks is the same as the lines
-    modifierBlocks_t::iterator it = modifierBlocks.begin();
-    std::advance(it, countCtrl);
-    modifierBlocks.erase(modifierBlocks.begin(), it);
+    modifierBlocks.eraseFront(countCtrl);
 }
 
 bool etm::TextBuffer::cursorAtEnd() {
@@ -118,22 +111,21 @@ bool etm::TextBuffer::isStartSpace(const Line::codepoint &c, lines_number_t row)
 }
 
 void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
-    modifierBlocks[blockId] = mod;
+    env::type id = modifierBlocks.add(mod);
     Line::string_t str;
     // Mod/control block flag
     str.push_back(env::CONTROL_CHAR_START);
-    // Encode 32 bit unsigned integer index, `blockId`, as 4 bytes in the string
+    // Encode 32 bit unsigned integer index, `id`, as 4 bytes in the string
     int shift = 8 * env::CONTROL_BLOCK_DATA_BYTES;
     for (unsigned int n = 0; n < env::CONTROL_BLOCK_DATA_BYTES; n++) {
         shift -= 8;
-        str.push_back(static_cast<Line::value_type>((blockId >> shift) & 0xff));
+        str.push_back(static_cast<Line::value_type>((id >> shift) & 0xff));
     }
     str.push_back(env::CONTROL_CHAR_END);
     if (!lines.size()) {
         newline();
     }
     lines.back().appendControl(str);
-    blockId++;
 }
 
 void etm::TextBuffer::clear() {
@@ -714,7 +706,7 @@ etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line 
         // As you may know, this is annoying when doing bit manipulation.
         value |= static_cast<env::type>(static_cast<unsigned char>(line.getDejure(i))) << shift;
     }
-    return modifierBlocks[value];
+    return modifierBlocks.get(value);
 }
 
 void etm::TextBuffer::render(int x, int y) {
