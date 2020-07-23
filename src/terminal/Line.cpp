@@ -60,8 +60,8 @@ void etm::Line::iterator::operator--() {
     // utf8::lookbehind will return 0 if the new index would
     // be invalid.
     index -= utf8::lookbehind(parent->getString(), index);
-    while (parent->getDejure(index) == ctrl::CONTROL_CHAR_END) {
-        index -= ctrl::CONTROL_BLOCK_SIZE + 1;
+    while (ctrl::testEnd(parent->getDejure(index))) {
+        index -= ctrl::getJump() + 1;
     }
     index -= utf8::lookbehind(parent->getString(), index);
 }
@@ -70,8 +70,8 @@ void etm::Line::iterator::operator++() {
     index += utf8::test(parent->getDejure(index));
     // Don't trust the offset given by the byte header.
     if (index >= parent->dejureSize()) return;
-    while (parent->getDejure(index) == ctrl::CONTROL_CHAR_START) {
-        index += ctrl::CONTROL_BLOCK_SIZE + 1;
+    while (ctrl::testStart(parent->getDejure(index))) {
+        index += ctrl::getJump() + 1;
     }
 }
 
@@ -103,8 +103,8 @@ etm::Line::size_type etm::Line::findDefactoSize(const string_t &string) {
 etm::Line::size_type etm::Line::findDefactoSize(const string_t::const_iterator &start, const string_t::const_iterator &end) {
     size_type size = 0;
     for (string_t::const_iterator it = start; it < end;) {
-        if (*it == ctrl::CONTROL_CHAR_START) {
-            it += ctrl::CONTROL_BLOCK_SIZE + 1;
+        if (ctrl::testStart(*it)) {
+            it += ctrl::getJump() + 1;
         } else {
             it += utf8::test(*it);
             size++;
@@ -122,15 +122,15 @@ etm::Line::Line():
 etm::Line::size_type etm::Line::correctIndex(size_type index) {
     size_type i = 0;
     for (size_type cIndex = 0; cIndex < index;) {
-        if (string[i] == ctrl::CONTROL_CHAR_START) {
-            i += ctrl::CONTROL_BLOCK_SIZE;
+        if (ctrl::testStart(string[i])) {
+            i += ctrl::getJump();
         } else {
             i += utf8::test(string[i]);
             cIndex++;
         }
     }
-    while (i < string.size() && string[i] == ctrl::CONTROL_CHAR_START) {
-        i += ctrl::CONTROL_BLOCK_SIZE + 1;
+    while (i < string.size() && ctrl::testStart(string[i])) {
+        i += ctrl::getJump() + 1;
     }
     return i;
 }
@@ -150,8 +150,8 @@ etm::Line::value_type &etm::Line::operator[](size_type index) {
 etm::Line::iterator etm::Line::last() {
     // Account for if the last few bytes are control chars
     size_type index = string.size() - 1;
-    while (string[index] == ctrl::CONTROL_CHAR_END) {
-        index -= ctrl::CONTROL_BLOCK_SIZE + 1;
+    while (ctrl::testEnd(string[index])) {
+        index -= ctrl::getJump() + 1;
     }
     return iterator(this, index - utf8::lookbehind(string, index));
 }

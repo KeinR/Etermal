@@ -4,23 +4,55 @@
 #include <string>
 
 namespace etm {
+
     /**
     * Describes encodings for control sequences.
     */
     namespace ctrl {
-        /// The start of a control sequence
-        constexpr char CONTROL_CHAR_START = '\xE';
-        /// The end of a control sequence
-        constexpr char CONTROL_CHAR_END = '\xF';
-        /// Not including the first CONTROL_CHAR_START control char - 
-        /// number of bytes/characters included in a control block.
-        /// 4 for sizeof(@ref type), 1 for CONTROL_CHAR_END
-        constexpr unsigned int CONTROL_BLOCK_SIZE = 5;
-        /// Number of bytes used to record offsets for control blocks.
-        /// Basically sizeof(@ref type)
-        constexpr unsigned int CONTROL_BLOCK_DATA_BYTES = 4;
         /// A value large enough to hold the control block index
-        typedef int type;
+        typedef unsigned int type;
+
+        typedef char char_t;
+        typedef std::string::const_iterator str_iterator_t;
+
+        /**
+        * Test if the given char is the @e start of a control block.
+        * @param [in] c The char to test
+        * @return `true` if yes
+        * @see testEnd(char_t c)
+        * @see getJump()
+        */
+        bool testStart(char_t c);
+        /**
+        * Test if the given char is the @e end of a control block.
+        * @param [in] c The char to test
+        * @return `true` if yes
+        * @see testStart(char_t c)
+        * @see getJump()
+        */
+        bool testEnd(char_t c);
+        /**
+        * Gets the number of bytes that must be skipped
+        * in order to get to the other end of the control block.
+        * If you were at the start, it would be the distance to move postitive
+        * to get to the end byte, and vice versa.
+        * @return The number of bytes to move
+        */
+        unsigned int getJump();
+        /**
+        * Decode a control sequence from a range to an index ID.
+        * @param [in] start The location of the starting byte [see @see testStart(char_t c)]
+        * @param [in] end The end of the string, exclusive (to guard against ill-placed control chars)
+        * @return The decoded index ID
+        */
+        type decode(const str_iterator_t &start, const str_iterator_t &end);
+        /**
+        * Encode a given index ID as a control string.
+        * @param [in] id The ID to encode
+        * @return The encoded string
+        */
+        std::string encode(type id);
+
     }
 
     /**

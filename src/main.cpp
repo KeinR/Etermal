@@ -94,12 +94,14 @@ int main() {
             glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            auto fstart = std::chrono::high_resolution_clock::now();
+            typedef std::chrono::high_resolution_clock clock;
+
+            auto fstart = clock::now();
             terminal->render();
-            totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - fstart).count();
+            totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - fstart).count();
             samples++;
             if (samples > 100) {
-                std::cout << "LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1e6 / 60.0f) * 100) << "% of frame" << std::endl;
+                std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
                 samples = 0;
                 totalMillis = 0;
             }

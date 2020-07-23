@@ -1,7 +1,63 @@
 #include "encode.h"
 
+namespace etm::ctrl {
+    /// The start of a control sequence
+    constexpr char CONTROL_CHAR_START = '\xE';
+    /// The end of a control sequence
+    constexpr char CONTROL_CHAR_END = '\xF';
+    /// Not including the first CONTROL_CHAR_START control char - 
+    /// number of bytes/characters included in a control block.
+    /// 4 for sizeof(@ref type), 1 for CONTROL_CHAR_END
+    constexpr unsigned int CONTROL_BLOCK_SIZE = 5;
+    /// Number of bytes used to record offsets for control blocks.
+    /// Basically sizeof(@ref type)
+    constexpr unsigned int CONTROL_BLOCK_DATA_BYTES = 4;
+}
+
+bool etm::ctrl::testStart(char_t c) {
+    return c == CONTROL_CHAR_START;
+}
+bool etm::ctrl::testEnd(char_t c) {
+    return c == CONTROL_CHAR_END;
+}
+unsigned int etm::ctrl::getJump() {
+    return CONTROL_BLOCK_SIZE;
+}
+etm::ctrl::type etm::ctrl::decode(const str_iterator_t &start, const str_iterator_t &end) {
+    type value = 0;
+    int shift = 8 * static_cast<int>(CONTROL_BLOCK_DATA_BYTES);
+    for (str_iterator_t it = start + 1, seqEnd = it + CONTROL_BLOCK_DATA_BYTES; it < seqEnd; ++it) {
+        if (it >= end) {
+            // Hit the string stop - corrupted?
+            return 0;
+        }
+        shift -= 8;
+        // Note:
+        // static_cast<int>(char) will return the char WITH THE SIGN.
+        // so -128 (char) will be -128 (int).
+        // As you may know, this is annoying when doing bit manipulation.
+        value |= static_cast<type>(static_cast<unsigned char>(*it)) << shift;
+    }
+    return value;
+}
+std::string etm::ctrl::encode(type id) {
+    std::string str;
+    // Mod/control block flag
+    str.push_back(CONTROL_CHAR_START);
+    // Encode 32 bit unsigned integer index, `id`, as 4 bytes in the string
+    int shift = 8 * CONTROL_BLOCK_DATA_BYTES;
+    for (unsigned int n = 0; n < CONTROL_BLOCK_DATA_BYTES; n++) {
+        shift -= 8;
+        str.push_back(static_cast<char_t>((id >> shift) & 0xff));
+    }
+    str.push_back(CONTROL_CHAR_END);
+    return str;
+}
+
+
+
 namespace etm::utf8 {
-    // See https://en.wikipedia.org/wiki/UTF-8#Description
+    /// @see https://en.wikipedia.org/wiki/UTF-8#Description
     static constexpr int countBytes = 4;
 }
 
