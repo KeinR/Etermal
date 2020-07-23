@@ -95,12 +95,37 @@ bool etm::Terminal::acceptInput() {
 void etm::Terminal::pushInput(const std::string &input) {
     display.setCursorEnabled(false);
 
+    // For convineince
+    typedef std::string::const_iterator iterator_t;
+
+    std::string filtered;
+    filtered.reserve(input.size());
+    bool escaped = false;
+    for (iterator_t it = input.begin(); it < input.end(); ++it) {
+        // Don't need to check for codepoint headers
+        // because a value of a header can only ever be < 128
+        // if it's a one-length ASCII char, and we only ever
+        // check ASCII chars.
+        if (escaped) {
+            escaped = false;
+            if (*it == '\n') {
+                filtered.push_back(' ');
+            } else {
+                filtered.push_back(*it);
+            }
+        } else if (*it == '\\') {
+            escaped = true;
+        } else {
+            filtered.push_back(*it);
+        }
+    }
+
     if (inputRequests.size()) {
-        inputRequests.front()->terminalInput(input);
+        inputRequests.front()->terminalInput(filtered);
         inputRequests.pop_front();
     } else if (shell != nullptr) {
-        std::cout << "SENDING TO SHELL: " << input << std::endl;
-        shell->input(input);
+        std::cout << "SENDING TO SHELL: " << filtered << std::endl;
+        shell->input(filtered);
     } else {
         resources->postError(
             "Terminal::flushInputBuffer()",
