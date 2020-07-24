@@ -53,9 +53,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     framebufValid(false)
 {
     Framebuffer::State state;
-    state.store();
     framebuffer.attachTexture(framebufferTex);
-    state.restore();
 
     setBackgroundColor(0x080808);
     setTextColor(0xf0f0f0);

@@ -76,7 +76,7 @@ void etm::Resources::genTriangle() {
 
     // Model and color of the arrow
     Model model(sampleWidth / 4, sampleWidth / 4, sampleWidth / 2, sampleHeight / 2);
-    Color color(1.0f, 1.0f, 1.0f, 1.0f);
+    Color color(1.0f, 1.0f, 1.0f);
 
     // Initialize the buffer
     Buffer triangleBuffer;

@@ -7,7 +7,7 @@ namespace etm::shader { class Shader; }
 namespace etm {
 
     /**
-    * A multipurpose color object that stores RGBA color
+    * A multipurpose color object that stores RGB color
     * proportions in float array [@ref color].
     * @see Model
     * @see RModel
@@ -18,17 +18,17 @@ namespace etm {
         /// @note hexes for Color are parsed as RGB values,
         /// so the first byte is ignored.
         typedef unsigned int hex_t;
-        /// Type used for RGBA @e values (0-255 inclusive).
+        /// Type used for RGB @e values (0-255 inclusive).
         typedef unsigned char value_t;
-        /// Type used for RGBA @e proportions (0-1 incl).
+        /// Type used for RGB @e proportions (0-1 incl).
         /// @see color
         typedef float prop_t;
     private:
         /// Internal color data proportions.
         /// Values are all 0-1.
-        /// Stored in RGBA format, where the first
+        /// Stored in RGB format, where the first
         /// index stores red, second green, etc.
-        prop_t color[4];
+        prop_t color[3];
 
         /**
         * Sets the uniform at `location` to `*this`'s @ref color
@@ -36,20 +36,13 @@ namespace etm {
         * @param [in] location The location of the uniform
         * @see setBackground(const shader::Shader &shader)
         * @see setForeground(const shader::Shader &shader)
+        * @see set(const shader::Shader &shader)
         */
         void setRGB(int location) const;
-
-        /**
-        * Sets the uniform at `location` to `*this`'s @ref color
-        * via glUniform4fv
-        * @see set(const shader::Shader &shader)
-        * @param [in] location The location of the uniform
-        */
-        void setRGBA(int location) const;
     public:
 
         /**
-        * Default initalize color values to 0, 0, 0, 255
+        * Default initalize color values to 0, 0, 0
         */
         Color();
         /**
@@ -57,18 +50,16 @@ namespace etm {
         * @param [in] r The red
         * @param [in] g The green
         * @param [in] b The blue
-        * @param [in] a The alpha
         */
-        Color(prop_t r, prop_t g, prop_t b, prop_t a = 1.0f);
+        Color(prop_t r, prop_t g, prop_t b);
         /**
-        * Initialize with hex value and alpha value.
+        * Initialize with hex value
         * @note The hex is RGB, so only the lesser three
         * bytes are read.
         * @param [in] hex The RGB hex value 
-        * @param [in] alpha The alpha value
         * @see setHex(hex_t hex)
         */
-        Color(hex_t hex, value_t alpha = 0xFF);
+        Color(hex_t hex);
 
         /**
         * Convinience operator, calls @ref setHex(hex_t hex).
@@ -97,46 +88,16 @@ namespace etm {
         * @note The hex is RGB, so only the lesser three
         * bytes are read.
         * @param [in] hex The RGB hex value 
-        * @see setHex(hex_t hex, value_t alpha)
         */
         void setHex(hex_t hex);
-        /**
-        * Set a RGB hex value and alpha.
-        * @note The hex is RGB, so only the lesser three
-        * bytes are read.
-        * @param [in] hex The RGB hex value 
-        * @param [in] alpha The alpha value 
-        * @see setHex(hex_t hex)
-        */
-        void setHex(hex_t hex, value_t alpha);
 
         /**
         * Set RGB color values.
-        * @note The alpha value is unaffected by this call.
         * @param [in] red The red
         * @param [in] green The green
         * @param [in] blue The blue
-        * @see setVal(value_t red, value_t green, value_t blue, value_t alpha)
-        * @see setVal(value_t alpha)
         */
         void setVal(value_t red, value_t green, value_t blue);
-        /**
-        * Set RGBA color values.
-        * @param [in] red The red
-        * @param [in] green The green
-        * @param [in] blue The blue
-        * @param [in] alpha The alpha
-        * @see setVal(value_t red, value_t green, value_t blue)
-        * @see setVal(value_t alpha)
-        */
-        void setVal(value_t red, value_t green, value_t blue, value_t alpha);
-        /**
-        * Set alpha color value.
-        * @param [in] alpha The alpha
-        * @see setVal(value_t red, value_t green, value_t blue)
-        * @see setVal(value_t red, value_t green, value_t blue, value_t alpha)
-        */
-        void setAlpha(value_t alpha);
 
         /**
         * Get an integer representing the RGB values of this
@@ -150,15 +111,15 @@ namespace etm {
         /**
         * Get pointer to data.
         * Especially useful when interfacing with other APIs (OpenGL).
-        * Stored sequentually, in RGBA format.
+        * Stored sequentually, in RGB format.
         * @note The lifetime of the data pointed to by the pointer
         * is tied to `*this`
-        * @return Pointer to array of 4 floats, sorted RGBA
+        * @return Pointer to array of 3 floats, sorted RGB
         */
         prop_t *get();
 
         /**
-        * Binds RGBA data to the color uniform in the current shader
+        * Binds RGB data to the color uniform in the current shader
         * @note The given shader only supplies the uniform location - 
         * the data is set for the currently bound shader.
         * @param [in] shader The shader that contains the uniform location info
@@ -185,10 +146,6 @@ namespace etm {
         */
         void setForeground(const shader::Shader &shader) const;
 
-        // Returns a copy based of this one, with
-        // the brightness modified by `percent`.
-        // Darker values would be caused by a negative arg,
-        // Brighter ones by a positive one
         /**
         * Returns a copy of `*this` with the brightness modified
         * by `percent`.
