@@ -37,3 +37,4 @@
 tests/
 docs/doxygen/
 doxygen/
+build/

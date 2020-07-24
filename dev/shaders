@@ -2,7 +2,7 @@
 
 # Create shader embedables
 
-pushd "resources/shaders" >/dev/null
+pushd "$(dirname "$0")/../resources/shaders" >/dev/null
 
 function comp {
     cat <<EOF > ${1}.h

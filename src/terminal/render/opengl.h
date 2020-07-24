@@ -12,7 +12,7 @@
 * @see https://glad.dav1d.de/
 */
 
-#define GLFW_DLL
+#define GLFW_DLL 1
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 

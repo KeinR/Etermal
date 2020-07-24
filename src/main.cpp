@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <thread>
 
 #include "../src/shell/Shell.h"
 
@@ -19,9 +20,17 @@ static void mouseClick(GLFWwindow* window, int button, int action, int mods);
 static void mouseMove(GLFWwindow* window, double xpos, double ypos);
 static void charCallback(GLFWwindow* window, unsigned int codepoint);
 
+void error_callback(int error, const char* description) {
+    std::cerr << "GLFW ERROR: " << description << std::endl;
+}
+
 int main() {
     try {
-        glfwInit();
+        glfwSetErrorCallback(error_callback);
+        if (glfwInit() == GLFW_FALSE) {
+            std::cerr << "Failed to initialze GLFW" << std::endl;
+            return 1;
+        }
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -49,6 +58,8 @@ int main() {
 
         etm::Terminal term;
         terminal = &term;
+
+        std::cout << "tjgf" << std::endl;
 
         GLFWcursor* ibeam = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
 
@@ -89,6 +100,7 @@ int main() {
 
         long samples = 0;
         long totalMillis = 0;
+        etm::Timer timer(1000 / 60);
         while (!glfwWindowShouldClose(window)) {
 
             glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
@@ -96,20 +108,26 @@ int main() {
 
             typedef std::chrono::high_resolution_clock clock;
 
-            auto fstart = clock::now();
+            // auto fstart = clock::now();
             terminal->render();
-            totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - fstart).count();
-            samples++;
-            if (samples > 100) {
-                std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
-                samples = 0;
-                totalMillis = 0;
-            }
+            // totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - fstart).count();
+            // samples++;
+            // if (samples > 1) {
+            //     std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
+            //     samples = 0;
+            //     totalMillis = 0;
+            // }
 
             etm::assertGLErr("Render loop");
 
             glfwSwapBuffers(window);
             glfwPollEvents();
+
+            while (!timer.hasEnded()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                glfwPollEvents();
+            }
+            timer.start();
         }
 
         glfwTerminate();
