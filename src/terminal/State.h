@@ -14,6 +14,10 @@ namespace etm {
     * set them, and restore their old values.
     * Is a @ref singleton because copying a State class
     * just wouldn't make any sense.
+    * Upon construction, captures all state values.
+    * upon destruction, resores those values.
+    * This is to prevent a state from being messed
+    * up because someone decided to throw.
     * @see Terminal
     */
     class State: public singleton {
@@ -25,13 +29,16 @@ namespace etm {
         GLint unpackAlign;
     public:
         /**
-        * Construct a State.
-        * @warning Fields are in an undefined state; that
-        * is, they're default initialized.
+        * Constructs and calls @ref store()
         */
         State();
         /**
-        * Store the current state into fields
+        * Destructs and calls @ref restore()
+        */
+        ~State();
+        /**
+        * Manually store the current state into fields
+        * @see State()
         */
         void store();
         /**
@@ -41,7 +48,8 @@ namespace etm {
         */
         void set();
         /**
-        * Store the state described in `*this`'s fields.
+        * Manually restore the state described in `*this`'s fields.
+        * @see ~State()
         * @see store()
         * @see set()
         */

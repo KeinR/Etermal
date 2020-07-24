@@ -689,6 +689,16 @@ etm::TextBuffer::mod_t &etm::TextBuffer::getMod(Line::size_type ctrlIndex, Line 
     return modifierBlocks.get(ctrl::decode(line.getString().begin() + ctrlIndex, line.getString().end()));
 }
 
+void etm::TextBuffer::getRange(lines_number_t &start, lines_number_t &end) {
+    start = std::floor(scroll->getOffset() / charHeight());
+    end = std::min(
+        lines.size(),
+        static_cast<lines_number_t>(
+            start + scroll->getNetHeight() / charHeight()
+        )
+    );
+}
+
 void etm::TextBuffer::render(int x, int y) {
 
     // "After scrollbar renders, the text shader is set
@@ -701,13 +711,8 @@ void etm::TextBuffer::render(int x, int y) {
     y -= scroll->getOffset();
 
     // Only render the range that is visible
-    lines_number_t start = std::floor(scroll->getOffset() / charHeight());
-    lines_number_t end = std::min(
-        lines.size(),
-        static_cast<lines_number_t>(
-            start + scroll->getNetHeight() / charHeight()
-        )
-    );
+    lines_number_t start, end;
+    getRange(start, end);
 
     tm::Lookbehind lookbehind(defBackgroundColor, defForegroundColor, start - 1);
 
@@ -779,18 +784,21 @@ void etm::TextBuffer::render(int x, int y) {
         model.x = 0;
         model.y += charHeight();
     }
+}
 
-    // Unfortunately, we have to render the cursor after,
-    // triggering another shader change else
-    // the text background will hide it :(
-                                        // cuz' unsigned, also
-                                        // cursor can only ever be
-                                        // at or past the end
-    if (cursorEnabled && displayCursor && cursor.row < end) {
-        res->bindPrimitiveShader();
-        dispCursor.setX(x + static_cast<int>(cursor.column * charWidth()));
-        dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));
-        dispCursor.setHeight(charHeight());
-        dispCursor.render();
+void etm::TextBuffer::renderCursor(int x, int y) {
+    if (cursorEnabled && displayCursor) {
+        lines_number_t start, end;
+        getRange(start, end);
+        // cuz' unsigned, also cursor can only
+        // ever be at or past the end
+        if (cursor.row < end) {
+            res->bindPrimitiveShader();
+            dispCursor.setX(x + static_cast<int>(cursor.column * charWidth()));
+            dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));
+            dispCursor.setHeight(charHeight());
+            dispCursor.render();
+        }
     }
 }
+

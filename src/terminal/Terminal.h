@@ -13,6 +13,7 @@
 #include "../ETerminal.h"
 #include "Scroll.h"
 #include "gui/Scrollbar.h"
+#include "render/Framebuffer.h"
 
 namespace etm {
     // ../shell/EShell
@@ -111,6 +112,47 @@ namespace etm {
         float dragX;
         /// Mouse y at the last drag location
         float dragY;
+
+        /// Framebuffer used to generate
+        /// @ref framebufferTex
+        Framebuffer framebuffer;
+        /// Texture used to efficintly
+        /// store and render the terminal.
+        /// @see initTex()
+        Texture framebufferTex;
+        /// Whether @ref framebufferTex is valid.
+        /// If it's not valid, will have to re-render
+        /// all text again.
+        /// @see invalidate()
+        /// @see validate()
+        bool framebufValid;
+
+        /**
+        * Invalidates the Terminal cache
+        * [@ref framebufferTex], signaling
+        * that it should be re-generated
+        * upon the next call to @ref render().
+        * @see validate()
+        * @see framebufValid
+        */
+        void invalidate();
+        /**
+        * Validates the Terminal cache
+        * [@ref framebufferTex], signaling
+        * that it should @e NOT be re-generated
+        * upon the next call to @ref render(),
+        * avoiding squandering of resources
+        * @see invalidate()
+        * @see framebufValid
+        */
+        void validate();
+        /**
+        * Initialize the cache texture with the
+        * dimensions of the terminal viewport.
+        * @see framebufferTex
+        * @see viewport
+        */
+        void initTex();
 
         /**
         * Display the welcome text.

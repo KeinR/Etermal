@@ -106,26 +106,26 @@ int main() {
 
             typedef std::chrono::high_resolution_clock clock;
 
-            // auto fstart = clock::now();
+            auto fstart = clock::now();
             terminal->render();
-            // totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - fstart).count();
-            // samples++;
-            // if (samples > 1) {
-            //     std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
-            //     samples = 0;
-            //     totalMillis = 0;
-            // }
+            totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - fstart).count();
+            samples++;
+            if (samples > 1) {
+                std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
+                samples = 0;
+                totalMillis = 0;
+            }
 
             etm::assertGLErr("Render loop");
 
             glfwSwapBuffers(window);
             glfwPollEvents();
 
-            while (!timer.hasEnded()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                glfwPollEvents();
-            }
-            timer.start();
+            // while (!timer.hasEnded()) {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            //     glfwPollEvents();
+            // }
+            // timer.start();
         }
 
         glfwTerminate();

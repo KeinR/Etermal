@@ -3,6 +3,10 @@
 #include "render/Model.h"
 
 etm::State::State() {
+    store();
+}
+etm::State::~State() {
+    restore();
 }
 void etm::State::store() {
     // All have the same z, so no depth test

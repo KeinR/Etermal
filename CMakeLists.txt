@@ -64,7 +64,9 @@ install(EXPORT etermalConfig
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/etermal"
 )
 
-add_subdirectory(docs)
+if (MAKE_DOCS)
+    add_subdirectory(docs)
+endif()
 
 # packaging
 

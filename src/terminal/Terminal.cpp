@@ -48,8 +48,15 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     escapeNext(false),
     cursorBlink(500),
     shell(nullptr),
-    dragging(false)
+    dragging(false),
+    framebufferTex({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR}),
+    framebufValid(false)
 {
+    Framebuffer::State state;
+    state.store();
+    framebuffer.attachTexture(framebufferTex);
+    state.restore();
+
     setBackgroundColor(0x080808);
     setTextColor(0xf0f0f0);
 
@@ -67,6 +74,18 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     displayWelcome();
     // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
+}
+
+void etm::Terminal::invalidate() {
+    framebufValid = false;
+}
+
+void etm::Terminal::validate() {
+    framebufValid = true;
+}
+
+void etm::Terminal::initTex() {
+    framebufferTex.setData(GL_RGB, viewport.width, viewport.height, NULL);
 }
 
 void etm::Terminal::displayWelcome() {
@@ -308,6 +327,8 @@ void etm::Terminal::flush() {
         scroll.jump();
     }
     scrollbar.update();
+
+    invalidate();
 }
 
 void etm::Terminal::setX(float x) {
@@ -363,6 +384,10 @@ void etm::Terminal::updatePosition() {
 
     // Takes number of columns
     display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
+
+    initTex();
+
+    invalidate();
 }
 
 void etm::Terminal::inputChar(unsigned int codepoint) {
@@ -377,6 +402,7 @@ void etm::Terminal::inputChar(const Line::codepoint &c) {
         // area, which is always at the bottom (or should be...)
         scroll.jump();
         scrollbar.update();
+        invalidate();
     }
 }
 void etm::Terminal::doInputChar(const Line::codepoint &c) {
@@ -401,6 +427,7 @@ void etm::Terminal::doInputChar(const Line::codepoint &c) {
             escapeNext = false;
             display.insertAtCursor(c);
         }
+        invalidate();
     }
 }
 
@@ -423,6 +450,7 @@ void etm::Terminal::inputActionKey(actionKey key) {
             break;
         case BACKSPACE:
             display.eraseAtCursor();
+            invalidate();
             break;
         case UP:
             display.moveCursorRow(-1);
@@ -459,6 +487,7 @@ void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) 
             TextBuffer::line_index_t column;
             mapCoords(mouseX, mouseY, row, column);
             display.initSelection(row, column);
+            invalidate();
         }
     } else {
         dragging = false;
@@ -473,6 +502,7 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
         TextBuffer::line_index_t column;
         mapCoords(mouseX, mouseY, row, column);
         display.setSelectionEnd(row, column);
+        invalidate();
     }
 }
 
@@ -483,10 +513,32 @@ void etm::Terminal::mapCoords(float x, float y, TextBuffer::lines_number_t &row,
 
 void etm::Terminal::render() {
     // Preserve caller state (important!)
-
     State state;
-    state.store();
     state.set();
+
+    if (!framebufValid) {
+        Framebuffer::State fbState;
+
+        framebuffer.bind();
+
+        // Render
+
+        resources->bindPrimitiveShader();
+        background.render();
+        scrollbar.render();
+        // After scrollbar renders, the text shader is set
+        // due to the rendering of the triangle textures,
+        // so display doesn't need to set it.
+        display.render(viewport.x, viewport.y);
+
+        // Revalidate cache (important!)
+        validate();
+    }
+
+    resources->bindTextureShader();
+    framebufferTex.bind();
+    Model(0, 0, viewport.width, viewport.height).set(resources->getShader());
+    resources->renderRectangle();
 
     // Run animiations
 
@@ -494,20 +546,10 @@ void etm::Terminal::render() {
         display.toggleCursor();
         cursorBlink.start();
     }
-
-    // Render
-
-    resources->bindPrimitiveShader();
-    background.render();
-    scrollbar.render();
-    // After scrollbar renders, the text shader is set
-    // due to the rendering of the triangle textures,
-    // so display doesn't need to set it.
-    display.render(viewport.x, viewport.y);
-
-    // Done rendering, resore state
-
-    state.restore();
+    // Redering the cursor every time isn't a big deal,
+    // and we have to isolate it anyways because it's
+    // an animation
+    display.renderCursor(viewport.x, viewport.y);
 
     // Check for errors
 

@@ -127,8 +127,6 @@ namespace etm {
         /// All the @ref TextState modifier blocks
         modifierBlocks_t modifierBlocks;
 
-        // Checks if the number of lines is valid,
-        // and truncates the lines if not.
         /**
         * Checks if the line count is less than or equal to
         * @ref maxNumberLines.
@@ -251,6 +249,14 @@ namespace etm {
         * @return The text
         */
         std::string getTextFromRange(const pos &start, const pos &end);
+
+        /**
+        * Gets the valid range (zero indexed indices,
+        * inclusive-exclusive) of lines.
+        * @param [out] start The starting line, inclusive
+        * @param [out] end The ending line, exlcusive
+        */
+        void getRange(lines_number_t &start, lines_number_t &end);
 
     public:
         /**
@@ -517,9 +523,7 @@ namespace etm {
         * The height and width are determined by @ref width (columns)
         * and the value of @ref scroll's getNetWidth().
         * @note Requires that the text shader be set.
-        * @note It is uncertain what shader will exit out with active.
-        * If the cursor is rendering, it will be the primitive shader.
-        * If not, it will be the text shader.
+        * @note Exits with the text shader active
         * @note Only renders text as high as the value of @ref scroll's
         * getNetWidth() return. However, still has to do a lookbehind to
         * determine the current style, which can range from O(1) to O(n)
@@ -528,6 +532,18 @@ namespace etm {
         * @param [in] y The y offset (terminal viewport y)
         */
         void render(int x, int y);
+
+        /**
+        * Renders the cursor if @ref displayCursor
+        * and @ref cursorEnabled are true, as well
+        * as if the cursor is in range.
+        * @note Does not require any shaders to be set
+        * @note Will only change the shader state if the
+        * cursor actually renders
+        * @param [in] x The x offset of the TextBuffer (see @ref render(int x, int y))
+        * @param [in] y The y offset of the TextBuffer (see @ref render(int x, int y))
+        */
+        void renderCursor(int x, int y);
     };
 }
 

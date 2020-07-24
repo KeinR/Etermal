@@ -7,6 +7,7 @@
 #include "render/Texture.h"
 #include "shader/Primitive.h"
 #include "shader/Text.h"
+#include "shader/Texture.h"
 
 namespace etm {
     // shader/Shader
@@ -35,6 +36,8 @@ namespace etm {
         shader::Text textShader;
         /// @see shader::Primitive
         shader::Primitive primitiveShader;
+        /// @see shader::Texture
+        shader::Texture textureShader;
         /// The active shader.
         /// Only ever bound if the shader is made
         /// current (bound via OpenGL calls) as well.
@@ -106,6 +109,12 @@ namespace etm {
         * it as the return value of @ref getShader().
         */
         void bindPrimitiveShader();
+        /**
+        * Binds the @ref textureShader, making it
+        * the current OpenGL shader program, and setting
+        * it as the return value of @ref getShader().
+        */
+        void bindTextureShader();
         /**
         * Gets the currently bound shader.
         * @note Will never be `nullptr`. Will always either be

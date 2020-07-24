@@ -20,5 +20,6 @@ EOF
 
 comp "primitive"
 comp "text"
+comp "texture"
 
 popd >/dev/null

@@ -10,6 +10,7 @@ etm::Resources::Resources(Terminal &terminal):
     terminal(&terminal),
     textShader(this),
     primitiveShader(this),
+    textureShader(this),
     currentShader(nullptr),
     fontLib(this),
     font(this, fontLib, "C:\\Windows\\Fonts\\lucon.ttf")
@@ -204,6 +205,10 @@ void etm::Resources::bindTextShader() {
 }
 void etm::Resources::bindPrimitiveShader() {
     currentShader = &primitiveShader;
+    currentShader->use();
+}
+void etm::Resources::bindTextureShader() {
+    currentShader = &textureShader;
     currentShader->use();
 }
 etm::shader::Shader &etm::Resources::getShader() {
