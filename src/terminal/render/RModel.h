@@ -1,8 +1,14 @@
 #ifndef ETERMAL_ROTATABLEMODEL_H_INCLUDED
 #define ETERMAL_ROTATABLEMODEL_H_INCLUDED
 
-// ../shader/Shader
-namespace etm::shader { class Shader; }
+namespace etm {
+    namespace shader {
+         // ../shader/Shader
+        class Shader;
+    }
+    // ../Resources
+    class Resources;
+}
 
 namespace etm {
 
@@ -43,9 +49,9 @@ namespace etm {
         * @ref width, @ref height and @ref rotation fields, and sets
         * it to the current shader's uniform location
         * specified by the given shader.
-        * @param [in] shader Shader from which to get the model location from
+        * @param [in] res Resources manager from which to get the model location and viewport info from
         */
-        void set(const shader::Shader &shader);
+        void set(Resources *res);
     };
 }
 

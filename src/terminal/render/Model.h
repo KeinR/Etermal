@@ -1,8 +1,14 @@
 #ifndef ETERMAL_MODEL_H_INCLUDED
 #define ETERMAL_MODEL_H_INCLUDED
 
-// ../shader/Shader
-namespace etm::shader { class Shader; }
+namespace etm {
+    namespace shader {
+         // ../shader/Shader
+        class Shader;
+    }
+    // ../Resources
+    class Resources;
+}
 
 namespace etm {
 
@@ -49,9 +55,9 @@ namespace etm {
         * @ref width, and @ref height fields, and sets
         * it to the current shader's uniform location
         * specified by the given shader.
-        * @param [in] shader Shader from which to get the model location from
+        * @param [in] res Resources manager from which to get the model location and viewport info from
         */
-        void set(const shader::Shader &shader);
+        void set(Resources *res);
     };
 }
 

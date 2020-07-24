@@ -135,13 +135,14 @@ void etm::Resources::genTriangle() {
     glBindFramebuffer(GL_FRAMEBUFFER, MSAAFramebuffer);
 
     glViewport(0, 0, sampleWidth, sampleHeight);
+    initViewport();
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     bindPrimitiveShader();
 
     color.set(getShader());
-    model.set(getShader());
+    model.set(this);
 
     triangleBuffer.render();
 
@@ -217,4 +218,18 @@ etm::shader::Shader &etm::Resources::getShader() {
 
 etm::Font &etm::Resources::getFont() {
     return font;
+}
+
+int etm::Resources::getViewportWidth() {
+    return viewportWidth;
+}
+int etm::Resources::getViewportHeight() {
+    return viewportHeight;
+}
+
+void etm::Resources::initViewport() {
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    viewportWidth = viewport[2];
+    viewportHeight = viewport[3];
 }

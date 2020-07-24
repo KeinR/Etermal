@@ -40,7 +40,7 @@ bool etm::Rectangle::hasPoint(float x, float y) {
 }
 
 void etm::Rectangle::render() {
-    model.set(res->getShader());
+    model.set(res);
     color.set(res->getShader());
     res->renderRectangle();
 }

@@ -44,7 +44,7 @@ float etm::Triangle::getRotation() {
 }
 
 void etm::Triangle::render() {
-    model.set(res->getShader());
+    model.set(res);
     backgroundColor.setBackground(res->getShader());
     foregroundColor.setForeground(res->getShader());
     res->renderTriangle();

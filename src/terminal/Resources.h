@@ -48,6 +48,9 @@ namespace etm {
         /// Used font
         Font font;
 
+        int viewportWidth;
+        int viewportHeight;
+
         /// Generate @ref rectangle
         void genRectangle();
         /// Generate @ref triangle
@@ -129,6 +132,11 @@ namespace etm {
         * @see Font
         */
         Font &getFont();
+
+        int getViewportWidth();
+        int getViewportHeight();
+
+        void initViewport();
     };
 }
 

@@ -765,7 +765,7 @@ void etm::TextBuffer::render(int x, int y) {
                 const int size = utf8::test(chr);
 
                 res->getFont().bindChar(utf8::read(line.getString(), c, size));
-                model.set(res->getShader());
+                model.set(res);
                 res->renderRectangle();
                 model.x += charWidth();
 

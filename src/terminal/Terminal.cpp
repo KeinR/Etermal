@@ -514,6 +514,9 @@ void etm::Terminal::render() {
     State state;
     state.set();
 
+    // We won't be changing the viewport
+    resources->initViewport();
+
     if (!framebufValid) {
         Framebuffer::State fbState;
 
@@ -535,7 +538,7 @@ void etm::Terminal::render() {
 
     resources->bindTextureShader();
     framebufferTex.bind();
-    Model(0, 0, viewport.width, viewport.height).set(resources->getShader());
+    viewport.set(resources.get());
     resources->renderRectangle();
 
     // Run animiations
