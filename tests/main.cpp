@@ -2,13 +2,11 @@
 #include <chrono>
 #include <thread>
 
-#include "../src/shell/Shell.h"
+#include <etermal/etermal.h>
+#include <etermal/include/terminal/util/debug.h>
+#include <etermal/include/terminal/util/enums.h>
 
-#include "../src/terminal/Terminal.h"
-#include "../src/terminal/util/debug.h"
-#include "../src/terminal/util/enums.h"
-
-#define GLFW_DLL
+#define GLFW_DLL 1
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 

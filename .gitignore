@@ -34,7 +34,7 @@
 # stackdumps
 *.stackdump
 
-tests/
 docs/doxygen/
 doxygen/
 build/
+tests/build/
