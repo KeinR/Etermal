@@ -13,7 +13,8 @@ etm::Resources::Resources(Terminal &terminal):
     textureShader(this),
     currentShader(nullptr),
     fontLib(this),
-    font(this, fontLib, "C:\\Windows\\Fonts\\lucon.ttf")
+    font(this, fontLib, "C:\\Windows\\Fonts\\lucon.ttf"),
+    viewportWidth(0), viewportHeight(0)
 {
     genRectangle();
     genTriangle();

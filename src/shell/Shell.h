@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <map>
+#include <list>
 
 #include "../EShell.h"
 #include "ArgFilter.h"
@@ -24,11 +25,37 @@ namespace etm {
     */
     class Shell: public EShell {
     public:
-        /// The command string type
-        typedef std::string key_type;
         /// Command callback.
         /// Called when a command is invoked.
         typedef std::function<void(Shell&,ETerminal&,Args&)> callback_t;
+
+        /**
+        * Container for a command callback and its
+        * argument processor.
+        */
+        struct Command {
+            /// The argument processor
+            ArgFilter filter;
+            /// The command callback
+            callback_t callback;
+            /**
+            * Construct a default-initialized command.
+            */
+            Command();
+            /**
+            * Construct command with args.
+            * @param [in] filter The argument processor
+            * @param [in] callback The command callback
+            */
+            Command(const ArgFilter &filter, const callback_t &callback);
+        };
+
+        /// The command string type
+        typedef std::string key_type;
+        /// Type used for command IDs
+        typedef unsigned int comid_t;
+        /// Type used for the command container
+        typedef std::map<comid_t, Command> commands_t;
         /// Error callback.
         /// Called when an error is detected.
         typedef std::function<void(const shellError&)> errCallback_t;
@@ -52,31 +79,8 @@ namespace etm {
         };
 
     private:
-        /**
-        * Container for a command callback and its
-        * argument processor.
-        */
-        struct Command {
-            /// The argument processor
-            ArgFilter filter;
-            /// The command callback
-            callback_t callback;
-            /**
-            * Construct a default-initialized command.
-            */
-            Command();
-            /**
-            * Construct command with args.
-            * @param [in] filter The argument processor
-            * @param [in] callback The command callback
-            */
-            Command(const ArgFilter &filter, const callback_t &callback);
-        };
-
-        /// Type used for the command container
-        typedef std::vector<Command> commands_t;
         /// Type used for the alias map
-        typedef std::map<std::string, commands_t::size_type> aliasMap_t;
+        typedef std::map<key_type, comid_t> aliasMap_t;
 
         /// Called when functional errors are encountered
         /// @see setErrorCallback(const errCallback_t &callback)
@@ -86,7 +90,8 @@ namespace etm {
         /// @see setNoCommandCallback(const noCommandCallback_t &callback)
         noCommandCallback_t noCommandCallback;
         /// Terminal frontend
-        /// @see 
+        /// @see EShell
+        /// @see Terminal
         ETerminal *terminal;
         /// Invokable commands
         /// @see addCommand(const std::string &name, const ArgFilter &filter, const callback_t &callback)
@@ -100,6 +105,8 @@ namespace etm {
         /// Printed to screen after each command invokation is complete
         /// @see setPrompt(const std::string &str)
         std::string prompt;
+        /// The command ID of the last added command
+        comid_t commandId;
 
         /**
         * Checks if a flag is set.
@@ -111,6 +118,15 @@ namespace etm {
         * Prepare the terminal for input.
         */
         void prepTerminal();
+
+        /**
+        * Alias the given ID with the given name.
+        * @note This doesn't check for the existance of the ID.
+        * @param [in] id The ID to alias
+        * @param [in] name The name to alias with
+        */
+        void doAlias(comid_t id, const std::string &name);
+
     public:
         /**
         * Construct a shell.
@@ -194,25 +210,28 @@ namespace etm {
 
         /**
         * Add a new command to the Shell.
-        * If the parameter `callback` is not callable,
+        * @note If the parameter `callback` is not callable,
         * an error is set and the command is not added.
         * @param [in] name The initial alias for the command
         * @param [in] filter The command filter for the command
         * @param [in] callback A callable callback for the command
         * @see alias(const std::string &name)
         * @see input(const std::string &commandString)
+        * @return ID of the command (used to modify it), or zero if
+        * an error occurred.
         */
-        void addCommand(const std::string &name, const ArgFilter &filter, const callback_t &callback);
+        comid_t addCommand(const std::string &name, const ArgFilter &filter, const callback_t &callback);
         /**
-        * Associate another name with the last added command.
+        * Associate another name with the given command.
+        * @note An error is set if `id` is invalid (doesn't exist)
         * @note If `name` already exists as an alias to some other
         * command, that alias gets re-pointed to the last command.
         * In other words, this function overwrites any previous alias
         * of the same name.
-        * @warning If there are no commands, an error is set.
+        * @param [in] id The ID of the command
         * @param [in] name The alias
         */
-        void alias(const std::string &name);
+        void alias(comid_t id, const std::string &name);
 
         /**
         * Send an error to the error callback.

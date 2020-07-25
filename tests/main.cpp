@@ -79,16 +79,23 @@ int main() {
         term.setShell(shell);
         shell.setTerminal(term);
 
+        typedef etm::Shell::comid_t comid;
+
         etm::ArgFilter clearFilter;
         clearFilter.setUsage("Usage: clear\n");
-        shell.addCommand("clear", clearFilter, [](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
+        comid clearCom = shell.addCommand("clear", clearFilter, [](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
             terminal.clear();
         });
         etm::ArgFilter exitFilter;
-        exitFilter.setUsage("Usage: clear\n");
-        shell.addCommand("exit", exitFilter, [window](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
+        exitFilter.setUsage("Usage: [exit|leave|stop|terminate|cya|bye]\n");
+        comid exitCom = shell.addCommand("exit", exitFilter, [window](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
             glfwSetWindowShouldClose(window, true);
         });
+        shell.alias(exitCom, "leave");
+        shell.alias(exitCom, "stop");
+        shell.alias(exitCom, "terminate");
+        shell.alias(exitCom, "cya");
+        shell.alias(exitCom, "bye");
 
         std::cout << "created" << std::endl;
 

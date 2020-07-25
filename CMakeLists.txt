@@ -2,15 +2,15 @@ cmake_minimum_required(VERSION 3.0)
 project(etermal VERSION 1.0)
 
 # Configure compiler settings
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 if (NOT DEV)
     message("Configured to release build")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -s -O2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s -O2")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s -O2")
 else()
     message("Configured to development build")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 endif()
 

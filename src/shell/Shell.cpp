@@ -42,7 +42,8 @@ etm::Shell::Shell(): Shell(defaultErrorCallback) {
 etm::Shell::Shell(const errCallback_t &callback):
     terminal(nullptr),
     flags(flag::none),
-    prompt("\nuser@terminal ~\n$ ")
+    prompt("\nuser@terminal ~\n$ "),
+    commandId(0)
 {
     setErrorCallback(callback);
     setNoCommandCallback(defaultNoCommandCallback);
@@ -154,31 +155,38 @@ void etm::Shell::prepTerminal() {
     terminal->setTakeInput(true);
 }
 
-void etm::Shell::addCommand(const std::string &name, const ArgFilter &filter, const callback_t &callback) {
+void etm::Shell::doAlias(comid_t id, const std::string &name) {
+    aliasMap.insert_or_assign(name, id);
+}
+
+etm::Shell::comid_t etm::Shell::addCommand(const std::string &name, const ArgFilter &filter, const callback_t &callback) {
     if (callback) {
-        commands.emplace_back(filter, callback);
-        alias(name);
+        commandId++;
+        commands.insert_or_assign(commandId, Command(filter, callback));
+        doAlias(commandId, name);
+        return commandId;
     } else {
         postError(
             "Shell::addCommand(const std::string&, const ArgFilter&, const callback_t&)",
             "The given callback is not callable. The command \"" + name + "\" will not be added",
             false
         );
+        return 0;
     }
 }
-void etm::Shell::alias(const std::string &name) {
-    if (commands.size() > 0) {
+void etm::Shell::alias(comid_t id, const std::string &name) {
+    if (commands.find(id) != commands.end()) {
         if (flagSet(flag::nocase)) {
-            std::string lower = name;
+            std::string lower(name);
             makeLowercase(lower);
-            aliasMap[lower] = commands.size() - 1;
+            doAlias(id, lower);
         } else {
-            aliasMap[name] = commands.size() - 1;
+            doAlias(id, name);
         }
     } else {
         postError(
-            "Shell::alias(const std::string&)",
-            "There are no commands to alias",
+            "Shell::alias(comid_t,const std::string&)",
+            "The given id of " + std::to_string(id) + " is invalid (doesn't exist)",
             false
         );
     }
