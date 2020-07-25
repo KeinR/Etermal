@@ -111,6 +111,10 @@ int main() {
 
         std::cout << "loop" << std::endl;
 
+        std::ostream out(terminal);
+        out << "\nhey look I can write to the temrinal!\n";
+        out.flush();
+
         long samples = 0;
         long totalMillis = 0;
         etm::Timer timer(1000 / 60);

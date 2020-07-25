@@ -4,6 +4,7 @@
 #include <deque>
 #include <memory>
 #include <functional>
+#include <streambuf>
 
 #include "util/enums.h"
 #include "util/Timer.h"
@@ -29,7 +30,7 @@ namespace etm {
     /**
     * Build-in implementation of the @ref ETerminal frontend.
     */
-    class Terminal: public ETerminal {
+    class Terminal: public ETerminal, public std::streambuf {
     public:
         /// Callback for a window action callback.
         /// Used to allow user to supply their own procedures
@@ -199,6 +200,39 @@ namespace etm {
         * @param [out] column Display column
         */
         void mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column);
+    protected:
+
+        /**
+        * Calls @ref flush().
+        * @return 0
+        */
+        int sync() override;
+        /**
+        * Returns the size of the @ref displayBuffer.
+        * @return The char count
+        */
+        std::streamsize showmanyc() override;
+        /**
+        * Extracts characters from the start of the @ref displayBuffer.
+        * @param [out] c The output string
+        * @param [in] n Size of the output string
+        * @return The number of chars put
+        */
+        std::streamsize xsgetn(char *c, std::streamsize n) override;
+        /**
+        * Get the first character in the @ref displayBuffer
+        * @return The character
+        */
+        int underflow() override;
+        /**
+        * Extract the first character in the @ref displayBuffer
+        * @return The character
+        */
+        int uflow() override;
+        int pbackfail(int c = EOF) override;
+        std::streamsize xsputn(const char* s, std::streamsize n) override;
+        int overflow(int c = EOF) override;
+
     public:
 
         /**

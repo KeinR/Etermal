@@ -177,6 +177,57 @@ bool etm::Terminal::acceptInput() {
     return takeInput || inputRequests.size();
 }
 
+
+/// 0------------- streambuf overrides -----------------0
+
+int etm::Terminal::sync() {
+    flush();
+    return 0;
+}
+std::streamsize etm::Terminal::showmanyc() {
+    return displayBuffer.size();
+}
+std::streamsize etm::Terminal::xsgetn(char *out, std::streamsize size) {
+    size = std::min(size, static_cast<std::streamsize>(displayBuffer.size()));
+    displayBuffer.copy(out, size);
+    displayBuffer.erase(0, size);
+    return size;
+}
+int etm::Terminal::underflow() {
+    if (displayBuffer.size()) {
+        return displayBuffer.back();
+    } else {
+        return std::char_traits<char>::eof();
+    }
+}
+int etm::Terminal::uflow() {
+    if (displayBuffer.size()) {
+        char c = displayBuffer.back();
+        displayBuffer.pop_back();
+        return c;
+    } else {
+        return std::char_traits<char>::eof();
+    }
+}
+int etm::Terminal::pbackfail(int c) {
+    if (std::char_traits<char>::eof() != c) {
+        displayBuffer.insert(displayBuffer.begin(), c);
+    }
+    return c;
+}
+std::streamsize etm::Terminal::xsputn(const char *s, std::streamsize n) {
+    displayBuffer.append(s, n);
+    return n;
+}
+int etm::Terminal::overflow(int c) {
+    if (std::char_traits<char>::eof() != c) {
+        displayBuffer.push_back(c);
+    }
+    return c;
+}
+
+/// 0------------- end streambuf overrides -----------------0
+
 void etm::Terminal::pushInput(const std::string &input) {
     display.setCursorEnabled(false);
 
