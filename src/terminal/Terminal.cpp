@@ -471,6 +471,7 @@ void etm::Terminal::inputChar(const Line::codepoint &c) {
         doInputChar(c);
         // When inputting, scroll to focus on the input
         // area, which is always at the bottom (or should be...)
+        scroll.setGrossHeight(display.getHeight());
         scroll.jump();
         scrollbar.update();
         invalidate();
