@@ -56,10 +56,10 @@ int main() {
 
         etm::Terminal term;
 
-        {
-            etm::Terminal othe;
-            term = std::move(othe);
-        }
+        // {
+        //     etm::Terminal othe;
+        //     term = std::move(othe);
+        // }
 
         terminal = &term;
 

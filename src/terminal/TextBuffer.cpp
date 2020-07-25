@@ -1,6 +1,5 @@
 #include "TextBuffer.h"
 
-#include <iostream>
 #include <cmath>
 #include <iterator>
 
@@ -799,7 +798,7 @@ void etm::TextBuffer::renderCursor(int x, int y) {
         if (cursor.row < end) {
             res->bindPrimitiveShader();
             dispCursor.setX(x + static_cast<int>(cursor.column * charWidth()));
-            dispCursor.setY(y + static_cast<int>(cursor.row * charHeight()));
+            dispCursor.setY(y - scroll->getOffset() + static_cast<int>(cursor.row * charHeight()));
             dispCursor.setHeight(charHeight());
             dispCursor.render();
         }
