@@ -47,6 +47,10 @@ etm::TextBuffer::TextBuffer(Resources *res, Scroll &scroll, line_index_t width):
     setCursorWidth(1);
 }
 
+void etm::TextBuffer::setScroll(Scroll &scroll) {
+    this->scroll = &scroll;
+}
+
 void etm::TextBuffer::checkNumberLines() {
     while (lines.size() > maxNumberLines) {
         deleteFirstLine();

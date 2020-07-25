@@ -250,6 +250,12 @@ namespace etm {
         Scrollbar(Resources *res, Scroll &scroll);
 
         /**
+        * Sets the scroll backend.
+        * @param [in] scroll The scroll backend
+        */
+        void setScroll(Scroll &scroll);
+
+        /**
         * Set the x coordinate of the scrollbar.
         * @param [in] x The x coordinate
         * @see getX()

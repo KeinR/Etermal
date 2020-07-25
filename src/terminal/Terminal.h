@@ -220,8 +220,17 @@ namespace etm {
         * @see setErrorCallback(const errCallback_t &callback)
         */
         Terminal(const errCallback_t &errorCallback);
-        Terminal(Terminal &&other) = delete; // Temp
-        Terminal &operator=(Terminal &&other) = delete;
+        /**
+        * Initialize with moved object.
+        * @param [in,out] The object to move
+        */
+        Terminal(Terminal &&other);
+        /**
+        * Set to moved object.
+        * @param [in,out] The object to move
+        * @return `*this`
+        */
+        Terminal &operator=(Terminal &&other);
 
         /** @internal
         * Invalidates the Terminal display cache

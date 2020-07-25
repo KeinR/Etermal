@@ -55,6 +55,12 @@ int main() {
         std::cout << "afs" << std::endl;
 
         etm::Terminal term;
+
+        {
+            etm::Terminal othe;
+            term = std::move(othe);
+        }
+
         terminal = &term;
 
         std::cout << "tjgf" << std::endl;

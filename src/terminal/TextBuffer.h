@@ -268,6 +268,12 @@ namespace etm {
         TextBuffer(Resources *res, Scroll &scroll, line_index_t width);
 
         /**
+        * Sets the scroll backend.
+        * @param [in] scroll The scroll backend
+        */
+        void setScroll(Scroll &scroll);
+
+        /**
         * Append a new modifier.
         * @param [in] mod The modifier
         */

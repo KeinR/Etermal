@@ -155,6 +155,10 @@ etm::Scrollbar::Scrollbar(Resources *res, Scroll &scroll):
     downArrow.setArrowColor(0x1f1f1f);
 }
 
+void etm::Scrollbar::setScroll(Scroll &scroll) {
+    this->scroll = &scroll;
+}
+
 void etm::Scrollbar::calcSliderX() {
     slider.setX(bar.getX() + sideMargin);
 }

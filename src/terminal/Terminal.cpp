@@ -74,6 +74,68 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
 }
+etm::Terminal::Terminal(Terminal &&other):
+// This is a terrible solution.
+errorCallback(std::move(other.errorCallback)),
+resources(std::move(other.resources)),
+viewport(std::move(other.viewport)),
+scroll(std::move(other.scroll)),
+scrollbar(std::move(other.scrollbar)),
+scrollSensitivity(std::move(other.scrollSensitivity)),
+display(std::move(other.display)),
+background(std::move(other.background)),
+displayBuffer(std::move(other.displayBuffer)),
+inputRequests(std::move(other.inputRequests)),
+focused(std::move(other.focused)),
+takeInput(std::move(other.takeInput)),
+escapeNext(std::move(other.escapeNext)),
+cursorBlink(std::move(other.cursorBlink)),
+shell(std::move(other.shell)),
+windowSetCursorDefault(std::move(other.windowSetCursorDefault)),
+windowSetCursorIBeam(std::move(other.windowSetCursorIBeam)),
+hovering(std::move(other.hovering)),
+dragging(std::move(other.dragging)),
+dragX(std::move(other.dragX)),
+dragY(std::move(other.dragY)),
+framebuffer(std::move(other.framebuffer)),
+framebufferTex(std::move(other.framebufferTex)),
+framebufValid(std::move(other.framebufValid))
+{
+    display.setScroll(scroll);
+    scrollbar.setScroll(scroll);
+}
+etm::Terminal &etm::Terminal::operator=(Terminal &&other) {
+    errorCallback = std::move(other.errorCallback);
+    resources = std::move(other.resources);
+    viewport = std::move(other.viewport);
+    scroll = std::move(other.scroll);
+    scrollbar = std::move(other.scrollbar);
+    scrollSensitivity = std::move(other.scrollSensitivity);
+    display = std::move(other.display);
+    background = std::move(other.background);
+    displayBuffer = std::move(other.displayBuffer);
+    inputRequests = std::move(other.inputRequests);
+    focused = std::move(other.focused);
+    takeInput = std::move(other.takeInput);
+    escapeNext = std::move(other.escapeNext);
+    cursorBlink = std::move(other.cursorBlink);
+    shell = std::move(other.shell);
+    windowSetCursorDefault = std::move(other.windowSetCursorDefault);
+    windowSetCursorIBeam = std::move(other.windowSetCursorIBeam);
+    hovering = std::move(other.hovering);
+    dragging = std::move(other.dragging);
+    dragX = std::move(other.dragX);
+    dragY = std::move(other.dragY);
+    windowSetCursorIBeam = std::move(other.windowSetCursorIBeam);
+    framebuffer = std::move(other.framebuffer);
+    framebufferTex = std::move(other.framebufferTex);
+    framebufValid = std::move(other.framebufValid);
+
+    display.setScroll(scroll);
+    scrollbar.setScroll(scroll);
+
+    return *this;
+}
 
 void etm::Terminal::invalidate() {
     framebufValid = false;
@@ -515,6 +577,8 @@ void etm::Terminal::render() {
     // Preserve caller state (important!)
     State state;
     state.set();
+
+    resources->setTerminal(*this);
 
     // Run animiations
 
