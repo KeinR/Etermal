@@ -269,6 +269,13 @@ void etm::Terminal::setScrollSensitivity(float value) {
     scrollSensitivity = value;
 }
 
+void etm::Terminal::setScrollCooldown(int millis) {
+    scrollbar.setScrollCooldown(millis);
+}
+void etm::Terminal::setScrollWait(int millis) {
+    scrollbar.setScrollWait(millis);
+}
+
 // The shell is where user input will be directed
 void etm::Terminal::setShell(EShell &shell) {
     this->shell = &shell;

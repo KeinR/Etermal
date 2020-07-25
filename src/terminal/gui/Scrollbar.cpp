@@ -81,6 +81,14 @@ float etm::Scrollbar::Arrow::getHeight() {
     return arrow.getHeight();
 }
 
+void etm::Scrollbar::Arrow::setScrollCooldown(int millis) {
+    tick.setTime(millis);
+}
+
+void etm::Scrollbar::Arrow::setScrollWait(int millis) {
+    wait.setTime(millis);
+}
+
 void etm::Scrollbar::Arrow::setColor(const Color &color) {
     bgColor = color;
     arrow.setBackColor(bgColor);
@@ -146,8 +154,8 @@ etm::Scrollbar::Scrollbar(Resources *res, Scroll &scroll):
     dragY(0.0d),
     showingSlider(false),
     sideMargin(1),
-    upArrow(this, 300, 1000, -1),
-    downArrow(this, 300, 1000, 1)
+    upArrow(this, 100, 300, -1),
+    downArrow(this, 100, 300, 1)
 {
     upArrow.setHeight(20);
     downArrow.setHeight(20);
@@ -157,6 +165,14 @@ etm::Scrollbar::Scrollbar(Resources *res, Scroll &scroll):
 
 void etm::Scrollbar::setScroll(Scroll &scroll) {
     this->scroll = &scroll;
+}
+
+void etm::Scrollbar::setScrollCooldown(int millis) {
+
+}
+
+void etm::Scrollbar::setScrollWait(int millis) {
+
 }
 
 void etm::Scrollbar::calcSliderX() {

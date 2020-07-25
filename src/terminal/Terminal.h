@@ -326,6 +326,20 @@ namespace etm {
         void setScrollSensitivity(float value);
 
         /**
+        * Time between scrolls when holding
+        * down the scrollbar arrow.
+        * @param [in] millis Time in milliseconds
+        */
+        void setScrollCooldown(int millis);
+
+        /**
+        * Time to wait until doing scroll repeat
+        * from when user first presses scroll button.
+        * @param [in] millis Time in milliseconds
+        */
+        void setScrollWait(int millis);
+
+        /**
         * Sets the shell to which user input should be directed.
         * @note If this isn't set and the terminal recieves input,
         * an error will be set.

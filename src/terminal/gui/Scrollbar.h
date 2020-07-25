@@ -144,6 +144,21 @@ namespace etm {
             */
             float getHeight();
 
+            /**
+            * Time between scrolls when holding
+            * down the scrollbar arrow.
+            * @param [in] millis Time in milliseconds
+            * @see Terminal::setScrollCooldown(int millis)
+            */
+            void setScrollCooldown(int millis);
+
+            /**
+            * Time to wait until doing scroll repeat
+            * from when user first presses scroll button.
+            * @param [in] millis Time in milliseconds
+            * @see Terminal::setScrollWait(int millis)
+            */
+            void setScrollWait(int millis);
 
             /**
             * Sets the background color
@@ -254,6 +269,22 @@ namespace etm {
         * @param [in] scroll The scroll backend
         */
         void setScroll(Scroll &scroll);
+
+        /**
+        * Time between scrolls when holding
+        * down the scrollbar arrow.
+        * @param [in] millis Time in milliseconds
+        * @see Terminal::setScrollCooldown(int millis)
+        */
+        void setScrollCooldown(int millis);
+
+        /**
+        * Time to wait until doing scroll repeat
+        * from when user first presses scroll button.
+        * @param [in] millis Time in milliseconds
+        * @see Terminal::setScrollWait(int millis)
+        */
+        void setScrollWait(int millis);
 
         /**
         * Set the x coordinate of the scrollbar.

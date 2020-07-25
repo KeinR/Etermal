@@ -70,6 +70,8 @@ int main() {
         term.setWidth(700);
         term.setHeight(700);
         // term.setRows(10, 5);
+        term.setScrollCooldown(75);
+        term.setScrollWait(200);
         term.setCursorDefault([window]()->void{
             glfwSetCursor(window, NULL);
         });
