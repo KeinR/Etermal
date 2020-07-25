@@ -449,6 +449,10 @@ void etm::Terminal::flush() {
         scroll.jump();
     }
     scrollbar.update();
+    // If there's data being pushed,
+    // it should disrupt the cursor
+    display.jumpCursor();
+    display.lockCursor();
 
     invalidate();
 }
