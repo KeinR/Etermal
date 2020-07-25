@@ -118,7 +118,7 @@ int main() {
             totalMillis += std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - fstart).count();
             samples++;
             if (samples > 1) {
-                std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
+                // std::cout << "FPS = " << (static_cast<float>(samples) / (static_cast<float>(totalMillis) / 1000.0f)) << ", LAST FRAME UTILIZATION AVG: " << (static_cast<float>(totalMillis) / samples) << ", " << (static_cast<float>(totalMillis) / samples / (1000 / 60.0f) * 100) << "% of frame" << std::endl;
                 samples = 0;
                 totalMillis = 0;
             }

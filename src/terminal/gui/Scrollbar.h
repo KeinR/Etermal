@@ -191,6 +191,11 @@ namespace etm {
             * the status of the @ref wait and @ref tick timers.
             */
             void render();
+
+            /**
+            * Checks timers.
+            */
+            void animate();
         };
 
         /// The upward facing arrow
@@ -228,6 +233,13 @@ namespace etm {
         * and @ref downArrow
         */
         void calcArrows();
+
+        /**
+        * Obtain the resources manager.
+        * For use by nested classes.
+        * @return The resources manager
+        */
+        Resources *getRes();
     public:
 
         /**
@@ -326,6 +338,11 @@ namespace etm {
         void update();
 
         /**
+        * Update the scrollbar's y value only.
+        */
+        void updateScroll();
+
+        /**
         * Notify the Scrollbar of a mouse button action.
         * @param [in] isPressed is the mouse button pressed?
         * @param [in] mouseX The current x coordinate of the mouse
@@ -351,6 +368,11 @@ namespace etm {
         * the Primitive and Text shaders will be modified
         */
         void render();
+
+        /**
+        * Checks timers.
+        */
+        void animate();
     };
 }
 

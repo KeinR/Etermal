@@ -135,14 +135,6 @@ etm::Line::size_type etm::Line::correctIndex(size_type index) {
     return i;
 }
 etm::Line::value_type &etm::Line::operator[](size_type index) {
-    if (correctIndex(index) >= string.size()) {
-        // @temp
-        std::cerr << "OUT OF BOUNDS!!" << std::endl;
-        std::cerr << "index = " << index << std::endl;
-        std::cerr << "correctIndex(index) = " << correctIndex(index) << std::endl;
-        std::cerr << "string.size() = " << string.size() << std::endl;
-        std::cout << "string == \"" << string << "\"" << std::endl;
-    }
     return string[correctIndex(index)];
 }
 

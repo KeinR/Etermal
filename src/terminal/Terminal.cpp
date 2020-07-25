@@ -39,6 +39,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     errorCallback(errorCallback ? errorCallback : defaultErrorCallback),
     resources(new Resources(*this)),
     viewport(0, 0, 0, 0),
+    scroll(resources.get()),
     scrollbar(resources.get(), scroll),
     scrollSensitivity(25.0f),
     display(resources.get(), scroll, 30),
@@ -80,6 +81,11 @@ void etm::Terminal::invalidate() {
 
 void etm::Terminal::validate() {
     framebufValid = true;
+}
+
+void etm::Terminal::notifyScroll() {
+    scrollbar.update();
+    invalidate();
 }
 
 void etm::Terminal::initTex() {
@@ -141,7 +147,6 @@ void etm::Terminal::pushInput(const std::string &input) {
         inputRequests.front()->terminalInput(filtered);
         inputRequests.pop_front();
     } else if (shell != nullptr) {
-        std::cout << "SENDING TO SHELL: " << filtered << std::endl;
         shell->input(filtered);
     } else {
         resources->postError(
@@ -265,7 +270,6 @@ int etm::Terminal::readHexFromStr(const std::string &str, std::string::size_type
     }
     // Decriment so that is on the last char in the hex
     i--;
-    std::cout << "read hex 0x" << std::hex << result << std::dec << std::endl;
     return result;
 }
 
@@ -468,9 +472,7 @@ void etm::Terminal::inputActionKey(actionKey key) {
 void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) {
     if (viewport.hasPoint(mouseX, mouseY)) {
         // Negate to align properly
-        if (scroll.scroll(-yOffset * scrollSensitivity)) {
-            scrollbar.update();
-        }
+        scroll.scroll(-yOffset * scrollSensitivity);
     }
 }
 void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {
@@ -514,6 +516,17 @@ void etm::Terminal::render() {
     State state;
     state.set();
 
+    // Run animiations
+
+    if (cursorBlink.hasEnded()) {
+        display.toggleCursor();
+        cursorBlink.start();
+    }
+
+    scrollbar.animate();
+
+    // Render
+
     // We won't be changing the viewport
     resources->initViewport();
 
@@ -541,12 +554,6 @@ void etm::Terminal::render() {
     viewport.set(resources.get());
     resources->renderRectangle();
 
-    // Run animiations
-
-    if (cursorBlink.hasEnded()) {
-        display.toggleCursor();
-        cursorBlink.start();
-    }
     // Redering the cursor every time isn't a big deal,
     // and we have to isolate it anyways because it's
     // an animation

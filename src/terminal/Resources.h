@@ -133,10 +133,32 @@ namespace etm {
         */
         Font &getFont();
 
+        /**
+        * Retrieve the cached viewport width.
+        * @return The viewport width
+        */
         int getViewportWidth();
+        /**
+        * Retrieve the cached viewport height.
+        * @return The viewport height
+        */
         int getViewportHeight();
 
+        /**
+        * Set up the viewport width and height
+        * variables to that of the current viewport.
+        */
         void initViewport();
+
+        /**
+        * Effectively calls @ref Terminal::invalidate().
+        */
+        void invalidateDisplay();
+
+        /**
+        * Effectively calls @ref Terminal::notifyScroll().
+        */
+        void notifyScroll();
     };
 }
 

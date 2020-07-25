@@ -5,7 +5,8 @@
 
 #include "Resources.h"
 
-etm::Scroll::Scroll():
+etm::Scroll::Scroll(Resources *res):
+    res(res),
     grossHeight(1), // Prevent /0 error in scrollbar
     netHeight(1), // Prevent /0 error in scrollbar
     offset(0),
@@ -47,7 +48,7 @@ float etm::Scroll::getMaxOffset() {
     return maxOffset;
 }
 
-bool etm::Scroll::scroll(float value) {
+void etm::Scroll::scroll(float value) {
     alignBuffer += value;
     if (alignBuffer >= align) {
         // Flush
@@ -58,7 +59,7 @@ bool etm::Scroll::scroll(float value) {
         );
         // Mod to get remaining scroll
         alignBuffer = std::fmod(alignBuffer, align);
-        return true;
+        res->notifyScroll();
     } else if (alignBuffer <= -align) {
         // Flush
         // NOTE: We use ceil because APPARENTLY
@@ -69,9 +70,8 @@ bool etm::Scroll::scroll(float value) {
             0.0f
         );
         alignBuffer = std::fmod(alignBuffer, -align);
-        return true;
+        res->notifyScroll();
     }
-    return false;
 }
 
 void etm::Scroll::scrollByAlign(int ammount) {

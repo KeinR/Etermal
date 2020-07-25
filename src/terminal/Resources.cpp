@@ -234,3 +234,11 @@ void etm::Resources::initViewport() {
     viewportWidth = viewport[2];
     viewportHeight = viewport[3];
 }
+
+void etm::Resources::invalidateDisplay() {
+    terminal->invalidate();
+}
+
+void etm::Resources::notifyScroll() {
+    terminal->notifyScroll();
+}

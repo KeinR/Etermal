@@ -1,12 +1,18 @@
 #ifndef ETERMAL_SCROLL_H_INCLUDED
 #define ETERMAL_SCROLL_H_INCLUDED
 
+// Resources
+namespace etm { class Resources; }
+
 namespace etm {
 
     /**
     * @ref Scrollbar backend, keeps track of scrolling values.
     */
     class Scroll {
+        /// Handle to the resources manager.
+        /// Notifies it when there's been a change in the scroll
+        Resources *res;
         /// Total height of all elements if
         /// they were to all be displayed
         int grossHeight;
@@ -34,8 +40,10 @@ namespace etm {
     public:
         /**
         * Create a new object, with values set to 0 or 1.
+        * @param [in] res Handle to the resources manager,
+        * used to report when the scroll changes
         */
-        Scroll();
+        Scroll(Resources *res);
 
         // Must be positive and not equal to zero
         /**
@@ -86,11 +94,8 @@ namespace etm {
         * Will not actually scroll until the @ref alignBuffer
         * has been filled.
         * @param [in] ammount The ammount of distance to scroll
-        * @return `true` if the scroll @ref offset changed
         */
-        bool scroll(float ammount);
-        // Scrolls by a certain align.
-        // Basically calls scroll(ammount * align)
+        void scroll(float ammount);
         /**
         * Scroll by one entire align unit.
         * Equivilent to `scroll(ammount * align)`

@@ -128,15 +128,6 @@ namespace etm {
         bool framebufValid;
 
         /**
-        * Invalidates the Terminal cache
-        * [@ref framebufferTex], signaling
-        * that it should be re-generated
-        * upon the next call to @ref render().
-        * @see validate()
-        * @see framebufValid
-        */
-        void invalidate();
-        /**
         * Validates the Terminal cache
         * [@ref framebufferTex], signaling
         * that it should @e NOT be re-generated
@@ -231,6 +222,22 @@ namespace etm {
         Terminal(const errCallback_t &errorCallback);
         Terminal(Terminal &&other) = delete; // Temp
         Terminal &operator=(Terminal &&other) = delete;
+
+        /** @internal
+        * Invalidates the Terminal display cache
+        * [@ref framebufferTex], signaling
+        * that it should be re-generated
+        * upon the next call to @ref render().
+        * @see validate()
+        * @see framebufValid
+        */
+        void invalidate();
+
+        /** @internal
+        * Notifies the terminal that the scroll has
+        * changed.
+        */
+        void notifyScroll();
 
         /**
         * Pass an error to the current error callback.
