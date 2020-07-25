@@ -23,7 +23,9 @@ add_library(etermal STATIC ${sources})
 
 # Find and add package dependencies
 find_package(freetype 2.1 REQUIRED)
+find_package(glm REQUIRED)
 target_link_libraries(etermal Freetype::Freetype)
+include_directories(${GLM_INCLUDE_DIRS})
 
 # installing
 
