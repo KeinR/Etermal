@@ -1,5 +1,5 @@
-#ifndef ARGFILTER_H_INCLUDED
-#define ARGFILTER_H_INCLUDED
+#ifndef ETERMAL_ARGFILTER_H_INCLUDED
+#define ETERMAL_ARGFILTER_H_INCLUDED
 
 #include <string>
 #include <vector>

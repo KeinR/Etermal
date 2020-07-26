@@ -1,5 +1,5 @@
-#ifndef SHADER_H_INCLUDED
-#define SHADER_H_INCLUDED
+#ifndef ETERMAL_SHADER_H_INCLUDED
+#define ETERMAL_SHADER_H_INCLUDED
 
 #include <string>
 

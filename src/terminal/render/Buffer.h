@@ -1,5 +1,5 @@
-#ifndef BUFFER_H_INCLUDED
-#define BUFFER_H_INCLUDED
+#ifndef ETERMAL_BUFFER_H_INCLUDED
+#define ETERMAL_BUFFER_H_INCLUDED
 
 namespace etm {
 

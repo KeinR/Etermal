@@ -1,5 +1,5 @@
-#ifndef TEXTURE_H_INCLUDED
-#define TEXTURE_H_INCLUDED
+#ifndef ETERMAL_TEXTURE_H_INCLUDED
+#define ETERMAL_TEXTURE_H_INCLUDED
 
 namespace etm {
 
