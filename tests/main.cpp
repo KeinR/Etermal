@@ -54,7 +54,7 @@ int main() {
 
         std::cout << "afs" << std::endl;
 
-        etm::Terminal term;
+        etm::Terminal term("C:\\Windows\\Fonts\\lucon.ttf", true);
 
         // {
         //     etm::Terminal othe;
@@ -114,6 +114,12 @@ int main() {
         std::ostream out(terminal);
         out << "\nhey look I can write to the temrinal!\n";
         out.flush();
+
+        /////////////////
+
+        term.init();
+
+        /////////////////
 
         long samples = 0;
         long totalMillis = 0;

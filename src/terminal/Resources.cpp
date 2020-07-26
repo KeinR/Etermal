@@ -6,19 +6,39 @@
 #include "render/Color.h"
 #include "Terminal.h"
 
-etm::Resources::Resources(Terminal &terminal):
-    terminal(&terminal),
-    textShader(this),
-    primitiveShader(this),
-    textureShader(this),
-    currentShader(nullptr),
+etm::Resources::contextdata_t::contextdata_t(Resources *parent):
+    textShader(parent),
+    primitiveShader(parent),
+    textureShader(parent)
+{
+}
+
+etm::Resources::Resources(Terminal &terminalP, const std::string &fontPath):
+    terminal(&terminalP),
     fontLib(this),
-    font(this, fontLib, "C:\\Windows\\Fonts\\lucon.ttf"),
+    font(this, fontLib, fontPath),
+    currentShader(nullptr),
     viewportWidth(0), viewportHeight(0)
 {
+}
+
+void etm::Resources::errNotInit(const char *location) {
+    postError(
+        location,
+        "Not initialized.",
+        0,
+        true
+    );
+}
+
+void etm::Resources::init() {
+    contextData.reset(new contextdata_t(this));
     genRectangle();
     genTriangle();
-    bindPrimitiveShader(); // Default setting to avoid unfortunate events
+}
+
+void etm::Resources::changeFont(const std::string &fontPath) {
+    font = Font(this, fontLib, fontPath);
 }
 
 void etm::Resources::postError(const std::string &location, const std::string &message, int code, bool severe) {
@@ -39,14 +59,14 @@ void etm::Resources::genRectangle() {
         1, 2, 3  // second triangle
     };
 
-    rectangle.setVerticies(16, vertices);
-    rectangle.setIndices(6, indices);
+    contextData->rectangle.setVerticies(16, vertices);
+    contextData->rectangle.setIndices(6, indices);
     // First param, two values, stride of 4
     // to get to the next set, starts at index 0
-    rectangle.setParam(0, 2, 4, 0);
+    contextData->rectangle.setParam(0, 2, 4, 0);
     // Second param, two values, stride of 4
     // to get to the next set, starts at index 2
-    rectangle.setParam(1, 2, 4, 2);
+    contextData->rectangle.setParam(1, 2, 4, 2);
 }
 
 void etm::Resources::genTriangle() {
@@ -96,15 +116,15 @@ void etm::Resources::genTriangle() {
     triangleBuffer.setParam(0, 2, 2, 0);
 
     // Initialize output texture - important that we do linear filtering
-    triangle.setParams({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR});
-    triangle.setData(GL_RED, sampleWidth, sampleHeight, NULL);
+    contextData->triangle.setParams({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR});
+    contextData->triangle.setData(GL_RED, sampleWidth, sampleHeight, NULL);
 
     // The output framebuffer, wraps the output texture
     unsigned int framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     // Attach output texture to framebuffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, triangle.get(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, contextData->triangle.get(), 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         errorMsg = "Failed to complete framebuffer #0";
@@ -194,23 +214,23 @@ etm::Terminal &etm::Resources::getTerminal() {
 }
 
 void etm::Resources::renderRectangle() {
-    rectangle.render();
+    contextData->rectangle.render();
 }
 void etm::Resources::renderTriangle() {
-    triangle.bind();
+    contextData->triangle.bind();
     renderRectangle();
 }
 
 void etm::Resources::bindTextShader() {
-    currentShader = &textShader;
+    currentShader = &contextData->textShader;
     currentShader->use();
 }
 void etm::Resources::bindPrimitiveShader() {
-    currentShader = &primitiveShader;
+    currentShader = &contextData->primitiveShader;
     currentShader->use();
 }
 void etm::Resources::bindTextureShader() {
-    currentShader = &textureShader;
+    currentShader = &contextData->textureShader;
     currentShader->use();
 }
 etm::shader::Shader &etm::Resources::getShader() {

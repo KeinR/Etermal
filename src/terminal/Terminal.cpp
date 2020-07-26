@@ -32,12 +32,12 @@ void defaultErrorCallback(const etm::termError &error) {
         << "---------------------------\n";
 }
 
-etm::Terminal::Terminal(): Terminal(defaultErrorCallback) {
+etm::Terminal::Terminal(const std::string &fontPath, bool postponeInit): Terminal(defaultErrorCallback, fontPath, postponeInit) {
 }
-etm::Terminal::Terminal(const errCallback_t &errorCallback):
+etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::string &fontPath, bool postponeInit):
     // Make sure that the provided callback is valid
     errorCallback(errorCallback ? errorCallback : defaultErrorCallback),
-    resources(new Resources(*this)),
+    resources(new Resources(*this, fontPath)),
     viewport(0, 0, 0, 0),
     scroll(resources.get()),
     scrollbar(resources.get(), scroll),
@@ -53,6 +53,11 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback):
     framebufferTex({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR}),
     framebufValid(false)
 {
+
+    if (!postponeInit) {
+        resources->init();
+    }
+
     Framebuffer::State state;
     framebuffer.attachTexture(framebufferTex);
 
@@ -135,6 +140,14 @@ etm::Terminal &etm::Terminal::operator=(Terminal &&other) {
     scrollbar.setScroll(scroll);
 
     return *this;
+}
+
+void etm::Terminal::init() {
+    resources->init();
+}
+
+void etm::Terminal::changeFont(const std::string &fontPath) {
+    resources->changeFont(fontPath);
 }
 
 void etm::Terminal::invalidate() {

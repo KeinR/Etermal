@@ -1,6 +1,9 @@
 #ifndef ETERMAL_RESOURCES_H_INCLUDED
 #define ETERMAL_RESOURCES_H_INCLUDED
 
+#include <memory>
+#include <string>
+
 #include "render/Buffer.h"
 #include "render/Font.h"
 #include "render/FontLibrary.h"
@@ -27,40 +30,69 @@ namespace etm {
         /// Handle to parent @ref Terminal
         Terminal *terminal;
 
-        /// Basic 2D quad
-        Buffer rectangle;
-        /// Anti-aliased triangle texture
-        Texture triangle;
+        struct contextdata_t {
+            /// Basic 2D quad
+            Buffer rectangle;
+            /// Anti-aliased triangle texture
+            Texture triangle;
 
-        /// @see shader::Text
-        shader::Text textShader;
-        /// @see shader::Primitive
-        shader::Primitive primitiveShader;
-        /// @see shader::Texture
-        shader::Texture textureShader;
-        /// The active shader.
-        /// Only ever bound if the shader is made
-        /// current (bound via OpenGL calls) as well.
-        shader::Shader *currentShader;
+            /// @see shader::Text
+            shader::Text textShader;
+            /// @see shader::Primitive
+            shader::Primitive primitiveShader;
+            /// @see shader::Texture
+            shader::Texture textureShader;
+
+            contextdata_t(Resources *parent);
+        };
+
+        std::unique_ptr<contextdata_t> contextData;
 
         /// Font root object
         FontLibrary fontLib;
         /// Used font
         Font font;
 
+        /// The active shader.
+        /// Only ever bound if the shader is made
+        /// current (bound via OpenGL calls) as well.
+        shader::Shader *currentShader;
+
         int viewportWidth;
         int viewportHeight;
 
-        /// Generate @ref rectangle
+        /**
+        * Post an error complaining that the Resources
+        * object isn't initialized.
+        * @param [in] location The function
+        */
+        void errNotInit(const char *location);
+        /**
+        * Generate @ref rectangle
+        */
         void genRectangle();
-        /// Generate @ref triangle
+        /**
+        * Generate @ref triangle
+        */
         void genTriangle();
     public:
         /**
         * Construct a new object with parent.
         * @param [in] terminal The parent terminal
+        * @param [in] fontPath Path to the initial font
         */
-        Resources(Terminal &terminal);
+        Resources(Terminal &terminal, const std::string &fontPath);
+
+        /**
+        * Initialize resources to the current context.
+        */
+        void init();
+
+        /**
+        * Changes the in-use font.
+        * @param [in] fontPath Path to the font
+        */
+        void changeFont(const std::string &fontPath);
 
         /**
         * Nofiy `*this` of an error.
@@ -120,8 +152,8 @@ namespace etm {
         void bindTextureShader();
         /**
         * Gets the currently bound shader.
-        * @note Will never be `nullptr`. Will always either be
-        * @ref textShader or @ref primitiveShader
+        * @note Not garunteed to be valid - properly
+        * bind a shader first
         * @return The shader
         */
         shader::Shader &getShader();

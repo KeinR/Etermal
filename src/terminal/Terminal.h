@@ -5,6 +5,7 @@
 #include <memory>
 #include <functional>
 #include <streambuf>
+#include <string>
 
 #include "util/enums.h"
 #include "util/Timer.h"
@@ -239,9 +240,17 @@ namespace etm {
         * Creates a Terminal.
         * @note If an error occurred during initialization, the default callback will be called.
         * @warning The terminal will be tied to the current OpenGL context.
-        * @todo Late initialization
+        * @param [in] fontPath Path of the initial font
+        * @param [in] postponeInit If this is set to `true`, the terminal @e WILL @e NOT
+        * initialize it's OpenGL resources right away, allowing you to later on generate
+        * the resources in the context you want to render to terminal to. NOTE WELL that
+        * you must call @ref init() before you do any rendering.
+        * If set to `false`, you can still call @ref init() later on when your desired context
+        * is bound, however bad things will happen if an OpenGL context isn't active.
+        * The bottom line is: if the context you want to render to is current,
+        * keep it at `false`. Otherwise, set it to `true` and call @ref init() later on.
         */
-        Terminal();
+        Terminal(const std::string &fontPath = "C:\\Windows\\Fonts\\lucon.ttf", bool postponeInit = false);
 
         /**
         * Creates a Terminal with a custom error callback.
@@ -250,10 +259,19 @@ namespace etm {
         * as errors can occur during initialization.
         * @warning The terminal will be tied to the current OpenGL context.
         * @param [in] errorCallback The error callback
+        * @param [in] fontPath Path of the initial font
+        * @param [in] postponeInit If this is set to `true`, the terminal @e WILL @e NOT
+        * initialize it's OpenGL resources right away, allowing you to later on generate
+        * the resources in the context you want to render to terminal to. NOTE WELL that
+        * you must call @ref init() before you do any rendering.
+        * If set to `false`, you can still call @ref init() later on when your desired context
+        * is bound, however bad things will happen if an OpenGL context isn't active.
+        * The bottom line is: if the context you want to render to is current,
+        * keep it at `false`. Otherwise, set it to `true` and call @ref init() later on.
         * @todo Late initialization
         * @see setErrorCallback(const errCallback_t &callback)
         */
-        Terminal(const errCallback_t &errorCallback);
+        Terminal(const errCallback_t &errorCallback, const std::string &fontPath = "C:\\Windows\\Fonts\\lucon.ttf", bool postponeInit = false);
         /**
         * Initialize with moved object.
         * @param [in,out] The object to move
@@ -265,6 +283,20 @@ namespace etm {
         * @return `*this`
         */
         Terminal &operator=(Terminal &&other);
+
+        /**
+        * Initialize the terminal's openGL context resources.
+        * @note This will generate a bunch of stuff, only
+        * call when you need to bind the terminal to a context.
+        * @warning The terminal will be tied to the current OpenGL context!
+        */
+        void init();
+
+        /**
+        * Changes the in-use font.
+        * @param [in] fontPath Path to the font
+        */
+        void changeFont(const std::string &fontPath);
 
         /** @internal
         * Invalidates the Terminal display cache

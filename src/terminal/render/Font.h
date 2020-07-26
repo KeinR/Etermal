@@ -61,6 +61,11 @@ namespace etm {
         * @see bindChar(char_t c)
         */
         Texture makeCharTexture(char_t c);
+        /**
+        * Move a font into this font.
+        * @param [in,out] other Font to move
+        */
+        void steal(Font &other);
     public:
         /**
         * Construct a Font.
@@ -71,7 +76,11 @@ namespace etm {
         * @param [in] path The path to the font resource
         */
         Font(Resources *res, FontLibrary &lib, const std::string &path);
-        Font(Font &&other) = delete; // TEMP
+        /**
+        * Initialize with moved object.
+        * @param [in,out] other Moved object
+        */
+        Font(Font &&other);
         /**
         * Destruct Font.
         * If the `lib` parameter that was given to it upon
@@ -79,7 +88,11 @@ namespace etm {
         * @see Font(Resources *res, FontLibrary &lib, const std::string &path)
         */
         ~Font();
-        // Font &operator=(Font &&other);
+        /**
+        * Assign to moved object.
+        * @param [in,out] other Moved object
+        */
+        Font &operator=(Font &&other);
         /**
         * Set the pixel size of the font.
         * @param [in] size The pixel size

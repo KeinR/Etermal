@@ -22,8 +22,26 @@ etm::Font::Font(Resources *res, FontLibrary &lib, const std::string &path): res(
         setSize(16);
     }
 }
+etm::Font::Font(Font &&other) {
+    steal(other);
+}
 etm::Font::~Font() {
     free();
+}
+
+etm::Font &etm::Font::operator=(Font &&other) {
+    steal(other);
+    return *this;
+}
+
+void etm::Font::steal(Font &other) {
+    res = other.res;
+    face = other.face;
+    charWidth = other.charWidth;
+    charHeight = other.charHeight;
+    textCache = std::move(other.textCache);
+
+    other.face = nullptr;
 }
 
 void etm::Font::free() {
