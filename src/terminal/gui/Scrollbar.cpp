@@ -12,34 +12,6 @@ etm::Scrollbar::Arrow::Arrow(Scrollbar *parentP, int tickTimeMillis, int arrowWa
     pressed(false), active(false),
     tick(tickTimeMillis), wait(arrowWaitMillis)
 {
-    button.setOnMouseEnter([this]()->void{
-        arrow.setBackColor(bgColor.brighten(-0.1));
-        parent->getRes()->invalidateDisplay();
-    });
-    button.setOnMouseLeave([this]()->void{
-        arrow.setBackColor(bgColor);
-        pressed = false;
-        parent->getRes()->invalidateDisplay();
-    });
-    button.setOnMousePress([this]()->void{
-        arrow.setBackColor(bgColor.brighten(-0.3));
-        pressed = true;
-        doScroll();
-        wait.start();
-    });
-    button.setOnMouseRelease([this]()->void{
-        if (pressed) {
-            // If we didn't check if it was pressed,
-            // then the user could press, move the mouse out
-            // of the button area, and release.
-            // This func would be called _after_ the leave
-            // func, causing the arrow to have a grayed out
-            // tint.
-            arrow.setBackColor(bgColor.brighten(-0.1));
-            pressed = false;
-            parent->getRes()->invalidateDisplay();
-        }
-    });
     if (directionMod == 1) {
         // If facing down, flip
         arrow.setRotation(180);
@@ -53,19 +25,15 @@ void etm::Scrollbar::Arrow::doScroll() {
 void etm::Scrollbar::Arrow::setX(float x) {
     // Must sync the arrow and button areas
     arrow.setX(x);
-    button.setX(x);
 }
 void etm::Scrollbar::Arrow::setY(float y) {
     arrow.setY(y);
-    button.setY(y);
 }
 void etm::Scrollbar::Arrow::setWidth(float width) {
     arrow.setWidth(width);
-    button.setWidth(width);
 }
 void etm::Scrollbar::Arrow::setHeight(float height) {
     arrow.setHeight(height);
-    button.setHeight(height);
 }
 
 float etm::Scrollbar::Arrow::getX() {
@@ -108,12 +76,40 @@ void etm::Scrollbar::Arrow::setArrowColor(const Color &color) {
 void etm::Scrollbar::Arrow::mouseClick(bool isPressed, float mouseX, float mouseY) {
     // If not active, not point in processing events
     if (active) {
-        button.mouseClick(isPressed, mouseX, mouseY);
+        if (arrow.hasPoint(mouseX, mouseY)) {
+            if (isPressed) {
+                arrow.setBackColor(bgColor.brighten(-0.3));
+                pressed = true;
+                doScroll();
+                wait.start();
+            } else if (pressed) {
+                // If we didn't check if it was pressed,
+                // then the user could press, move the mouse out
+                // of the button area, and release.
+                // This func would be called _after_ the leave
+                // func, causing the arrow to have a grayed out
+                // tint.
+                arrow.setBackColor(bgColor.brighten(-0.1));
+                pressed = false;
+                parent->getRes()->invalidateDisplay();
+            }
+        }
     }
 }
 void etm::Scrollbar::Arrow::mouseMove(float mouseX, float mouseY) {
     if (active) {
-        button.mouseMove(mouseX, mouseY);
+        if (arrow.hasPoint(mouseX, mouseY)) {
+            if (!hovering) {
+                hovering = true;
+                arrow.setBackColor(bgColor.brighten(-0.1));
+                parent->getRes()->invalidateDisplay();
+            }
+        } else if (hovering) {
+            hovering = false;
+            arrow.setBackColor(bgColor);
+            pressed = false;
+            parent->getRes()->invalidateDisplay();
+        }
     }
 }
 

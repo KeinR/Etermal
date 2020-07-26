@@ -3,7 +3,6 @@
 
 #include "Rectangle.h"
 #include "Triangle.h"
-#include "Button.h"
 #include "../util/Timer.h"
 
 namespace etm {
@@ -65,13 +64,13 @@ namespace etm {
             Color arrowColor;
             /// The actual visible arrow
             Triangle arrow;
-            /// Used to detect user click/release/etc
-            Button button;
             /// `-1` if the Arrow is facing @e up,
             /// `1` if the Arrow is facing @e down
             int directionMod;
             /// Is the arrow being pressed?
             bool pressed;
+            // Is the mouse hovering over the arrow?
+            bool hovering;
             /// Is the arrow active?
             /// Goes by the same princible as @ref showingSlider:
             /// if there's no scroll, should not be showing.

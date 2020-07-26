@@ -43,6 +43,10 @@ float etm::Triangle::getRotation() {
     return model.rotation;
 }
 
+bool etm::Triangle::hasPoint(float x, float y) {
+    return model.hasPoint(x, y);
+}
+
 void etm::Triangle::render() {
     model.set(res);
     backgroundColor.setBackground(res->getShader());

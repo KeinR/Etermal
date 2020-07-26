@@ -117,6 +117,13 @@ namespace etm {
         float getRotation();
 
         /**
+        * Check if the given point is contained within
+        * the triangle's bounds.
+        * @return `true` if yes
+        */
+        bool hasPoint(float x, float y);
+
+        /**
         * Render the triangle to the current framebuffer using the
         * back/foreground colors, model, and @ref Resources handle.
         * @note The text shader must be set in @ref res
