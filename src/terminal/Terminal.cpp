@@ -146,6 +146,10 @@ void etm::Terminal::init() {
     resources->init();
 }
 
+void etm::Terminal::deInit() {
+    resources->deInit();
+}
+
 void etm::Terminal::changeFont(const std::string &fontPath) {
     resources->changeFont(fontPath);
 }

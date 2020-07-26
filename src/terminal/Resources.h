@@ -89,6 +89,11 @@ namespace etm {
         void init();
 
         /**
+        * Un-initialize resources OpenGL resources.
+        */
+        void deInit();
+
+        /**
         * Changes the in-use font.
         * @param [in] fontPath Path to the font
         */

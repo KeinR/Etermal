@@ -310,6 +310,12 @@ namespace etm {
         void init();
 
         /**
+        * Free the terminal's openGL context resources.
+        * @warning Must not render until @ref init() is called again!
+        */
+        void deInit();
+
+        /**
         * Changes the in-use font.
         * @param [in] fontPath Path to the font
         */

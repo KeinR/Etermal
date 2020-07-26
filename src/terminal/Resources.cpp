@@ -37,6 +37,10 @@ void etm::Resources::init() {
     genTriangle();
 }
 
+void etm::Resources::deInit() {
+    contextData.reset();
+}
+
 void etm::Resources::changeFont(const std::string &fontPath) {
     font = Font(this, fontLib, fontPath);
 }
