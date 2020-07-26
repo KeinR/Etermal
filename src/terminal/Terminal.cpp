@@ -229,12 +229,21 @@ int etm::Terminal::pbackfail(int c) {
     return c;
 }
 std::streamsize etm::Terminal::xsputn(const char *s, std::streamsize n) {
-    displayBuffer.append(s, n);
+    displayBuffer.reserve(displayBuffer.size() + n);
+    for (std::streamsize i = 0; i < n; i++) {
+        displayBuffer.push_back(s[i]);
+        if (s[i] == '\n') {
+            flush();
+        }
+    }
     return n;
 }
 int etm::Terminal::overflow(int c) {
     if (std::char_traits<char>::eof() != c) {
         displayBuffer.push_back(c);
+        if (c == '\n') {
+            flush();
+        }
     }
     return c;
 }

@@ -203,6 +203,9 @@ namespace etm {
         void mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column);
     protected:
 
+        // Streambuf overrides, see bottom of
+        // http://www.cplusplus.com/reference/streambuf/streambuf/
+
         /**
         * Calls @ref flush().
         * @return 0
@@ -230,8 +233,22 @@ namespace etm {
         * @return The character
         */
         int uflow() override;
+        /**
+        * Put back a char.
+        */
         int pbackfail(int c = EOF) override;
+        /**
+        * Input chars.
+        * @param [in] s The data
+        * @param [in] n Length of data
+        * @return Length of data put
+        */
         std::streamsize xsputn(const char* s, std::streamsize n) override;
+        /**
+        * Input a char.
+        * @param [in] c The char.
+        * @return The char
+        */
         int overflow(int c = EOF) override;
 
     public:
