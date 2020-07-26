@@ -1,7 +1,185 @@
 /*!
 
-@page getting_started Getting Started
+@page getting_started Getting started
 
+@tableofcontents
 
+@section building_and_linking Building and linking
+
+First, @ref building "build etermal".
+
+@subsection building_and_linking_cmake Installed with CMake
+
+Add the following to your `CMakeLists.txt`:
+
+@code{.cmake}
+find_package(etermal REQUIRED)
+find_package(Freetype REQUIRED)
+target_link_libraries(yourTarget etermal)
+@endcode
+
+Yes, it linkes to freetype. Will see to adding bitmap fonts option.
+
+@subsection building_and_linking_manual Manual package install
+
+Simply make sure that the include dir is in your include
+path and the library binary is in your linker path - 
+and that you link to the binary.
+
+@section running Running
+
+@note All the things explained below could also be inferred
+from reading the docs for the pertinent classes.
+@note Please also read the docs for @ref etm::Terminal "terminal"
+and @ref etm::Shell "shell", this is all just a brief intoduction.
+
+@subsection basics Basics
+
+To set everything up, you literally just have to do:
+
+@code{.cpp}
+#include <etermal/etermal.h>
+
+int main() {
+
+    // ... Set up the context etc etc ...
+
+    // Create terminal and shell
+    etm::Terminal terminal;
+    etm::Shell shell;
+
+    // Link the two
+    terminal.setShell(shell);
+    shell.setTerminal(terminal);
+
+    terminal.dispText("Is anyone there");
+    terminal.flush();
+
+    while (rendering) {
+        // ... Render stuff ...
+        // ... Make terminal context current ...
+
+        // Render terminal to framebuffer
+        terminal.render();
+
+        // ... Do other stuff ...
+    }
+
+    return 0;
+}
+@endcode
+
+@warning If the terminal is created this way, its OpenGL resources
+will be tied to the current context. This is not always desired
+behavior, especially if there isn't even a context active!
+
+To fix that, you can instead do late initialization:
+
+@code{.cpp}
+#include <etermal/etermal.h>
+
+...
+
+// Create terminal early
+etm::Terminal terminal(
+    "path/to/some/font.ttf", // Path to intial font (unrelated)
+    true // Tell terminal to postpone initialization of OpenGL resources
+);
+
+// ... Set up and make current the desired context ...
+
+terminal.init();
+@endcode
+
+You can also call @ref etm::Terminal::init() "init" whenever
+you want to regenerate the terminal's resources in a different
+context.
+
+Of course, since Terminal is a little heavy, it might be
+better for you to dynamically allocate it with shared pointers...
+That's up to you, however.
+
+@subsection streaming Streaming
+
+What's cool about terminal is that it extends std::streambuf,
+so you can create an std::ostream with it.
+
+@code{.cpp}
+#include <etermal/etermal.h>
+#include <ostream>
+
+...
+
+etm::Terminal terminal;
+std::ostream stream(&terminal);
+
+// Write to terminal through stream
+stream << "What's the answer? " << std::flush;
+// Since it's a stream, will flush on newline
+int a = 42;
+stream << a << "!\n";
+// NB: Terminal DOES NOT automatically flush otherwise.
+terminal.dispText("\nWait, who's Rem?\n");
+terminal.flush();
+@endcode
+
+@subsection beautifying_terminal_text Beautifying terminal text
+
+See @ref escape_sequences "the page on escape sequences".
+
+@subsection custom_commands Adding custom commands to Shell
+
+@note My Shell implementation really isn't the best - 
+it's @ref etm::Terminal "terminal" that really shines.
+Remember, you can always give your own custom implementation
+of the shell via @ref etm::EShell "EShell".
+
+Really quite straightforward.
+
+@code{.cpp}
+#include <etermal/etermal.h>
+
+...
+
+etm::Shell shell;
+
+// Add a clear command
+// The argument filter
+etm::ArgFilter clearArgs;
+// Set the usage (printed when invalid arguments are given;
+// in this case, if any are)
+clearArgs.setUsage("Usage: [clear|wipe] [no args]\nClears the screen");
+// We don't want any flagless arguments.
+// A flagless argument would be "main.cpp" in "[command] main.cpp",
+// whereas a flag'd argument would be the same in "[command] -source main.cpp"
+clearArgs.setMaxArrayArgs(0);
+shell.addCommand(
+    "clear" // The initial alias
+    clearArgs, // The argument filter
+    [](etm::Shell &shell, etm::ETerminal &terminal, etm::Args &args)->void{ // std::function to execute
+        terminal.clear();
+    }
+);
+// Alias the last added command
+shell.alias("wipe");
+
+// Add a command that argues with you
+// The argument filter
+etm::ArgFilter argArgs;
+// Take a few
+argArgs.setMaxArrayArgs(100);
+argArgs.setUsage("Usage: arg [arg]\nClears the screen");
+shell.addCommand(
+    "arg" // The initial alias
+    argArgs, // The argument filter
+    [](etm::Shell &shell, etm::ETerminal &terminal, etm::Args &args)->void{ // std::function to execute
+        for (std::string &str : args.getArrayArgs()) {
+            terminal.dispText("\"" + str + "\" is a stupid argument!\n");
+            terminal.flush();
+        }
+    }
+);
+
+@endcode
 
 */

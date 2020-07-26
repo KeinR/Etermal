@@ -1,0 +1,28 @@
+/*!
+
+@page building Building
+
+Etermal uses CMake. If you don't use it, I suggest you
+switch to it; honestly, it's made my life so much easier.
+
+@section Options
+
+In generating the build files (via `cmake ...`), you can specify the following options:
+
+| name | default value | description |
+| ---- | ------------- | ----------- |
+| DEV | OFF | If the library should be build with debug symbols |
+| MAKE_DOCS | OFF | If the `docs` target should be created, to build the documentation (requires doxygen) |
+
+@section Targets
+
+When the build files are created, the following targets are available:
+
+| name | description |
+| ---- | ----------- |
+| all | Simply generates the binary `libetermal.a` |
+| install | Does what `all` does, but also installs the binary and headers. |
+| package | Creates a zipped file with the files installed by `install` |
+| docs | If `MAKE_DOCS` was turned on, generates the documentation |
+
+*/

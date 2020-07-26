@@ -1,7 +1,52 @@
 /*!
 @mainpage
 
-Etermal docs
+@tableofcontents
 
+@section what_is_it What is it?
+
+Etermal is an embedabble terminal (and shell) for OpenGL 3.3,
+although it might work for later versions.
+
+@section getting_started_main Getting started
+
+See @ref getting_started "this page".
+
+@section structure Structure
+
+The library is divided into the frontend and backend,
+being the terminal and shell respectively. The shell
+takes care of command processing, and the terminal handles
+the displaying of text and user input.
+
+The front and back-end are abstracted so that you can easially
+swap in your own implementation, with @ref etm::ETerminal "ETerminal"
+and @ref etm::EShell "EShell".
+
+@section performance Performance
+
+@subsection performance_cpu CPU
+
+Pretty good. The benchmarks from [here](https://github.com/KeinR/Etermal/blob/master/tests/main.cpp#L133)
+claim that on my dinky laptop the FPS ranges from 2000 to infinity...
+Long story short, it shouldn't be an issue.
+
+@subsection performance_memory Memory
+
+There is a glyph cache that is used when rendering text
+(cleared when the screen is cleared via @ref etm::Terminal::clear()
+"Terminal::clear()"), but it's really quite small.
+
+While it's implementation defined, the terminal takes
+up ~1.5 KB, whereas the entire program seems to take up
+What you should note is the usage from the line
+count, which no my machine ~25 bytes plus however
+much the strings allocate.
+
+In investigating, I've found that it takes on its own no more than
+like 1MB, although I really have no idea because it's a little hard
+to measure.
+
+TL;DR: Set the max line count to 500-1000 and you'll be @b fine.
 
 */
