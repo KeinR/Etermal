@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "encode.h"
+#include "codec.h"
 
 
 etm::Line::iterator::iterator(Line *parent, size_type index):

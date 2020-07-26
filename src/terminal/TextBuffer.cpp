@@ -576,6 +576,7 @@ void etm::TextBuffer::clampPos(pos &p, lines_number_t row, line_index_t column) 
     if (lines.size()) {
         if (row < lines.size()) {
             p.row = row;
+                                        // last char of string defined
             p.column = std::min(column, lines[p.row].size());
         } else {
             p.row = lines.size() - 1;
@@ -609,6 +610,13 @@ std::string etm::TextBuffer::getSelectionText() {
 }
 
 std::string etm::TextBuffer::getTextFromRange(const pos &start, const pos &stop) {
+    pos endpoint;
+    clampPos(endpoint, stop.row, stop.column);
+    // Denies if start > end, so we're fine
+    return doGetTextFromRange(start, endpoint);
+}
+
+std::string etm::TextBuffer::doGetTextFromRange(const pos &start, const pos &stop) {
     if (start.row > stop.row || (start.row == stop.row && start.column > stop.column)) {
         return "";
     }
@@ -676,7 +684,7 @@ std::string etm::TextBuffer::pollInput() {
         newline();
         return "";
     }
-    return getTextFromRange(cursorMin, pos(lines.size() - 1, lines.back().size()));
+    return doGetTextFromRange(cursorMin, pos(lines.size() - 1, lines.back().size()));
 }
 
 void etm::TextBuffer::prepare() {

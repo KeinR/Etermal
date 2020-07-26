@@ -1,6 +1,8 @@
 #ifndef ETERMAL_ROTATABLEMODEL_H_INCLUDED
 #define ETERMAL_ROTATABLEMODEL_H_INCLUDED
 
+#include "Model.h"
+
 namespace etm {
     namespace shader {
          // ../shader/Shader
@@ -13,20 +15,15 @@ namespace etm {
 namespace etm {
 
     /**
-    * A rotatable model
+    * A rotatable model.
+    * Almost a duplicate of @ref Model
+    * because I don't want glm to be included
+    * by Terminal.
     * @see Model
     * @see Color
     */
-    class RModel {
+    class RModel: public Model {
     public:
-        /// X coordinate
-        float x;
-        /// Y coordinate
-        float y;
-        /// Width
-        float width;
-        /// Height
-        float height;
         /// Rotation in degrees
         float rotation;
 

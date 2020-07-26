@@ -1,5 +1,5 @@
-#ifndef ETERMAL_ENV_H_INCLUDED
-#define ETERMAL_ENV_H_INCLUDED
+#ifndef ETERMAL_CODEC_H_INCLUDED
+#define ETERMAL_CODEC_H_INCLUDED
 
 #include <string>
 

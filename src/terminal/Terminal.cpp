@@ -9,7 +9,7 @@
 #include "../TermInput.h"
 #include "../EShell.h"
 #include "State.h"
-#include "encode.h"
+#include "codec.h"
 #include "Line.h"
 
 #include "textmods/Mod.h"
@@ -709,4 +709,11 @@ void etm::Terminal::setFocused(bool val) {
 
 std::string etm::Terminal::getTextSelection() {
     return display.getSelectionText();
+}
+
+std::string etm::Terminal::getText() {
+    return display.getTextFromRange(
+        TextBuffer::pos(0, 0),
+        TextBuffer::pos(display.getCountRows() + 1, 0)
+    );
 }

@@ -583,6 +583,12 @@ namespace etm {
         * @return UTF-8 encoded string
         */
         std::string getTextSelection();
+
+        /**
+        * Gets all the text in the terminal.
+        * @return The text in the terminal
+        */
+        std::string getText();
     };
 }
 

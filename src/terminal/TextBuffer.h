@@ -9,7 +9,7 @@
 #include "gui/Rectangle.h"
 #include "render/Color.h"
 #include "Line.h"
-#include "encode.h"
+#include "codec.h"
 #include "util/IdList.h"
 #include "textmods/Mod.h"
 
@@ -243,12 +243,12 @@ namespace etm {
 
         /**
         * Gets text in a given range.
-        * @note Does range checks
+        * @note Does @e NOT do range checks. Call @ref clampPos if you're not sure.
         * @param [in] The start position
         * @param [in] The end position (column exclusive)
         * @return The text
         */
-        std::string getTextFromRange(const pos &start, const pos &end);
+        std::string doGetTextFromRange(const pos &start, const pos &end);
 
         /**
         * Gets the valid range (zero indexed indices,
@@ -266,6 +266,15 @@ namespace etm {
         * @param [in] width Initial number of columns
         */
         TextBuffer(Resources *res, Scroll &scroll, line_index_t width);
+
+        /**
+        * Gets text in a given range.
+        * @note Does range checks
+        * @param [in] The start position
+        * @param [in] The end position (column exclusive)
+        * @return The text
+        */
+        std::string getTextFromRange(const pos &start, const pos &end);
 
         /**
         * Sets the scroll backend.

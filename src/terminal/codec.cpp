@@ -1,4 +1,4 @@
-#include "encode.h"
+#include "codec.h"
 
 namespace etm::ctrl {
     /// The start of a control sequence
