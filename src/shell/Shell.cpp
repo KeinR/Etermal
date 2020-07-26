@@ -192,6 +192,10 @@ void etm::Shell::alias(comid_t id, const std::string &name) {
     }
 }
 
+void etm::Shell::alias(const std::string &name) {
+    alias(commandId, name);
+}
+
 void etm::Shell::postError(const std::string &location, const std::string &message, bool severe) {
     errorCallback(shellError(location, message, severe));
 }

@@ -234,6 +234,17 @@ namespace etm {
         void alias(comid_t id, const std::string &name);
 
         /**
+        * Associate another name with the @e last added command.
+        * @note An error is set if there aren't any commands
+        * @note If `name` already exists as an alias to some other
+        * command, that alias gets re-pointed to the last command.
+        * In other words, this function overwrites any previous alias
+        * of the same name.
+        * @param [in] name The alias
+        */
+        void alias(const std::string &name);
+
+        /**
         * Send an error to the error callback.
         * The given parameters are packaged into a @ref shellError object.
         * @param [in] location The location at which the error was detected
