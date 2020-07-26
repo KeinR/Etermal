@@ -112,6 +112,13 @@ namespace etm {
             */
             virtual std::string badFlag(int position, const std::string &badFlag) = 0;
             /**
+            * Called when there are too many array arguments
+            * @param [in] position The argument position (with 0 being the invokation)
+            * @param [in] int The max allowed args
+            * @return String to display to the user
+            */
+            virtual std::string tooManyArgs(int position, unsigned int max) = 0;
+            /**
             * Called when some internal error occurred.
             * This should never happen, but it's good to have some
             * way to handle it if it does.
@@ -148,6 +155,7 @@ namespace etm {
             std::string badDatatype(int position, const std::string &data, datatype expectedType) override;
             std::string noParam(int position, const std::string &lastFlag, datatype expectedType) override;
             std::string badFlag(int position, const std::string &badFlag) override;
+            std::string tooManyArgs(int position, unsigned int max) override;
             std::string internalError(int position, const std::string &errMsg) override;
             /**
             * Check if the ArgFilter should stop processing the commands
@@ -198,6 +206,8 @@ namespace etm {
         filters_t filters;
         /// Aliases to @ref filter "filters"
         aliases_t aliases;
+        /// The max allowed flagless array parameters
+        unsigned int maxArrayArgs;
         /// The command usage, printed by the shell
         /// if the command fails.
         std::string usage;
@@ -232,6 +242,13 @@ namespace etm {
         * @see setErrorHandle(ErrorHandle &errorHandle)
         */
         ErrorHandle &getErrorHandle();
+
+        /**
+        * Sets the maximum number of flagless parameters
+        * that can be passed.
+        * @param [in] count The max, inclusive
+        */
+        void setMaxArrayArgs(unsigned int count);
 
         /**
         * Sets the string that is printed when

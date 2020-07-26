@@ -91,10 +91,12 @@ int main() {
 
         etm::ArgFilter clearFilter;
         clearFilter.setUsage("Usage: clear\n");
+        clearFilter.setMaxArrayArgs(0);
         comid clearCom = shell.addCommand("clear", clearFilter, [](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
             terminal.clear();
         });
         etm::ArgFilter exitFilter;
+        exitFilter.setMaxArrayArgs(0);
         exitFilter.setUsage("Usage: [exit|leave|stop|terminate|cya|bye]\n");
         comid exitCom = shell.addCommand("exit", exitFilter, [window](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
             glfwSetWindowShouldClose(window, true);
@@ -112,8 +114,7 @@ int main() {
         std::cout << "loop" << std::endl;
 
         std::ostream out(terminal);
-        out << "\nhey look I can write to the temrinal!\n";
-        out.flush();
+        out << "\nhey look I can write to the temrinal!" << std::flush;
 
         /////////////////
 

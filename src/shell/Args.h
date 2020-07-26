@@ -4,6 +4,7 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "data/ArgData.h"
 
@@ -24,6 +25,8 @@ namespace etm {
         typedef std::map<std::string, data_t> container_t;
         /// Arguments container
         container_t args;
+        // Flagless parameters
+        std::vector<std::string> arrayArgs;
         /// The alias that was used to invoke the command
         std::string call;
     public:
@@ -31,7 +34,7 @@ namespace etm {
         * Construct an Args object.
         */
         Args();
-        /**
+        /** @internal
         * Adds a new argument.
         * @note For building only by @ref ArgFilter
         * @param [in] name The argument name
@@ -41,13 +44,18 @@ namespace etm {
         * @see args
         */
         void pushArg(const std::string &name, const data_t &data);
-        /**
+        /** @internal
         * Sets the alias that was used to invoke the command.
         * @param [in] str The alias
         * @see getCall()
         * @see call
         */
         void setCall(const std::string &str);
+        /** @internal
+        * Set the array args.
+        * @param [in,out] The args (moved)
+        */
+        void setArrayArgs(std::vector<std::string> &&args);
 
         /**
         * Check if object @e has the given argument.
@@ -68,6 +76,11 @@ namespace etm {
         * @return The alias
         */
         std::string &getCall();
+        /**
+        * Gets the flagless parameters
+        * @return The args
+        */
+        std::vector<std::string> &getArrayArgs();
     };
 }
 
