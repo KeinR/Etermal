@@ -80,7 +80,7 @@ void etm::Color::setForeground(const shader::Shader &shader) const {
 
 etm::Color etm::Color::brighten(float percent) const {
     Color c;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
         c.color[i] = color[i] + color[i] * percent;
         // Truncate the value if the value is too high/low
         if (c.color[i] > 1) {
