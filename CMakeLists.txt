@@ -21,6 +21,8 @@ endif()
 file(GLOB_RECURSE sources src/*.cpp extern/*.c)
 file(GLOB generalheaders include/*.h)
 
+include_directories("extern")
+
 # Create the library
 add_library(etermal STATIC ${sources})
 

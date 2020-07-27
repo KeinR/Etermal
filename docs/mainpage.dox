@@ -38,7 +38,9 @@ There is a glyph cache that is used when rendering text
 "Terminal::clear()"), but it's really quite small.
 
 While it's implementation defined, the terminal takes
-up ~1.5 KB, whereas the entire program seems to take up
+up ~1.5 KB, making it rather stack-heavy. Should probably
+dynamically allocate.
+
 What you should note is the usage from the line
 count, which no my machine ~25 bytes plus however
 much the strings allocate.

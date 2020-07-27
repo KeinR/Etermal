@@ -287,7 +287,6 @@ namespace etm {
         * is bound, however bad things will happen if an OpenGL context isn't active.
         * The bottom line is: if the context you want to render to is current,
         * keep it at `false`. Otherwise, set it to `true` and call @ref init() later on.
-        * @todo Late initialization
         * @see setErrorCallback(const errCallback_t &callback)
         */
         Terminal(const errCallback_t &errorCallback, const std::string &fontPath = "C:\\Windows\\Fonts\\lucon.ttf", bool postponeInit = false);
