@@ -154,6 +154,8 @@ int main() {
             // timer.start();
         }
 
+        term.deInit();
+
         glfwTerminate();
 
         return 0;
