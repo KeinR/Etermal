@@ -22,7 +22,7 @@ A minimal-footprint terminal (and shell too I guess) for OpenGL 3.3.
 
 ## Documentation
 
-Hosted (here)[https://keinr.github.io/Etermal/docs/index.html], but you can also generate it during the build process.
+Hosted [here](https://keinr.github.io/Etermal/docs/index.html), but you can also generate it during the build process.
 
 ## Contributing
 
