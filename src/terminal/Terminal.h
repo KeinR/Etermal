@@ -144,11 +144,6 @@ namespace etm {
         void initTex();
 
         /**
-        * Display the welcome text.
-        */
-        void displayWelcome();
-
-        /**
         * Tests if a codepoint is one that should be rejected
         * from the terminal input.
         * @param [in] c The codepoint in question

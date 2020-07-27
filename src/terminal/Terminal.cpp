@@ -71,8 +71,6 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::string &f
     // Superfluous given that setFontSize() calls it, however just
     // to make sure...
     updatePosition();
-
-    displayWelcome();
     // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
 }
@@ -178,11 +176,6 @@ void etm::Terminal::initTex() {
     if (isInit) {
         resources->initTermTex(viewport.width, viewport.height);
     }
-}
-
-void etm::Terminal::displayWelcome() {
-    dispText("Etermal v0.1\n");
-    flush();
 }
 
 bool etm::Terminal::ignoreCodepoint(const Line::codepoint &c) {
