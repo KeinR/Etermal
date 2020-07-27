@@ -9,8 +9,11 @@
 etm::Resources::contextdata_t::contextdata_t(Resources *parent):
     textShader(parent),
     primitiveShader(parent),
-    textureShader(parent)
+    textureShader(parent),
+    termFramebufferTex({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR})
 {
+    Framebuffer::State state;
+    termFramebuffer.attachTexture(termFramebufferTex);
 }
 
 etm::Resources::Resources(Terminal &terminalP, const std::string &fontPath):
@@ -239,6 +242,17 @@ void etm::Resources::bindTextureShader() {
 }
 etm::shader::Shader &etm::Resources::getShader() {
     return *currentShader;
+}
+
+void etm::Resources::bindTermFramebuffer() {
+    contextData->termFramebuffer.bind();
+}
+void etm::Resources::bindTermFramebufferTex() {
+    contextData->termFramebufferTex.bind();
+}
+
+void etm::Resources::initTermTex(int width, int height) {
+    contextData->termFramebufferTex.setData(GL_RGB, width, height, NULL);
 }
 
 etm::Font &etm::Resources::getFont() {

@@ -11,6 +11,7 @@
 #include "shader/Primitive.h"
 #include "shader/Text.h"
 #include "shader/Texture.h"
+#include "render/Framebuffer.h"
 
 namespace etm {
     // shader/Shader
@@ -42,6 +43,14 @@ namespace etm {
             shader::Primitive primitiveShader;
             /// @see shader::Texture
             shader::Texture textureShader;
+
+            /// Framebuffer used to generate
+            /// @ref framebufferTex
+            Framebuffer termFramebuffer;
+            /// Texture used to efficiently
+            /// store and render the terminal.
+            /// @see initTex()
+            Texture termFramebufferTex;
 
             contextdata_t(Resources *parent);
         };
@@ -162,6 +171,27 @@ namespace etm {
         * @return The shader
         */
         shader::Shader &getShader();
+
+        /**
+        * Binds the terminal's framebuffer
+        */
+        void bindTermFramebuffer();
+
+        /**
+        * Binds the terminal's framebuffer texture
+        */
+        void bindTermFramebufferTex();
+
+        /**
+        * Sets the dimensions of the terminal texture.
+        * @param [in] width The width
+        * @param [in] height The height
+        */
+        void initTermTex(int width, int height);
+
+        /**
+        * 
+        */
 
         /**
         * Get the in-use @ref font.

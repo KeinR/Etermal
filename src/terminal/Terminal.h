@@ -9,13 +9,11 @@
 
 #include "util/enums.h"
 #include "util/Timer.h"
-#include "Resources.h"
 #include "TextBuffer.h"
 #include "gui/Rectangle.h"
 #include "../ETerminal.h"
 #include "Scroll.h"
 #include "gui/Scrollbar.h"
-#include "render/Framebuffer.h"
 
 namespace etm {
     // ../shell/EShell
@@ -24,6 +22,8 @@ namespace etm {
     class TermInput;
     // util/termError
     class termError;
+    // Resources
+    class Resources;
 }
 
 namespace etm {
@@ -52,7 +52,7 @@ namespace etm {
         errCallback_t errorCallback;
 
         /// The resources manager
-        std::unique_ptr<Resources> resources;
+        Resources *resources;
 
         /// The viewport, describes the entire area taken
         /// up by the terminal.
@@ -115,19 +115,15 @@ namespace etm {
         /// Mouse y at the last drag location
         float dragY;
 
-        /// Framebuffer used to generate
-        /// @ref framebufferTex
-        Framebuffer framebuffer;
-        /// Texture used to efficintly
-        /// store and render the terminal.
-        /// @see initTex()
-        Texture framebufferTex;
         /// Whether @ref framebufferTex is valid.
         /// If it's not valid, will have to re-render
         /// all text again.
         /// @see invalidate()
         /// @see validate()
         bool framebufValid;
+
+        /// Are the terminal's OpenGL resources initialized?
+        bool isInit;
 
         /**
         * Validates the Terminal cache
@@ -201,6 +197,12 @@ namespace etm {
         * @param [out] column Display column
         */
         void mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column);
+
+        /**
+        * Ensure everything's in order after a move.
+        * @param [in,out] other The other terminal
+        */
+        void finishMove(Terminal &other);
     protected:
 
         // Streambuf overrides, see bottom of
@@ -289,6 +291,10 @@ namespace etm {
         * @see setErrorCallback(const errCallback_t &callback)
         */
         Terminal(const errCallback_t &errorCallback, const std::string &fontPath = "C:\\Windows\\Fonts\\lucon.ttf", bool postponeInit = false);
+        /**
+        * Destucts the terminal.
+        */
+        ~Terminal();
         /**
         * Initialize with moved object.
         * @param [in,out] The object to move

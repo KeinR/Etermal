@@ -11,6 +11,7 @@
 #include "State.h"
 #include "codec.h"
 #include "Line.h"
+#include "Resources.h"
 
 #include "textmods/Mod.h"
 #include "textmods/mods.h"
@@ -39,27 +40,23 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::string &f
     errorCallback(errorCallback ? errorCallback : defaultErrorCallback),
     resources(new Resources(*this, fontPath)),
     viewport(0, 0, 0, 0),
-    scroll(resources.get()),
-    scrollbar(resources.get(), scroll),
+    scroll(resources),
+    scrollbar(resources, scroll),
     scrollSensitivity(25.0f),
-    display(resources.get(), scroll, 30),
-    background(resources.get()),
+    display(resources, scroll, 30),
+    background(resources),
     focused(true),
     takeInput(false),
     escapeNext(false),
     cursorBlink(500),
     shell(nullptr),
     dragging(false),
-    framebufferTex({GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, GL_LINEAR, GL_LINEAR}),
-    framebufValid(false)
+    framebufValid(false),
+    isInit(false)
 {
-
     if (!postponeInit) {
         resources->init();
     }
-
-    Framebuffer::State state;
-    framebuffer.attachTexture(framebufferTex);
 
     setBackgroundColor(0x080808);
     setTextColor(0xf0f0f0);
@@ -78,6 +75,11 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::string &f
     displayWelcome();
     // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
+}
+etm::Terminal::~Terminal() {
+    if (resources != nullptr) {
+        delete resources;
+    }
 }
 etm::Terminal::Terminal(Terminal &&other):
 // This is a terrible solution.
@@ -102,12 +104,10 @@ hovering(std::move(other.hovering)),
 dragging(std::move(other.dragging)),
 dragX(std::move(other.dragX)),
 dragY(std::move(other.dragY)),
-framebuffer(std::move(other.framebuffer)),
-framebufferTex(std::move(other.framebufferTex)),
-framebufValid(std::move(other.framebufValid))
+framebufValid(std::move(other.framebufValid)),
+isInit(std::move(other.isInit))
 {
-    display.setScroll(scroll);
-    scrollbar.setScroll(scroll);
+    finishMove(other);
 }
 etm::Terminal &etm::Terminal::operator=(Terminal &&other) {
     errorCallback = std::move(other.errorCallback);
@@ -132,22 +132,29 @@ etm::Terminal &etm::Terminal::operator=(Terminal &&other) {
     dragX = std::move(other.dragX);
     dragY = std::move(other.dragY);
     windowSetCursorIBeam = std::move(other.windowSetCursorIBeam);
-    framebuffer = std::move(other.framebuffer);
-    framebufferTex = std::move(other.framebufferTex);
     framebufValid = std::move(other.framebufValid);
+    isInit = std::move(other.isInit);
 
-    display.setScroll(scroll);
-    scrollbar.setScroll(scroll);
+    finishMove(other);
 
     return *this;
 }
 
+void etm::Terminal::finishMove(Terminal &other) {
+    other.resources = nullptr;
+    display.setScroll(scroll);
+    scrollbar.setScroll(scroll);
+}
+
 void etm::Terminal::init() {
     resources->init();
+    resources->initTermTex(viewport.width, viewport.height);
+    isInit = true;
 }
 
 void etm::Terminal::deInit() {
     resources->deInit();
+    isInit = false;
 }
 
 void etm::Terminal::changeFont(const std::string &fontPath) {
@@ -168,7 +175,9 @@ void etm::Terminal::notifyScroll() {
 }
 
 void etm::Terminal::initTex() {
-    framebufferTex.setData(GL_RGB, viewport.width, viewport.height, NULL);
+    if (isInit) {
+        resources->initTermTex(viewport.width, viewport.height);
+    }
 }
 
 void etm::Terminal::displayWelcome() {
@@ -686,7 +695,7 @@ void etm::Terminal::render() {
     if (!framebufValid) {
         Framebuffer::State fbState;
 
-        framebuffer.bind();
+        resources->bindTermFramebuffer();
 
         // Render
 
@@ -703,8 +712,8 @@ void etm::Terminal::render() {
     }
 
     resources->bindTextureShader();
-    framebufferTex.bind();
-    viewport.set(resources.get());
+    resources->bindTermFramebufferTex();
+    viewport.set(resources);
     resources->renderRectangle();
 
     // Redering the cursor every time isn't a big deal,
