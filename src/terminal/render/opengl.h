@@ -6,6 +6,6 @@
 * @see https://glad.dav1d.de/
 */
 
-#include "../../../extern/glad/glad.h"
+#include <glad/glad.h>
 
 #endif
