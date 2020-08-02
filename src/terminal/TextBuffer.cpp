@@ -691,6 +691,8 @@ std::string etm::TextBuffer::pollInput() {
 }
 
 void etm::TextBuffer::clearInput() {
+    int brea = 3;
+    brea++;
     lines[cursorMin.row].erase(cursorMin.column);
     lines.erase(lines.begin() + cursorMin.row + 1, lines.end());
 }

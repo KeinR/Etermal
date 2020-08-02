@@ -389,10 +389,7 @@ namespace etm {
         */
         void setErrorCallback(const errCallback_t &callback);
 
-        /**
-        * Clears the input area (the area after the cursor lock).
-        */
-        void clearInput();
+        void clearInput() override;
 
         void clear() override;
 
@@ -446,9 +443,11 @@ namespace etm {
         void requestInput(TermInput &callback) override;
         void cancelInputRequest(TermInput *callback) override;
         void clearInputRequests() override;
+        std::string pollInput() override;
 
         void dispText(const std::string &str) override;
         void flush() override;
+        void softFlush() override;
 
         /**
         * Set the x coordinate of the top-right corner of the terminal.

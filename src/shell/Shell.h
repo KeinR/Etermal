@@ -108,6 +108,14 @@ namespace etm {
         std::string prompt;
         /// The command ID of the last added command
         comid_t commandId;
+        /// The shell's command history.
+        /// Capped at an arbitrary number (small)
+        std::vector<std::string> commandHistory;
+        /// Stored text so that seeking operations can
+        /// return to what the user was preveously typing.
+        std::string currentText;
+        /// Seek index for command history
+        std::vector<std::string>::size_type seekI;
 
         /**
         * Checks if a flag is set.
@@ -128,6 +136,12 @@ namespace etm {
         */
         void doAlias(comid_t id, const std::string &name);
 
+        /**
+        * Replaces the current user input.
+        * @param [in] str The string to replace with
+        */
+        void setInput(const std::string &str);
+
     public:
         /**
         * Construct a shell.
@@ -143,7 +157,7 @@ namespace etm {
         * @see setErrorCallback(const errCallback_t &callback)
         */
         Shell(const errCallback_t &callback);
-        Shell(Shell &&other) = delete; // temp
+
         /**
         * Set the callback that will be called whenever
         * a `shellError` is set.

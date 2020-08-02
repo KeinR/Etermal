@@ -333,6 +333,7 @@ void etm::Terminal::setErrorCallback(const errCallback_t &callback) {
 
 void etm::Terminal::clearInput() {
     display.clearInput();
+    display.jumpCursor();
 }
 
 void etm::Terminal::clear() {
@@ -400,6 +401,10 @@ void etm::Terminal::clearInputRequests() {
     }
 }
 
+std::string etm::Terminal::pollInput() {
+    return display.pollInput();
+}
+
 void etm::Terminal::dispText(const std::string &str) {
     displayBuffer += str;
 }
@@ -427,6 +432,14 @@ int etm::Terminal::readHexFromStr(const std::string &str, std::string::size_type
 }
 
 void etm::Terminal::flush() {
+    softFlush();
+
+    // Disrupt the cursor
+    display.jumpCursor();
+    display.lockCursor();
+}
+
+void etm::Terminal::softFlush() {
     constexpr char ESCAPE = '\x1b';
 
     // Required when appending
@@ -482,10 +495,6 @@ void etm::Terminal::flush() {
         scroll.jump();
     }
     scrollbar.update();
-    // If there's data being pushed,
-    // it should disrupt the cursor
-    display.jumpCursor();
-    display.lockCursor();
 
     invalidate();
 }

@@ -60,6 +60,19 @@ namespace etm {
         virtual void clearInputRequests() = 0;
 
         /**
+        * Clears the input area (the area after the cursor lock).
+        */
+        virtual void clearInput() = 0;
+
+        /**
+        * Get the current input text.
+        * @note This is only a get operation.
+        * Nothing is changed as a result of this call.
+        * @return The input text, UTF-8 encoded
+        */
+        virtual std::string pollInput() = 0;
+
+        /**
         * Append text to the display buffer.
         * The buffer will not be displayed until flush()
         * is called.
@@ -70,9 +83,17 @@ namespace etm {
 
         /**
         * Pushes the display buffer to the display.
+        * @note Pushes the cursor with it.
         * @see dispText(const std::string &str)
         */
         virtual void flush() = 0;
+
+        /**
+        * Pushes the display buffer to the display.
+        * Unlike @ref flush(), does not move the cursor.
+        * @see dispText(const std::string &str)
+        */
+        virtual void softFlush() = 0;
     };
 }
 

@@ -1,6 +1,7 @@
 #include "Shell.h"
 
 #include <iostream>
+#include <utility>
 
 #include "../ETerminal.h"
 #include "shellError.h"
@@ -8,6 +9,8 @@
 static void makeLowercase(std::string &str);
 static void defaultErrorCallback(const etm::shellError &error);
 static std::string defaultNoCommandCallback(const std::string &command);
+
+static constexpr unsigned int MAX_COMMAND_HISTORY = 10;
 
 void makeLowercase(std::string &str) {
     for (char &c : str) {
@@ -43,8 +46,10 @@ etm::Shell::Shell(const errCallback_t &callback):
     terminal(nullptr),
     flags(flag::none),
     prompt("\nuser@terminal ~\n$ "),
-    commandId(0)
+    commandId(0),
+    seekI(0)
 {
+    commandHistory.reserve(MAX_COMMAND_HISTORY);
     setErrorCallback(callback);
     setNoCommandCallback(defaultNoCommandCallback);
 }
@@ -143,17 +148,45 @@ void etm::Shell::input(const std::string &commandString) {
         } else {
             terminal->dispText(noCommandCallback(params[0]));
         }
+
+        if (commandHistory.size() >= MAX_COMMAND_HISTORY) {
+            commandHistory.erase(commandHistory.begin(), commandHistory.begin() + (commandHistory.size() - MAX_COMMAND_HISTORY + 1));
+        }
+        commandHistory.push_back(commandString);
+        seekI = commandHistory.size();
     }
 
     // Does flushing for us
     prepTerminal();
 }
 
-void etm::Shell::cursorUp() {
+void etm::Shell::setInput(const std::string &str) {
+    terminal->clearInput();
+    terminal->dispText(str);
+    terminal->softFlush();
+}
 
+void etm::Shell::cursorUp() {
+    if (commandHistory.size() > 0 && seekI != 0) {
+        if (seekI == commandHistory.size()) {
+            currentText = terminal->pollInput();
+        }
+        seekI--;
+        setInput(commandHistory[seekI]);
+    }
 }
 void etm::Shell::cursorDown() {
-
+    if (commandHistory.size() > 0) {
+        if (seekI < commandHistory.size() - 1) {
+            seekI++;
+            setInput(commandHistory[seekI]);
+        } else {
+            seekI = commandHistory.size();
+            setInput(currentText);
+            currentText.clear();
+            currentText.shrink_to_fit();
+        }
+    }
 }
 
 void etm::Shell::prepTerminal() {
