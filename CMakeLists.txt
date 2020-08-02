@@ -63,7 +63,9 @@ install(
 export(TARGETS etermal
     FILE "${CMAKE_CURRENT_BINARY_DIR}/etermalConfig.cmake"
 )
-install(EXPORT etermalConfig
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/etermalConfigVersion.cmake" COMPATIBILITY SameMajorVersion)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/etermalConfigVersion.cmake"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/etermal"
 )
 

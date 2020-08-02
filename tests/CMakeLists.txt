@@ -8,7 +8,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 
 add_executable(etermal_test main.cpp)
 
-find_package(etermal REQUIRED)
+find_package(etermal 1.0 REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 target_link_libraries(etermal_test glfw)
