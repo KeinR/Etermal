@@ -80,7 +80,7 @@ int main() {
         });
         term.setMaxLines(200);
 
-        etm::Shell shell;
+        etm::BasicShell shell;
 
         shell.setPrompt("\n\e[B\e[f199e3d;tester@\e[b4c1b4f;testTerminal\e[B \e[fb8b816;~\e[F\n$ ");
 
@@ -89,23 +89,26 @@ int main() {
 
         typedef etm::Shell::comid_t comid;
 
-        etm::ArgFilter clearFilter;
-        clearFilter.setUsage("Usage: clear\n");
-        clearFilter.setMaxArrayArgs(0);
-        comid clearCom = shell.addCommand("clear", clearFilter, [](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
-            terminal.clear();
+        // etm::ArgFilter clearFilter;
+        // clearFilter.setUsage("Usage: clear\n");
+        // clearFilter.setMaxArrayArgs(0);
+        // comid clearCom = shell.addCommand("clear", clearFilter, [](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
+        //     terminal.clear();
+        // });
+        // etm::ArgFilter exitFilter;
+        // exitFilter.setMaxArrayArgs(0);
+        // exitFilter.setUsage("Usage: [exit|leave|stop|terminate|cya|bye]\n");
+        // comid exitCom = shell.addCommand("exit", exitFilter, [window](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
+        //     glfwSetWindowShouldClose(window, true);
+        // });
+        // shell.alias(exitCom, "leave");
+        // shell.alias(exitCom, "stop");
+        // shell.alias(exitCom, "terminate");
+        // shell.alias(exitCom, "cya");
+        // shell.alias(exitCom, "bye");
+        shell.add("clear", [terminal](etm::BasicShell::param_t)->void{
+            terminal->clear();
         });
-        etm::ArgFilter exitFilter;
-        exitFilter.setMaxArrayArgs(0);
-        exitFilter.setUsage("Usage: [exit|leave|stop|terminate|cya|bye]\n");
-        comid exitCom = shell.addCommand("exit", exitFilter, [window](etm::Shell&,etm::ETerminal &terminal,etm::Args&)->void{
-            glfwSetWindowShouldClose(window, true);
-        });
-        shell.alias(exitCom, "leave");
-        shell.alias(exitCom, "stop");
-        shell.alias(exitCom, "terminate");
-        shell.alias(exitCom, "cya");
-        shell.alias(exitCom, "bye");
 
         std::cout << "created" << std::endl;
 
