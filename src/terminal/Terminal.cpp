@@ -604,6 +604,16 @@ void etm::Terminal::inputString(const std::string &text) {
     }
 }
 void etm::Terminal::inputActionKey(actionKey key) {
+    // Parts of the function depend on a valid shell
+    if (shell == nullptr) {
+        resources->postError(
+            "Terminal::inputActionKey(actionKey)",
+            "Shell is nullptr (not set)",
+            0,
+            false
+        );
+        return;
+    }
     switch (key) {
         case ENTER:
             inputChar('\n');
@@ -613,10 +623,14 @@ void etm::Terminal::inputActionKey(actionKey key) {
             invalidate();
             break;
         case UP:
-            display.moveCursorRow(-1);
+            if (!display.moveCursorRow(-1)) {
+                shell->cursorUp();
+            }
             break;
         case DOWN:
-            display.moveCursorRow(1);
+            if (!display.moveCursorRow(1)) {
+                shell->cursorDown();
+            }
             break;
         case LEFT:
             display.moveCursorCollumnWrap(-1);

@@ -370,8 +370,9 @@ namespace etm {
         * Not garunteed to be in the same column due to differing line lengths.
         * @param [in] distance Distance to move. Positive values to move down, and vice versa.
         * @see moveCursorCollumn(int distance)
+        * @return `true` if the cursor was actually moved
         */
-        void moveCursorRow(int distance);
+        bool moveCursorRow(int distance);
 
         /**
         * Like @ref moveCursorCollumn, except that if it encounters the

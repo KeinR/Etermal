@@ -174,9 +174,11 @@ void etm::TextBuffer::moveCursorCollumn(int distance) {
         cursor.column = std::max(cursor.column, cursorMin.column);
     }
 }
-void etm::TextBuffer::moveCursorRow(int distance) {
+bool etm::TextBuffer::moveCursorRow(int distance) {
+    lines_number_t row = cursor.row;
     cursor.row = std::min(std::max(cursor.row + distance, cursorMin.row), lines.size()-1);
     cursor.column = std::min(cursor.column, lines[cursor.row].size());
+    return row != cursor.row;
 }
 void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
     // Signed value so that we can detect underflow (negatives)
