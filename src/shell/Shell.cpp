@@ -149,6 +149,13 @@ void etm::Shell::input(const std::string &commandString) {
     prepTerminal();
 }
 
+void etm::Shell::cursorUp() {
+
+}
+void etm::Shell::cursorDown() {
+
+}
+
 void etm::Shell::prepTerminal() {
     terminal->dispText(prompt);
     terminal->flush();

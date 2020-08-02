@@ -3,7 +3,8 @@
 
 #include <functional>
 #include <map>
-#include <list>
+#include <vector>
+#include <string>
 
 #include "../EShell.h"
 #include "ArgFilter.h"
@@ -207,6 +208,8 @@ namespace etm {
         void setTerminal(ETerminal &terminal);
 
         void input(const std::string &commandString) override;
+        void cursorUp() override;
+        void cursorDown() override;
 
         /**
         * Add a new command to the Shell.

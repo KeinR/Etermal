@@ -32,6 +32,7 @@ void etm::IdList<T>::eraseBack(id_t count) {
 template<class T>
 void etm::IdList<T>::clear() {
     container.clear();
+    container.shrink_to_fit();
     indexOffset = 0;
 }
 

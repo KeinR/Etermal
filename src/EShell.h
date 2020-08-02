@@ -21,6 +21,19 @@ namespace etm {
         * @param [in] commandString The command string
         */
         virtual void input(const std::string &commandString) = 0;
+
+        /**
+        * Called when the user attempts to move the cursor @e up
+        * when it's already at max height; think command
+        * history...
+        */
+        virtual void cursorUp() = 0;
+        /**
+        * Called when the user attempts to move the cursor @e down
+        * when it's already at max height; think command
+        * history...
+        */
+        virtual void cursorDown() = 0;
     };
 }
 

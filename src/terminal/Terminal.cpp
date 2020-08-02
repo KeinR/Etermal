@@ -331,9 +331,14 @@ void etm::Terminal::setErrorCallback(const errCallback_t &callback) {
     }
 }
 
+void etm::Terminal::clearInput() {
+    display.clearInput();
+}
+
 void etm::Terminal::clear() {
     display.clear();
     displayBuffer.clear();
+    displayBuffer.shrink_to_fit();
 }
 
 void etm::Terminal::setBackgroundColor(const Color &color) {

@@ -126,6 +126,7 @@ void etm::TextBuffer::clear() {
     res->getFont().clearCache();
     newline();
     jumpCursor();
+    lines.shrink_to_fit();
 }
 
 void etm::TextBuffer::setMaxLines(lines_number_t count) {
@@ -685,6 +686,11 @@ std::string etm::TextBuffer::pollInput() {
         return "";
     }
     return doGetTextFromRange(cursorMin, pos(lines.size() - 1, lines.back().size()));
+}
+
+void etm::TextBuffer::clearInput() {
+    lines[cursorMin.row].erase(cursorMin.column);
+    lines.erase(lines.begin() + cursorMin.row + 1, lines.end());
 }
 
 void etm::TextBuffer::prepare() {

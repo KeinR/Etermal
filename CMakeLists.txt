@@ -34,10 +34,6 @@ include_directories(${GLM_INCLUDE_DIRS})
 
 # installing
 
-include(CMakePackageConfigHelpers)
-
-set(GLFW_CONFIG_PATH "${CMAKE_INSTALL_LIBDIR}/cmake/glfw3")
-
 include(GNUInstallDirs)
 
 install(

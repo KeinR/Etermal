@@ -524,6 +524,12 @@ namespace etm {
         std::string pollInput();
 
         /**
+        * Deletes text after the user input start, set by @ref lockCursor().
+        * @see pollInput()
+        */
+        void clearInput();
+
+        /**
         * Prepares the buffer for textual appendations via @ref append().
         * append() does not call this method, so as to allow for efficient
         * chaining.

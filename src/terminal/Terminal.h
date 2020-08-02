@@ -151,7 +151,6 @@ namespace etm {
         */
         bool ignoreCodepoint(const Line::codepoint &c);
 
-        // Pushes input to recievers (shell, etc)
         /**
         * Pushes input to recievers (shell, and anyone
         * listed in @ref inputRequests)
@@ -389,6 +388,11 @@ namespace etm {
         * @see postError(const termError &error)
         */
         void setErrorCallback(const errCallback_t &callback);
+
+        /**
+        * Clears the input area (the area after the cursor lock).
+        */
+        void clearInput();
 
         void clear() override;
 

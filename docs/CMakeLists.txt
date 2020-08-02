@@ -5,6 +5,7 @@ if (NOT BUILD_PRIVATE_DOCS)
         "src/TermInput.h"
         "src/EShell.h"
         "src/terminal/Terminal.h"
+        "src/terminal/termError.h"
         "src/shell/"
         "docs/"
     )
