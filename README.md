@@ -1,6 +1,6 @@
 # Etermal
 
-![Alternate image text](screenshots/example.png)
+![screenshot](screenshots/example.png)
 
 ## What is it?
 

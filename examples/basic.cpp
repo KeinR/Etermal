@@ -21,19 +21,19 @@ static void keyPress(GLFWwindow* window, int key, int scancode, int action, int 
 static void mouseClick(GLFWwindow* window, int button, int action, int mods);
 static void mouseMove(GLFWwindow* window, double xpos, double ypos);
 static void charCallback(GLFWwindow* window, unsigned int codepoint);
-static void error_callback(int error, const char* description);
+static void errorCallback(int error, const char* description);
 
 // This is only for demonstrative purposes - 
 // obviously, you won't actually have it global.
 static etm::Terminal terminal(
-    "C:\\Windows\\Fonts\\lucon.ttf", // Font to use
+    std::make_shared<etm::Font>("c:\\windows\\fonts\\lucon.ttf"), // Font to use
     true // `true` to postpone initialization (because there's no active OpenGL context)
 );
 
 int main() {
 
     // Just in case
-    glfwSetErrorCallback(error_callback);
+    glfwSetErrorCallback(errorCallback);
 
     if (glfwInit() == GLFW_FALSE) {
         std::cerr << "Failed to initialze GLFW" << std::endl;
@@ -226,6 +226,6 @@ void mouseMove(GLFWwindow* window, double xpos, double ypos) {
     terminal.inputMouseMove(static_cast<float>(xpos), static_cast<float>(ypos));
 }
 
-void error_callback(int error, const char* description) {
+void errorCallback(int error, const char* description) {
     std::cerr << "GLFW ERROR: " << description << std::endl;
 }

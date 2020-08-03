@@ -5,6 +5,11 @@
 Etermal uses CMake. If you don't use it, I suggest you
 switch to it; honestly, it's made my life so much easier.
 
+@note Client applications have the choice of using bitmap fonts or
+vector fonts. If only using bitmap fonts, there is no need to link
+against freetype. Despite this, you still need to build with freetype,
+as the installation would be incomplete without it.
+
 @section Options
 
 In generating the build files (via `cmake ...`), you can specify the following options:

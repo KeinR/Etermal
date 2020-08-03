@@ -31,6 +31,9 @@ namespace etm {
 
     /**
     * Build-in implementation of the @ref ETerminal frontend.
+    * The multible constructors operate under the philosophy that
+    * there should be an option to construct the terminal so that
+    * is completely ready to render.
     */
     class Terminal: public ETerminal, public std::streambuf {
     public:

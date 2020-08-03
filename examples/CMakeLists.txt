@@ -8,10 +8,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 add_executable(basic_example basic.cpp ../extern/glad/glad.c)
 
-find_package(glfw3 3.3 REQUIRED)
+find_package(etermal 2.0 REQUIRED)
 find_package(freetype 2.1 REQUIRED)
-find_package(etermal REQUIRED)
-
+find_package(glfw3 3.3 REQUIRED)
+target_link_libraries(basic_example etermal)
 target_link_libraries(basic_example Freetype::Freetype)
 target_link_libraries(basic_example glfw)
-target_link_libraries(basic_example etermal)

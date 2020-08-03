@@ -56,7 +56,7 @@ int main() {
     terminal.setShell(shell);
     shell.setTerminal(terminal);
 
-    terminal.dispText("Is anyone there");
+    terminal.dispText("Is anyone there?");
     terminal.flush();
 
     while (rendering) {
@@ -117,7 +117,8 @@ so you can create an std::ostream with it.
 
 ...
 
-etm::Terminal terminal;
+std::shared_ptr<Font> font = std::make_shared<Font>("some/font/path.ttf");
+etm::Terminal terminal(font);
 std::ostream stream(&terminal);
 
 // Write to terminal through stream

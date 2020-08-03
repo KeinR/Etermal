@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(etermal VERSION 1.1)
+project(etermal VERSION 2.0)
 
 option(MAKE_DOCS "Whether the documentation target should be generated" OFF)
 option(DEV "Whether the library should be build with debug symbols" OFF)
