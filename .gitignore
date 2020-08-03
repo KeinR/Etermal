@@ -37,4 +37,5 @@
 docs/doxygen/
 doxygen/
 build/
+vsbuild/
 tests/build/

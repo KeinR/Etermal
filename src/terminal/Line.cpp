@@ -1,7 +1,7 @@
 #include "Line.h"
 
 #include <iostream>
-#include <cmath>
+#include <algorithm>
 
 #include "codec.h"
 

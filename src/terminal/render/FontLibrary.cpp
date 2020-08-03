@@ -1,5 +1,6 @@
 #include "FontLibrary.h"
 
+#include <string>
 #include <stdexcept>
 
 etm::FontLibrary::FontLibrary() {

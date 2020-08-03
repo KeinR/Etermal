@@ -1,6 +1,7 @@
 #include "Scroll.h"
 
 #include <iostream>
+#include <algorithm>
 #include <cmath>
 
 #include "Resources.h"

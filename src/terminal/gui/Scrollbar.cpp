@@ -147,7 +147,7 @@ etm::Scrollbar::Scrollbar(Resources *res, Scroll &scroll):
     scroll(&scroll),
     bar(res), slider(res),
     dragging(false),
-    dragY(0.0d),
+    dragY(0),
     showingSlider(false),
     sideMargin(1),
     upArrow(this, 100, 300, -1),

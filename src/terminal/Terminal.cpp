@@ -1,6 +1,7 @@
 #include "Terminal.h"
 
 #include <iostream>
+#include <algorithm>
 #include <cmath>
 
 #include "util/termError.h"

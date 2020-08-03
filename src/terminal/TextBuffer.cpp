@@ -1,5 +1,6 @@
 #include "TextBuffer.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "gui/Rectangle.h"
