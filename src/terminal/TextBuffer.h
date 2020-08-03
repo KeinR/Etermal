@@ -540,8 +540,6 @@ namespace etm {
         /**
         * Renders the lines contined within the buffer to the
         * current framebuffer.
-        * The given paramters determine the coordinate of the
-        * top-left of the render area.
         * The height and width are determined by @ref width (columns)
         * and the value of @ref scroll's getNetWidth().
         * @note Requires that the text shader be set.
@@ -550,10 +548,8 @@ namespace etm {
         * getNetWidth() return. However, still has to do a lookbehind to
         * determine the current style, which can range from O(1) to O(n)
         * in complexity.
-        * @param [in] x The x offset (terminal viewport x)
-        * @param [in] y The y offset (terminal viewport y)
         */
-        void render(int x, int y);
+        void render();
 
         /**
         * Renders the cursor if @ref displayCursor

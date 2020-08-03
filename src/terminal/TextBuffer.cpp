@@ -737,7 +737,11 @@ void etm::TextBuffer::getRange(lines_number_t &start, lines_number_t &end) {
     );
 }
 
-void etm::TextBuffer::render(int x, int y) {
+void etm::TextBuffer::render() {
+
+    // Offsets
+    int x = 0;
+    int y = 0;
 
     // "After scrollbar renders, the text shader is set
     // due to the rendering of the triangle textures,

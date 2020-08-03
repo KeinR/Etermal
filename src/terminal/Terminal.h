@@ -188,9 +188,9 @@ namespace etm {
         */
         int readHexFromStr(const std::string &str, std::string::size_type &i);
         /**
-        * Maps screen coordinates to coordinates in the @ref display.
-        * @param [in] x X screen coordinate
-        * @param [in] y Y screen coordinate
+        * Maps viewport-relative coordinates (ex. x - viewport.x) to coordinates in the @ref display.
+        * @param [in] x X viewport coordinate
+        * @param [in] y Y viewport coordinate
         * @param [out] row Display row
         * @param [out] column Display column
         */

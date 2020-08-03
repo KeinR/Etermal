@@ -552,13 +552,13 @@ void etm::Terminal::setMaxLines(TextBuffer::lines_number_t count) {
 }
 
 void etm::Terminal::updatePosition() {
-    background.setX(viewport.x);
-    background.setY(viewport.y);
+    background.setX(0);
+    background.setY(0);
     background.setWidth(viewport.width - scrollbar.getWidth());
     background.setHeight(viewport.height);
 
-    scrollbar.setX(viewport.x + viewport.width - scrollbar.getWidth());
-    scrollbar.setY(viewport.y);
+    scrollbar.setX(0 + viewport.width - scrollbar.getWidth());
+    scrollbar.setY(0);
     scrollbar.setHeight(viewport.height);
 
     if (resources->getFont()) {
@@ -673,6 +673,8 @@ void etm::Terminal::inputMouseScroll(float yOffset, float mouseX, float mouseY) 
     }
 }
 void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) {
+    mouseX -= viewport.x;
+    mouseY -= viewport.y;
     scrollbar.mouseClick(isPressed, mouseX, mouseY);
     if (isPressed) {
         focused = background.hasPoint(mouseX, mouseY);
@@ -691,6 +693,8 @@ void etm::Terminal::inputMouseClick(bool isPressed, float mouseX, float mouseY) 
     }
 }
 void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
+    mouseX -= viewport.x;
+    mouseY -= viewport.y;
     scrollbar.mouseMove(mouseX, mouseY);
     setHovering(background.hasPoint(mouseX, mouseY));
     if (dragging) {
@@ -704,8 +708,8 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 }
 
 void etm::Terminal::mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column) {
-    row = std::max(std::floor((y - viewport.y + scroll.getOffset()) / resources->getFont()->getCharHeight()), 0.0f);
-    column = std::max(std::floor((x - viewport.x) / resources->getFont()->getCharWidth()), 0.0f);
+    row = std::max(std::floor((y + scroll.getOffset()) / resources->getFont()->getCharHeight()), 0.0f);
+    column = std::max(std::floor(x / resources->getFont()->getCharWidth()), 0.0f);
 }
 
 void etm::Terminal::render() {
@@ -735,7 +739,7 @@ void etm::Terminal::render() {
 
         resources->bindTermFramebuffer();
 
-        glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        glViewport(0, 0, viewport.width, viewport.height);
         resources->initViewport();
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -749,7 +753,7 @@ void etm::Terminal::render() {
         // After scrollbar renders, the text shader is set
         // due to the rendering of the triangle textures,
         // so display doesn't need to set it.
-        display.render(viewport.x, viewport.y);
+        display.render();
 
         // Revalidate cache (important!)
         validate();
