@@ -25,6 +25,7 @@ namespace etm {
     */
     class BasicShell: public EShell {
     public:
+        /// Parameter type given to command callbacks
         typedef const std::vector<std::string>& param_t;
 
         /// Command callback.
@@ -198,12 +199,9 @@ namespace etm {
         * @note If the parameter `callback` is not callable,
         * an error is set and the command is not added.
         * @param [in] name The initial alias for the command
-        * @param [in] filter The command filter for the command
         * @param [in] callback A callable callback for the command
         * @see alias(const std::string &name)
         * @see input(const std::string &commandString)
-        * @return ID of the command (used to modify it), or zero if
-        * an error occurred.
         */
         void add(const std::string &name, const callback_t &callback);
 

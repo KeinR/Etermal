@@ -114,7 +114,7 @@ namespace etm {
             /**
             * Called when there are too many array arguments
             * @param [in] position The argument position (with 0 being the invokation)
-            * @param [in] int The max allowed args
+            * @param [in] max The max allowed args
             * @return String to display to the user
             */
             virtual std::string tooManyArgs(int position, unsigned int max) = 0;

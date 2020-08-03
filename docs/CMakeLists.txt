@@ -1,11 +1,14 @@
 
-if (NOT BUILD_PRIVATE_DOCS)
+set(ETERMAL_BUILD_INTERNAL_DOCS ${BUILD_PRIVATE_DOCS})
+
+if (NOT ETERMAL_BUILD_INTERNAL_DOCS)
+    message("-- Configured to public docs")
     set(ETERMAL_DOXYGEN_SRC
         "src/ETerminal.h"
         "src/TermInput.h"
         "src/EShell.h"
         "src/terminal/Terminal.h"
-        "src/terminal/termError.h"
+        "src/terminal/util/termError.h"
         "src/terminal/render/Font.h"
         "src/terminal/render/BmpFont.h"
         "src/terminal/render/EtmFont.h"
@@ -14,6 +17,7 @@ if (NOT BUILD_PRIVATE_DOCS)
         "docs/"
     )
 else()
+    message("-- Configured to private docs")
     set(ETERMAL_DOXYGEN_SRC
         "src/"
         "docs/"

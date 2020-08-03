@@ -212,24 +212,24 @@ namespace etm {
         */
         int sync() override;
         /**
-        * Returns the size of the @ref displayBuffer.
+        * Returns the size of the display buffer.
         * @return The char count
         */
         std::streamsize showmanyc() override;
         /**
-        * Extracts characters from the start of the @ref displayBuffer.
+        * Extracts characters from the start of the display buffer.
         * @param [out] c The output string
         * @param [in] n Size of the output string
         * @return The number of chars put
         */
         std::streamsize xsgetn(char *c, std::streamsize n) override;
         /**
-        * Get the first character in the @ref displayBuffer
+        * Get the first character in the display buffer
         * @return The character
         */
         int underflow() override;
         /**
-        * Extract the first character in the @ref displayBuffer
+        * Extract the first character in the display buffer
         * @return The character
         */
         int uflow() override;
@@ -283,6 +283,7 @@ namespace etm {
         * @warning The terminal will be tied to the current OpenGL context if `postponeInit` is
         * set to `false`.
         * @note If an error occurred during initialization, the default callback will be called.
+        * @param [in] font The initial font
         * @param [in] postponeInit If this is set to `true`, the terminal @e WILL @e NOT
         * initialize it's OpenGL resources right away, allowing you to later on generate
         * the resources in the context you want to render to terminal to. NOTE WELL that
@@ -320,12 +321,12 @@ namespace etm {
         ~Terminal();
         /**
         * Initialize with moved object.
-        * @param [in,out] The object to move
+        * @param [in,out] other The object to move
         */
         Terminal(Terminal &&other);
         /**
         * Set to moved object.
-        * @param [in,out] The object to move
+        * @param [in,out] other The object to move
         * @return `*this`
         */
         Terminal &operator=(Terminal &&other);

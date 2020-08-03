@@ -20,6 +20,7 @@ In generating the build files (via `cmake ...`), you can specify the following o
 | MAKE_DOCS | OFF | If the `docs` target should be created, to build the documentation (requires doxygen) |
 | EXAMPLES | OFF | If the `examples` target should be created, to build the example applications (requires glfw) |
 | TESTS | OFF | If the `tests` target should be created, to build the tests (requires glfw) |
+| BUILD_PRIVATE_DOCS | OFF | If `MAKE_DOCS` is turned on, the `docs` target will generate documentation for the entire codebase (as opposed to just the public interface) |
 
 @section Targets
 

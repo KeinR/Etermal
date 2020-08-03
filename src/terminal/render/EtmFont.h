@@ -7,6 +7,12 @@ namespace etm {
 }
 
 namespace etm {
+
+    /**
+    * Interface for all etermal fonts.
+    * @see Font
+    * @see BmpFont
+    */
     class EtmFont {
     public:
         /// Codepoint type

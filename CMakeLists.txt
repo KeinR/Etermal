@@ -5,6 +5,7 @@ option(MAKE_DOCS "Whether the documentation target should be generated" OFF)
 option(DEV "Whether the library should be build with debug symbols" OFF)
 option(EXAMPLES "Whether the target for examples should be created" OFF)
 option(TESTS "Whether the target for tests should be created" OFF)
+option(BUILD_PRIVATE_DOCS "If MAKE_DOCS is turned on, will build docs for the entire codebase" OFF)
 
 # Configure compiler settings
 set(CMAKE_CXX_STANDARD 17)
