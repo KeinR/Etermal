@@ -23,8 +23,9 @@ namespace etm {
         * its children (fonts that were made with it)
         * are deleted.
         * @param [in] res A @ref Resources object to witch constructor errors will be posted.
+        * @throw std::logic_error if failed to create library
         */
-        FontLibrary(Resources *res);
+        FontLibrary();
         /**
         * Destroy the freetype library
         * @see lib

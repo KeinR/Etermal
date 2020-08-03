@@ -6,6 +6,10 @@ if (NOT BUILD_PRIVATE_DOCS)
         "src/EShell.h"
         "src/terminal/Terminal.h"
         "src/terminal/termError.h"
+        "src/terminal/render/Font.h"
+        "src/terminal/render/BmpFont.h"
+        "src/terminal/render/EtmFont.h"
+        "src/terminal/util/Enums.h"
         "src/shell/"
         "docs/"
     )

@@ -5,5 +5,7 @@
 #include "basicshell.h"
 #include "shell.h"
 #include "terminal.h"
+#include "font.h"
+#include "bmpfont.h"
 
 #endif

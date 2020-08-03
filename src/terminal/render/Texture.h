@@ -88,13 +88,13 @@ namespace etm {
         * Initialize by taking ownership of `other`'s buffer
         * @param [in,out] other Target
         */
-        Texture(Texture &&other);
+        Texture(Texture &&other) noexcept;
         /**
         * Take ownership of `other`'s buffer,
         * and destroy `*this`'s
         * @param [in,out] other Target
         */
-        Texture &operator=(Texture &&other);
+        Texture &operator=(Texture &&other) noexcept;
 
         /**
         * Gets the wrapped OpenGL buffer, @ref buffer.

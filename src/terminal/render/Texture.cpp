@@ -44,10 +44,10 @@ void etm::Texture::steal(Texture &other) {
     other.buffer = 0;
 }
 
-etm::Texture::Texture(Texture &&other) {
+etm::Texture::Texture(Texture &&other) noexcept {
     steal(other);
 }
-etm::Texture &etm::Texture::operator=(Texture &&other) {
+etm::Texture &etm::Texture::operator=(Texture &&other) noexcept {
     steal(other);
     return *this;
 }

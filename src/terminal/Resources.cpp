@@ -16,10 +16,8 @@ etm::Resources::contextdata_t::contextdata_t(Resources *parent):
     termFramebuffer.attachTexture(termFramebufferTex);
 }
 
-etm::Resources::Resources(Terminal &terminalP, const std::string &fontPath):
+etm::Resources::Resources(Terminal &terminalP):
     terminal(&terminalP),
-    fontLib(this),
-    font(this, fontLib, fontPath),
     currentShader(nullptr),
     viewportWidth(0), viewportHeight(0)
 {
@@ -44,8 +42,9 @@ void etm::Resources::deInit() {
     contextData.reset();
 }
 
-void etm::Resources::changeFont(const std::string &fontPath) {
-    font = Font(this, fontLib, fontPath);
+void etm::Resources::setFont(const font_t &font) {
+    this->font = font;
+    this->font->setResMan(this);
 }
 
 void etm::Resources::postError(const std::string &location, const std::string &message, int code, bool severe) {
@@ -255,7 +254,7 @@ void etm::Resources::initTermTex(int width, int height) {
     contextData->termFramebufferTex.setData(GL_RGB, width, height, NULL);
 }
 
-etm::Font &etm::Resources::getFont() {
+etm::Resources::font_t &etm::Resources::getFont() {
     return font;
 }
 

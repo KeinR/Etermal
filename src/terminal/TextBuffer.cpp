@@ -101,10 +101,10 @@ bool etm::TextBuffer::outOfBounds(lines_number_t row, line_index_t column) {
 }
 
 int etm::TextBuffer::charWidth() {
-    return res->getFont().getCharWidth();
+    return res->getFont()->getCharWidth();
 }
 int etm::TextBuffer::charHeight() {
-    return res->getFont().getCharHeight();
+    return res->getFont()->getCharHeight();
 }
 
 bool etm::TextBuffer::isStartSpace(const Line::codepoint &c, lines_number_t row) {
@@ -123,7 +123,7 @@ void etm::TextBuffer::pushMod(const std::shared_ptr<tm::Mod> &mod) {
 void etm::TextBuffer::clear() {
     lines.clear();
     modifierBlocks.clear();
-    res->getFont().clearCache();
+    res->getFont()->clearCache();
     newline();
     jumpCursor();
     lines.shrink_to_fit();
@@ -784,7 +784,7 @@ void etm::TextBuffer::render(int x, int y) {
             } else {
                 const int size = utf8::test(chr);
 
-                res->getFont().bindChar(utf8::read(line.getString(), c, size));
+                res->getFont()->bindChar(utf8::read(line.getString(), c, size));
                 model.set(res);
                 res->renderRectangle();
                 model.x += charWidth();

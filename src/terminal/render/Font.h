@@ -4,8 +4,10 @@
 #include <string>
 #include <map>
 
+#include "EtmFont.h"
 #include "ftype.h"
 #include "Texture.h"
+#include "FontLibrary.h"
 
 namespace etm {
     // ../Resources
@@ -21,13 +23,10 @@ namespace etm {
     * textures.
     * Works with a cache to save run time.
     */
-    class Font {
-    public:
-        /// Codepoint type
-        typedef unsigned int char_t;
-    private:
+    class Font: public EtmFont {
         /// The text cache type
         typedef std::map<char_t, Texture> textCache_t;
+        FontLibrary fontLib;
 
         /// Handle to the @ref Resources object
         Resources *res;
@@ -69,13 +68,12 @@ namespace etm {
     public:
         /**
         * Construct a Font.
-        * @warning `lib` must destruct after `*this`, because @ref face is generated
-        * from it.
-        * @param [in] res A @ref Resources object
-        * @param [in,out] lib The parent font library that will be used to generate the face
+        * Contains a root font library object, which is a good and bad thing.
         * @param [in] path The path to the font resource
+        * @throw std::logic_error if failed to create freetype library
+        * @throw std::invalid_argument if failed to create font face from given `path`
         */
-        Font(Resources *res, FontLibrary &lib, const std::string &path);
+        Font(const std::string &path);
         /**
         * Initialize with moved object.
         * @param [in,out] other Moved object
@@ -93,34 +91,13 @@ namespace etm {
         * @param [in,out] other Moved object
         */
         Font &operator=(Font &&other);
-        /**
-        * Set the pixel size of the font.
-        * @param [in] size The pixel size
-        */
-        void setSize(unsigned int size);
-        /**
-        * Binds the given codepoint's texture to the currently
-        * active OpenGL texture slot.
-        * @param [in] c The codepoint to bind
-        */
-        void bindChar(char_t c);
-        /**
-        * Clears the codepoint texture cache.
-        */
-        void clearCache();
 
-        /**
-        * Gets the width of each codepoint
-        * @return The width
-        * @see charWidth
-        */
-        int getCharWidth();
-        /**
-        * Gets the height of each codepoint
-        * @return The height
-        * @see charHeight
-        */
-        int getCharHeight();
+        void setResMan(Resources *res) override;
+        void setSize(unsigned int size) override;
+        void bindChar(char_t c) override;
+        void clearCache() override;
+        int getCharWidth() override;
+        int getCharHeight() override;
     };
 }
 

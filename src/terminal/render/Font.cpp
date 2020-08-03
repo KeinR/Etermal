@@ -3,23 +3,22 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 
 #include "../Resources.h"
 #include "opengl.h"
 #include "FontLibrary.h"
 
-etm::Font::Font(Resources *res, FontLibrary &lib, const std::string &path): res(res) {
-    FT_Error error = FT_New_Face(lib.get(), path.c_str(), 0, &face);
-    if (error != FT_Err_Ok) {
-        face = nullptr;
-        res->postError(
-            "etm::Font::Font(Resources*,FontLibrary&,const std::string&)",
-            "Failed to load font @\"" + path + "\" as new face",
-            error,
-            true
-        );
+etm::Font::Font(const std::string &path): res(nullptr) {
+    FT_Error error = FT_New_Face(fontLib.get(), path.c_str(), 0, &face);
+    if (error == FT_Err_Ok) {
+        setSize(18); // Default size
     } else {
-        setSize(16);
+        face = nullptr;
+        throw std::invalid_argument(
+            "etm::Font: Failed to load font @\"" + path +
+            "\" as new face (ft err code = " + std::to_string(error) +
+            ")");
     }
 }
 etm::Font::Font(Font &&other) {
@@ -50,6 +49,10 @@ void etm::Font::free() {
     if (face != nullptr) {
         FT_Done_Face(face);
     }
+}
+
+void etm::Font::setResMan(Resources *res) {
+    this->res = res;
 }
 
 void etm::Font::calcCharSize() {
@@ -116,13 +119,16 @@ etm::Texture etm::Font::makeCharTexture(char_t c) {
 
         result.setData(GL_RED, charWidth, charHeight, data.data());
 
-    } else {
+    } else if (res != nullptr) {
         res->postError(
             "Font::renderChar(char)",
             std::string("Failed to load char '") + std::to_string(c) + "'",
             error,
             false
         );
+    } else {
+        std::cerr << "ETERMAL ERROR: etm::Font::renderChar(char): Not only is the resources manager nullptr, but codepoint "
+        << c << " failed to render with freetype error code " << error << std::endl;
     }
 
     return result;

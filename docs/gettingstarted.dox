@@ -13,12 +13,14 @@ First, @ref building "build etermal".
 Add the following to your `CMakeLists.txt`:
 
 @code{.cmake}
-find_package(etermal REQUIRED)
-find_package(Freetype REQUIRED)
+find_package(etermal 1.1 REQUIRED)
+find_package(Freetype 2.1 REQUIRED)
 target_link_libraries(yourTarget etermal)
+target_link_libraries(yourTarget Freetype::Freetype)
 @endcode
 
-Yes, it linkes to freetype. Will see to adding bitmap fonts option.
+@note You only need to link against freetype if your program
+uses the default font as opposed to a bitmap font.
 
 @subsection building_and_linking_manual Manual package install
 
@@ -44,8 +46,10 @@ int main() {
 
     // ... Set up the context etc etc ...
 
+    // Create font
+    std::shared_ptr<Font> font = std::make_shared<Font>("some/font/path.ttf");
     // Create terminal and shell
-    etm::Terminal terminal;
+    etm::Terminal terminal(font);
     etm::Shell shell;
 
     // Link the two
@@ -80,9 +84,12 @@ To fix that, you can instead do late initialization:
 
 ...
 
+// Create normal font (doesn't immediately allocate OpenGL resources,
+// only when caching - which happens during render time)
+std::shared_ptr<Font> font = std::make_shared<Font>("some/font/path.ttf");
 // Create terminal early
 etm::Terminal terminal(
-    "path/to/some/font.ttf", // Path to intial font (unrelated)
+    font,
     true // Tell terminal to postpone initialization of OpenGL resources
 );
 

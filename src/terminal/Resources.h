@@ -5,8 +5,7 @@
 #include <string>
 
 #include "render/Buffer.h"
-#include "render/Font.h"
-#include "render/FontLibrary.h"
+#include "render/EtmFont.h"
 #include "render/Texture.h"
 #include "shader/Primitive.h"
 #include "shader/Text.h"
@@ -28,6 +27,9 @@ namespace etm {
     * Takes care of all resource management for the @ref Terminal
     */
     class Resources {
+    public:
+        typedef std::shared_ptr<EtmFont> font_t;
+    private:
         /// Handle to parent @ref Terminal
         Terminal *terminal;
 
@@ -57,10 +59,8 @@ namespace etm {
 
         std::unique_ptr<contextdata_t> contextData;
 
-        /// Font root object
-        FontLibrary fontLib;
         /// Used font
-        Font font;
+        font_t font;
 
         /// The active shader.
         /// Only ever bound if the shader is made
@@ -87,10 +87,10 @@ namespace etm {
     public:
         /**
         * Construct a new object with parent.
+        * @warning There will be no active font
         * @param [in] terminal The parent terminal
-        * @param [in] fontPath Path to the initial font
         */
-        Resources(Terminal &terminal, const std::string &fontPath);
+        Resources(Terminal &terminal);
 
         /**
         * Initialize resources to the current context.
@@ -104,9 +104,16 @@ namespace etm {
 
         /**
         * Changes the in-use font.
-        * @param [in] fontPath Path to the font
+        * @param [in] font The font
         */
-        void changeFont(const std::string &fontPath);
+        void setFont(const font_t &font);
+
+        /**
+        * Get the in-use font.
+        * @return The font
+        * @see EtmFont
+        */
+        font_t &getFont();
 
         /**
         * Nofiy `*this` of an error.
@@ -188,17 +195,6 @@ namespace etm {
         * @param [in] height The height
         */
         void initTermTex(int width, int height);
-
-        /**
-        * 
-        */
-
-        /**
-        * Get the in-use @ref font.
-        * @return The font
-        * @see Font
-        */
-        Font &getFont();
 
         /**
         * Retrieve the cached viewport width.

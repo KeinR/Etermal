@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <memory>
 
 #include <etermal/etermal.h>
 #include <etermal/include/terminal/util/debug.h>
@@ -54,7 +55,11 @@ int main() {
 
         std::cout << "afs" << std::endl;
 
-        etm::Terminal term("C:\\Windows\\Fonts\\lucon.ttf", true);
+        // std::shared_ptr<etm::Font> font = std::make_shared<etm::Font>("C:\\Windows\\Fonts\\lucon.ttf");
+        std::shared_ptr<etm::BmpFont> font = std::make_shared<etm::BmpFont>("ExportedFont.bmp", 32, 11, 16, 183);
+
+        etm::Terminal term(true);
+        term.setFont(font);
 
         // {
         //     etm::Terminal othe;

@@ -14,6 +14,7 @@
 #include "../ETerminal.h"
 #include "Scroll.h"
 #include "gui/Scrollbar.h"
+#include "render/EtmFont.h"
 
 namespace etm {
     // ../shell/EShell
@@ -247,13 +248,22 @@ namespace etm {
         */
         int overflow(int c = EOF) override;
 
+        /**
+        * Construct a terminal (internal).
+        * @param [in] errorCallback The error callback
+        * @param [in] postponeInit `true` to postpone OpenGL resource initialization
+        */
+        Terminal(const errCallback_t &errorCallback, bool postponeInit);
+
     public:
 
         /**
         * Creates a Terminal.
+        * @warning The terminal will @e NOT have an active font. Attempts at rendering @b WILL fail
+        * unless you first call @ref setFont(const std::shared_ptr<EtmFont>&).
+        * @warning The terminal will be tied to the current OpenGL context if `postponeInit` is
+        * set to `false`.
         * @note If an error occurred during initialization, the default callback will be called.
-        * @warning The terminal will be tied to the current OpenGL context.
-        * @param [in] fontPath Path of the initial font
         * @param [in] postponeInit If this is set to `true`, the terminal @e WILL @e NOT
         * initialize it's OpenGL resources right away, allowing you to later on generate
         * the resources in the context you want to render to terminal to. NOTE WELL that
@@ -263,16 +273,33 @@ namespace etm {
         * The bottom line is: if the context you want to render to is current,
         * keep it at `false`. Otherwise, set it to `true` and call @ref init() later on.
         */
-        Terminal(const std::string &fontPath = "C:\\Windows\\Fonts\\lucon.ttf", bool postponeInit = false);
+        Terminal(bool postponeInit = false);
+
+        /**
+        * Creates a Terminal.
+        * @warning The terminal will be tied to the current OpenGL context if `postponeInit` is
+        * set to `false`.
+        * @note If an error occurred during initialization, the default callback will be called.
+        * @param [in] postponeInit If this is set to `true`, the terminal @e WILL @e NOT
+        * initialize it's OpenGL resources right away, allowing you to later on generate
+        * the resources in the context you want to render to terminal to. NOTE WELL that
+        * you must call @ref init() before you do any rendering.
+        * If set to `false`, you can still call @ref init() later on when your desired context
+        * is bound, however bad things will happen if an OpenGL context isn't active.
+        * The bottom line is: if the context you want to render to is current,
+        * keep it at `false`. Otherwise, set it to `true` and call @ref init() later on.
+        */
+        Terminal(const std::shared_ptr<EtmFont> &font, bool postponeInit = false);
 
         /**
         * Creates a Terminal with a custom error callback.
         * 
         * It's important to specify how you want errors handled on creation,
         * as errors can occur during initialization.
-        * @warning The terminal will be tied to the current OpenGL context.
+        * @warning The terminal will be tied to the current OpenGL context if `postponeInit` is
+        * set to `false`.
         * @param [in] errorCallback The error callback
-        * @param [in] fontPath Path of the initial font
+        * @param [in] font The initial font (See @ref Font and @ref BmpFont)
         * @param [in] postponeInit If this is set to `true`, the terminal @e WILL @e NOT
         * initialize it's OpenGL resources right away, allowing you to later on generate
         * the resources in the context you want to render to terminal to. NOTE WELL that
@@ -283,7 +310,7 @@ namespace etm {
         * keep it at `false`. Otherwise, set it to `true` and call @ref init() later on.
         * @see setErrorCallback(const errCallback_t &callback)
         */
-        Terminal(const errCallback_t &errorCallback, const std::string &fontPath = "C:\\Windows\\Fonts\\lucon.ttf", bool postponeInit = false);
+        Terminal(const errCallback_t &errorCallback, const std::shared_ptr<EtmFont> &font, bool postponeInit = false);
         /**
         * Destucts the terminal.
         */
@@ -316,9 +343,9 @@ namespace etm {
 
         /**
         * Changes the in-use font.
-        * @param [in] fontPath Path to the font
+        * @param [in] font The font
         */
-        void changeFont(const std::string &fontPath);
+        void setFont(const std::shared_ptr<EtmFont> &font);
 
         /** @internal
         * Invalidates the Terminal display cache

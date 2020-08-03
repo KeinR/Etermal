@@ -33,12 +33,24 @@ void defaultErrorCallback(const etm::termError &error) {
         << "---------------------------\n";
 }
 
-etm::Terminal::Terminal(const std::string &fontPath, bool postponeInit): Terminal(defaultErrorCallback, fontPath, postponeInit) {
+etm::Terminal::Terminal(bool postponeInit):
+    Terminal(defaultErrorCallback, postponeInit)
+{
 }
-etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::string &fontPath, bool postponeInit):
+etm::Terminal::Terminal(const std::shared_ptr<EtmFont> &font, bool postponeInit):
+    Terminal(defaultErrorCallback, postponeInit)
+{
+    setFont(font);
+}
+etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::shared_ptr<EtmFont> &font, bool postponeInit):
     // Make sure that the provided callback is valid
-    errorCallback(errorCallback ? errorCallback : defaultErrorCallback),
-    resources(new Resources(*this, fontPath)),
+    Terminal(errorCallback ? errorCallback : defaultErrorCallback, postponeInit)
+{
+    setFont(font);
+}
+etm::Terminal::Terminal(const errCallback_t &errorCallback, bool postponeInit):
+    errorCallback(errorCallback),
+    resources(new Resources(*this)),
     viewport(0, 0, 0, 0),
     scroll(resources),
     scrollbar(resources, scroll),
@@ -66,11 +78,6 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::string &f
     scrollbar.setSliderColor(0xbababa);
     scrollbar.setBarColor(0xf5f5f5);
 
-    setFontSize(18);
-
-    // Superfluous given that setFontSize() calls it, however just
-    // to make sure...
-    updatePosition();
     // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
 }
@@ -155,8 +162,9 @@ void etm::Terminal::deInit() {
     isInit = false;
 }
 
-void etm::Terminal::changeFont(const std::string &fontPath) {
-    resources->changeFont(fontPath);
+void etm::Terminal::setFont(const std::shared_ptr<EtmFont> &font) {
+    resources->setFont(font);
+    updatePosition();
 }
 
 void etm::Terminal::invalidate() {
@@ -517,19 +525,19 @@ void etm::Terminal::setHeight(int height) {
     updatePosition();
 }
 void etm::Terminal::setColumns(int columns) {
-    viewport.width = resources->getFont().getCharWidth() * columns;
+    viewport.width = resources->getFont()->getCharWidth() * columns;
     updatePosition();
 }
 void etm::Terminal::setRows(int rows, int margin) {
-    viewport.height = resources->getFont().getCharHeight() * rows;
+    viewport.height = resources->getFont()->getCharHeight() * rows;
     viewport.height += margin;
     updatePosition();
 }
 
 void etm::Terminal::setFontSize(unsigned int size) {
-    resources->getFont().setSize(size);
+    resources->getFont()->setSize(size);
     // Align to char height
-    scroll.setAlign(resources->getFont().getCharHeight());
+    scroll.setAlign(resources->getFont()->getCharHeight());
     updatePosition();
 }
 
@@ -548,10 +556,10 @@ void etm::Terminal::updatePosition() {
     scrollbar.setHeight(viewport.height);
 
     // Align net height to the character height
-    scroll.setNetHeight(viewport.height - (static_cast<int>(viewport.height) % resources->getFont().getCharHeight()));
+    scroll.setNetHeight(viewport.height - (static_cast<int>(viewport.height) % resources->getFont()->getCharHeight()));
 
     // Takes number of columns
-    display.setWidth(background.getWidth() / resources->getFont().getCharWidth());
+    display.setWidth(background.getWidth() / resources->getFont()->getCharWidth());
 
     initTex();
 
@@ -688,8 +696,8 @@ void etm::Terminal::inputMouseMove(float mouseX, float mouseY) {
 }
 
 void etm::Terminal::mapCoords(float x, float y, TextBuffer::lines_number_t &row, TextBuffer::line_index_t &column) {
-    row = std::max(std::floor((y - viewport.y + scroll.getOffset()) / resources->getFont().getCharHeight()), 0.0f);
-    column = std::max(std::floor((x - viewport.x) / resources->getFont().getCharWidth()), 0.0f);
+    row = std::max(std::floor((y - viewport.y + scroll.getOffset()) / resources->getFont()->getCharHeight()), 0.0f);
+    column = std::max(std::floor((x - viewport.x) / resources->getFont()->getCharWidth()), 0.0f);
 }
 
 void etm::Terminal::render() {

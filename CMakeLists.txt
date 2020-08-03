@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(etermal VERSION 1.0)
+project(etermal VERSION 1.1)
 
 option(MAKE_DOCS "Whether the documentation target should be generated" OFF)
 option(DEV "Whether the library should be build with debug symbols" OFF)
@@ -29,7 +29,7 @@ add_library(etermal STATIC ${sources})
 # Find and add package dependencies
 find_package(freetype 2.1 REQUIRED)
 find_package(glm REQUIRED)
-target_link_libraries(etermal Freetype::Freetype)
+include_directories(${FREETYPE_INCLUDE_DIRS})
 include_directories(${GLM_INCLUDE_DIRS})
 
 # installing
@@ -62,6 +62,9 @@ install(
 )
 export(TARGETS etermal
     FILE "${CMAKE_CURRENT_BINARY_DIR}/etermalConfig.cmake"
+)
+install(EXPORT etermalConfig
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/etermal"
 )
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/etermalConfigVersion.cmake" COMPATIBILITY SameMajorVersion)
