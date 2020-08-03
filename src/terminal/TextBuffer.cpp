@@ -217,6 +217,7 @@ void etm::TextBuffer::moveCursorCollumnWrap(int distance) {
         }
     }
     if (cursor.row <= cursorMin.row) {
+        cursor.row = cursorMin.row;
         cursor.column = std::max(cursor.column, cursorMin.column);
     }
 }
