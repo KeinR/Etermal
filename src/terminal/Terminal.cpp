@@ -52,7 +52,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, const std::shared_pt
 etm::Terminal::Terminal(const errCallback_t &errorCallback, bool postponeInit):
     errorCallback(errorCallback),
     resources(new Resources(*this)),
-    viewport(0, 0, 0, 0),
+    viewport(0, 0, 100, 100),
     scroll(resources),
     scrollbar(resources, scroll),
     scrollSensitivity(25.0f),
@@ -68,7 +68,7 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, bool postponeInit):
     isInit(false)
 {
     if (!postponeInit) {
-        resources->init();
+        init();
     }
 
     setBackgroundColor(0x080808);
@@ -81,6 +81,10 @@ etm::Terminal::Terminal(const errCallback_t &errorCallback, bool postponeInit):
 
     // Wait for the shell to tell us that it wants input
     display.setCursorEnabled(false);
+
+    if (!postponeInit) {
+        updatePosition();
+    }
 }
 etm::Terminal::~Terminal() {
     if (resources != nullptr) {
@@ -154,7 +158,8 @@ void etm::Terminal::finishMove(Terminal &other) {
 
 void etm::Terminal::init() {
     resources->init();
-    resources->initTermTex(viewport.width, viewport.height);
+    // resources->initTermTex(viewport.width, viewport.height);
+    updatePosition();
     isInit = true;
 }
 
@@ -556,11 +561,13 @@ void etm::Terminal::updatePosition() {
     scrollbar.setY(viewport.y);
     scrollbar.setHeight(viewport.height);
 
-    // Align net height to the character height
-    scroll.setNetHeight(viewport.height - (static_cast<int>(viewport.height) % resources->getFont()->getCharHeight()));
+    if (resources->getFont()) {
+        // Align net height to the character height
+        scroll.setNetHeight(viewport.height - (static_cast<int>(viewport.height) % resources->getFont()->getCharHeight()));
 
-    // Takes number of columns
-    display.setWidth(background.getWidth() / resources->getFont()->getCharWidth());
+        // Takes number of columns
+        display.setWidth(background.getWidth() / resources->getFont()->getCharWidth());
+    }
 
     initTex();
 
