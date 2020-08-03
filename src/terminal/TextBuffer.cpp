@@ -246,8 +246,24 @@ void etm::TextBuffer::setCursorWidth(int value) {
 
 void etm::TextBuffer::setWidth(line_index_t width) {
     this->width = width;
-    if (lines.size()) {
+    if (lines.size() > 0) {
+        int charDist = lines[cursor.row].size() - cursor.column;
+        int charDistMin = lines[cursorMin.row].size() - cursorMin.column;
+        for (lines_number_t row = cursor.row + 1; row < lines.size(); row++) {
+            charDist += lines[row].size();
+        }
+        for (lines_number_t row = cursorMin.row + 1; row < lines.size(); row++) {
+            charDistMin += lines[row].size();
+        }
+
         reformat(0, 0);
+
+        jumpCursor();
+        cursorMin = pos(0, 0);
+        moveCursorCollumnWrap(-charDistMin);
+        cursorMin = cursor;
+        jumpCursor();
+        moveCursorCollumnWrap(-charDist);
     }
 }
 etm::TextBuffer::line_index_t etm::TextBuffer::getWidth() {
