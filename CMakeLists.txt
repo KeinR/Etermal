@@ -3,16 +3,18 @@ project(etermal VERSION 2.0)
 
 option(MAKE_DOCS "Whether the documentation target should be generated" OFF)
 option(DEV "Whether the library should be build with debug symbols" OFF)
+option(EXAMPLES "Whether the target for examples should be created" OFF)
+option(TESTS "Whether the target for tests should be created" OFF)
 
 # Configure compiler settings
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 if (NOT DEV)
-    message("Configured to release build")
+    message("-- Configured to release build")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s -O2")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s -O2")
 else()
-    message("Configured to development build")
+    message("-- Configured to development build")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 endif()
@@ -73,8 +75,16 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/etermalConfigVersion.cmake"
 )
 
 if (MAKE_DOCS)
-    message("Generating docs target...")
+    message("-- Generating docs target")
     add_subdirectory(docs)
+endif()
+if (EXAMPLES)
+    message("-- Generating examples target")
+    add_subdirectory(examples)
+endif()
+if (TESTS)
+    message("-- Generating tests target")
+    add_subdirectory(tests)
 endif()
 
 # packaging

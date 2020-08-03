@@ -18,6 +18,8 @@ In generating the build files (via `cmake ...`), you can specify the following o
 | ---- | ------------- | ----------- |
 | DEV | OFF | If the library should be build with debug symbols |
 | MAKE_DOCS | OFF | If the `docs` target should be created, to build the documentation (requires doxygen) |
+| EXAMPLES | OFF | If the `examples` target should be created, to build the example applications (requires glfw) |
+| TESTS | OFF | If the `tests` target should be created, to build the tests (requires glfw) |
 
 @section Targets
 
