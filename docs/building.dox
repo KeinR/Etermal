@@ -32,5 +32,7 @@ When the build files are created, the following targets are available:
 | install | Does what `all` does, but also installs the binary and headers. |
 | package | Creates a zipped file with the files installed by `install` |
 | docs | If `MAKE_DOCS` was turned on, generates the documentation |
+| examples | If `EXAMPLES` was turned on, builds the examples |
+| tests | If `TESTS` was turned on, builds the tests |
 
 */
