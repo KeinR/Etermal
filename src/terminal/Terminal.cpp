@@ -170,6 +170,7 @@ void etm::Terminal::deInit() {
 
 void etm::Terminal::setFont(const std::shared_ptr<EtmFont> &font) {
     resources->setFont(font);
+    scroll.setAlign(resources->getFont()->getCharHeight());
     updatePosition();
 }
 
