@@ -23,6 +23,8 @@ namespace etm {
     class State: public singleton {
         /// GL_DEPTH_TEST toggle value
         GLboolean depth;
+        /// GL_BLEND toggle value
+        GLboolean blend;
         /// GL_CURRENT_PROGRAM value
         GLint program;
         /// GL_UNPACK_ALIGNMENT value

@@ -728,6 +728,8 @@ void etm::Terminal::render() {
 
     if (!framebufValid) {
         Framebuffer::State fbState;
+        // None of the called functions in this
+        // block should throw exceptions
         GLint callerViewport[4];
         glGetIntegerv(GL_VIEWPORT, callerViewport);
 

@@ -11,6 +11,10 @@ etm::State::~State() {
 void etm::State::store() {
     // All have the same z, so no depth test
     glGetBooleanv(GL_DEPTH_TEST, &depth);
+    // If alpha blend is true, will give
+    // weird results when highlighting text...
+    glGetBooleanv(GL_BLEND, &blend);
+    // Obviously, we set shader programs
     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
     // Glyph widths can vary quite a lot
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlign);
@@ -22,6 +26,9 @@ void etm::State::set() {
     if (depth == GL_TRUE) {
         glDisable(GL_DEPTH_TEST);
     }
+    if (blend == GL_TRUE) {
+        glDisable(GL_BLEND);
+    }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
@@ -32,6 +39,9 @@ void etm::State::set() {
 void etm::State::restore() {
     if (depth == GL_TRUE) {
         glEnable(GL_DEPTH_TEST);
+    }
+    if (blend == GL_TRUE) {
+        glEnable(GL_BLEND);
     }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
