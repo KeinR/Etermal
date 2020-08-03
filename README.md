@@ -1,28 +1,38 @@
 # Etermal
 
-![screenshot](screenshots/example.png)
+![Screenshot of example build](screenshots/example.png)
 
 ## What is it?
 
-A minimal-footprint terminal (and shell too I guess) for OpenGL 3.3.
+A minimal-footprint terminal for OpenGL 3.3.
 
 ## Features
 
-- Easy setup
+- Easy setup (see [docs](https://keinr.github.io/Etermal/docs/index.html))
 - Extensible interfaces that allow for user-defined shell and terminal implementations.
+- Tested with Visual Studio 2019 and g++ (GCC) 9.3.0 (as of version `2.0.0`)
 - Terminal frontend
-    - Colored text
+    - Polymorphic
+        - There's only one implementation
+    - Polymorphic fonts
+        - Bitmap font support
+        - Vector font support (uses Freetype)
+    - Colored text (full RGB support!)
     - UTF-8 support
-    - scrolling
+    - Scrolling
     - Dynamic initialization of OpenGL resources
+    - User input
+    - Input area control (clear/set)
+    - Caller OpenGL state preserved when rendering
+    - No-throw policy; Font and BmpFont are the only classes that throw exceptions, and only `<stdexcept>` members from their contructors (this is not the case for shell-related classes).
 - Shell backend
-    - Arguemnt parser
-    - It's kinda' bad, but you can make your own custom one
-
+    - Polymophic
+        - Shell with advanced type-based argument parser
+        - Basic shell that simply breaks up arguments into a vector
 
 ## Documentation
 
-Hosted [here](https://keinr.github.io/Etermal/docs/index.html), but you can also generate it during the build process.
+Hosted [here](https://keinr.github.io/Etermal/docs/index.html), but you can also generate it during the build process yourself. Also, as of `2.0.0`, docs are included in every release.
 
 ## Contributing
 

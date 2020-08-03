@@ -481,14 +481,14 @@ namespace etm {
         void softFlush() override;
 
         /**
-        * Set the x coordinate of the top-right corner of the terminal.
+        * Set the x coordinate of the top-left corner of the terminal.
         * @param [in] x The x coordinate
         * @see setY(float y)
         */
         void setX(float x);
 
         /**
-        * Set the y coordinate of the top-right corner of the terminal.
+        * Set the y coordinate of the top-left corner of the terminal.
         * @param [in] y The y coordinate
         * @see setX(float x)
         */

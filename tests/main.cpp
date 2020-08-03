@@ -221,7 +221,7 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods) {
 }
 
 static void charCallback(GLFWwindow* window, unsigned int codepoint) {
-    terminal->inputChar(static_cast<char>(codepoint));
+    terminal->inputChar(codepoint);
 }
 
 void mouseClick(GLFWwindow* window, int button, int action, int mods) {
