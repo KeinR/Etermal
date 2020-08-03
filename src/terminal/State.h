@@ -27,6 +27,8 @@ namespace etm {
         GLint program;
         /// GL_UNPACK_ALIGNMENT value
         GLint unpackAlign;
+        /// GL_ACTIVE_TEXTURE value
+        GLint activeTexture;
     public:
         /**
         * Constructs and calls @ref store()

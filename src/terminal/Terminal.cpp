@@ -726,13 +726,18 @@ void etm::Terminal::render() {
 
     // Render
 
-    // We won't be changing the viewport
-    resources->initViewport();
-
     if (!framebufValid) {
         Framebuffer::State fbState;
+        GLint callerViewport[4];
+        glGetIntegerv(GL_VIEWPORT, callerViewport);
 
         resources->bindTermFramebuffer();
+
+        glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        resources->initViewport();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // Render
 
@@ -746,7 +751,12 @@ void etm::Terminal::render() {
 
         // Revalidate cache (important!)
         validate();
+
+        glViewport(callerViewport[0], callerViewport[1], callerViewport[2], callerViewport[3]);
     }
+
+    // We won't be changing the viewport
+    resources->initViewport();
 
     resources->bindTextureShader();
     resources->bindTermFramebufferTex();
