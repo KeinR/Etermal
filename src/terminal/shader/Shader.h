@@ -29,6 +29,34 @@ namespace etm::shader {
         void free();
     public:
         /**
+        * Stores and releases a framebuffer state.
+        * Upon construction, stores the state.
+        * Upon destruction, restores that state.
+        * @see etm::State
+        */
+        class State {
+            /// The shader program
+            int program;
+        public:
+            /**
+            * Constructs and calls @ref store()
+            */
+            State();
+            /**
+            * Constructs and calls @ref restore()
+            */
+            ~State();
+            /**
+            * Records the current shader binding.
+            */
+            void store();
+            /**
+            * Restores the recorded shader binding.
+            */
+            void restore();
+        };
+
+        /**
         * Constructs initializes a Shader object.
         * @param [in] res A Resources object to report errors to
         * @param [in] vertexData Pointer to the raw vertex shader data

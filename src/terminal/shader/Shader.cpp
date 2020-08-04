@@ -6,6 +6,19 @@
 #include "../render/opengl.h"
 #include "../Resources.h"
 
+etm::shader::Shader::State::State() {
+    store();
+}
+etm::shader::Shader::State::~State() {
+    restore();
+}
+void etm::shader::Shader::State::store() {
+    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+}
+void etm::shader::Shader::State::restore() {
+    glUseProgram(program);
+}
+
 /**
 * Compiles the given shader and returns a handle to the OpenGL object.
 * @param [in] type The type (GL_VERTEX_SHADER/GL_FRAGMENT_SHADER)

@@ -33,6 +33,8 @@ void etm::Resources::errNotInit(const char *location) {
 }
 
 void etm::Resources::init() {
+    shader::Shader::State shaderState;
+
     contextData.reset(new contextdata_t(this));
     genRectangle();
     genTriangle();
