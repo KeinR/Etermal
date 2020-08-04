@@ -1,6 +1,5 @@
 #include "Line.h"
 
-#include <iostream>
 #include <algorithm>
 
 #include "codec.h"

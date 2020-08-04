@@ -6,7 +6,6 @@
 
 #include "util/termError.h"
 #include "render/opengl.h"
-#include "util/debug.h"
 #include "../TermInput.h"
 #include "../EShell.h"
 #include "State.h"

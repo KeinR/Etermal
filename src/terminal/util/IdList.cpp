@@ -1,7 +1,6 @@
 #include "IdList.h"
 
 #include <memory>
-#include <iostream>
 
 #include "../textmods/Mod.h"
 
