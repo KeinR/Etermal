@@ -28,6 +28,8 @@ etm::BmpFont::BmpFont(
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+    stbi_set_flip_vertically_on_load(false);
+
     constexpr int channels = 1;
     int imgWidth, imgHeight;
     unsigned char *img = stbi_load(path.c_str(), &imgWidth, &imgHeight, NULL, channels);
