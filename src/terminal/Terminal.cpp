@@ -157,9 +157,8 @@ void etm::Terminal::finishMove(Terminal &other) {
 
 void etm::Terminal::init() {
     resources->init();
-    // resources->initTermTex(viewport.width, viewport.height);
-    updatePosition();
     isInit = true;
+    updatePosition();
 }
 
 void etm::Terminal::deInit() {

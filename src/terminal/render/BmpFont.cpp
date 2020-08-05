@@ -70,15 +70,15 @@ etm::BmpFont::BmpFont(
         }
     }
 
-    // Truncate remaining glyphs
-    glyphs.resize(glyphIndex);
-    glyphs.shrink_to_fit();
-
     delete[] buffer;
     stbi_image_free(img);
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
     }
+
+    // Truncate remaining glyphs
+    glyphs.resize(glyphIndex);
+    glyphs.shrink_to_fit();
 }
 
 void etm::BmpFont::setResMan(Resources *res) {
