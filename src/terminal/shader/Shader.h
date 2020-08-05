@@ -29,7 +29,7 @@ namespace etm::shader {
         void free();
     public:
         /**
-        * Stores and releases a framebuffer state.
+        * Stores and releases a shader state.
         * Upon construction, stores the state.
         * Upon destruction, restores that state.
         * @see etm::State

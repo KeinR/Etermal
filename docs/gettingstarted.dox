@@ -73,6 +73,10 @@ int main() {
 }
 @endcode
 
+@note Of course, adding input calls and such are a bit more,
+but this is the basic level for getting the terminal to render
+on screen.
+
 @warning If the terminal is created this way, its OpenGL resources
 will be tied to the current context. This is not always desired
 behavior, especially if there isn't even a context active!
