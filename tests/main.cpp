@@ -56,7 +56,13 @@ int main() {
         std::cout << "afs" << std::endl;
 
         // std::shared_ptr<etm::Font> font = std::make_shared<etm::Font>("C:\\Windows\\Fonts\\lucon.ttf");
-        std::shared_ptr<etm::BmpFont> font = std::make_shared<etm::BmpFont>("ExportedFont.bmp", 32, 11, 16, 183);
+        std::shared_ptr<etm::BmpFont> font = std::make_shared<etm::BmpFont>(
+            "lucon_aa.bmp",
+            32,
+            11,
+            18,
+            160
+        );
 
         etm::Terminal term(true);
         term.setFont(font);

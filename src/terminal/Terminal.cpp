@@ -12,6 +12,7 @@
 #include "codec.h"
 #include "Line.h"
 #include "Resources.h"
+#include "util/debug.h"
 
 #include "textmods/Mod.h"
 #include "textmods/mods.h"

@@ -8,6 +8,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 
 add_executable(etermal_test EXCLUDE_FROM_ALL main.cpp)
 
+file(COPY "lucon_aa.bmp" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
 find_package(etermal 2.0 REQUIRED)
 find_package(freetype 2.1 REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
