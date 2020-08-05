@@ -1,6 +1,11 @@
 # Etermal
 
-![Screenshot of example build](screenshots/example.png)
+<table>
+  <tr>
+    <td valign="top"><img src="screenshots/deployment.png"></td>
+    <td valign="top"><img src="screenshots/example.png"></td>
+  </tr>
+</table>
 
 ## What is it?
 
