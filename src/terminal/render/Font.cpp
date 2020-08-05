@@ -129,7 +129,7 @@ etm::Texture etm::Font::makeCharTexture(char_t c) {
         );
     } else {
         std::cerr << "ETERMAL ERROR: etm::Font::renderChar(char): Not only is the resources manager nullptr, but codepoint "
-        << c << " failed to render with freetype error code " << error << std::endl;
+        << c << " failed to render with freetype error code " << error << '\n';
     }
 
     return result;

@@ -7,7 +7,7 @@
 void etm::assertGLErr(const char *location) {
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        std::cerr << "GL ERROR @[" << location << "]: " << getGLErrorStr(error) << std::endl;
+        std::cerr << "GL ERROR @[" << location << "]: " << getGLErrorStr(error) << '\n';
         exit(1);
     }
 }
