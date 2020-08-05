@@ -30,7 +30,7 @@ include_directories("extern")
 add_library(etermal STATIC ${sources})
 
 # Find and add package dependencies
-find_package(freetype 2.1 REQUIRED)
+find_package(Freetype 2.1 REQUIRED)
 find_package(glm REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 include_directories(${GLM_INCLUDE_DIRS})
