@@ -60,6 +60,6 @@ other times may be `#`).
 
 `<ESC>[ff0b105` - sets foreground color to a nice orange<br>
 `<ESC>[bff2f00` - sets background color to a harsh red<br>
-`<ESC>[bff;` - sets background color to blue. same as `<ESC>[f0000ff`
+`<ESC>[bff;` - sets background color to blue. same as `<ESC>[b0000ff`
 
 */
