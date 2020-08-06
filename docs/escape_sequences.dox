@@ -59,7 +59,7 @@ other times may be `#`).
 @subsection examples Examples
 
 `<ESC>[ff0b105` - sets foreground color to a nice orange<br>
-`<ESC>[fff2f00` - sets background color to a harsh red<br>
-`<ESC>[fff;` - sets background color to blue. same as `<ESC>[f0000ff`
+`<ESC>[bff2f00` - sets background color to a harsh red<br>
+`<ESC>[bff;` - sets background color to blue. same as `<ESC>[f0000ff`
 
 */
