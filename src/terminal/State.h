@@ -25,6 +25,8 @@ namespace etm {
         GLboolean depth;
         /// GL_BLEND toggle value
         GLboolean blend;
+        /// GL_CULL_FACE toggle value
+        GLboolean cull;
         /// GL_CURRENT_PROGRAM value
         GLint program;
         /// GL_UNPACK_ALIGNMENT value

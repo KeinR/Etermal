@@ -90,6 +90,14 @@ void etm::Resources::genTriangle() {
     glGetIntegerv(GL_RENDERBUFFER_BINDING, &renderBuff);
     GLfloat clearColor[4];
     glGetFloatv(GL_COLOR_CLEAR_VALUE, clearColor);
+    GLboolean depthToggle, blendToggle, cullToggle;
+    glGetBooleanv(GL_DEPTH_TEST, &depthToggle);
+    glGetBooleanv(GL_BLEND, &blendToggle);
+    glGetBooleanv(GL_CULL_FACE, &cullToggle);
+
+    if (depthToggle == GL_TRUE) glDisable(GL_DEPTH_TEST);
+    if (blendToggle == GL_TRUE) glDisable(GL_BLEND);
+    if (cullToggle == GL_TRUE) glDisable(GL_CULL_FACE);
 
     // Size of the texture
     constexpr int sampleWidth = 20;
@@ -201,6 +209,9 @@ void etm::Resources::genTriangle() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, readBuff);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, writeBuff);
     glBindRenderbuffer(GL_RENDERBUFFER, renderBuff);
+    if (depthToggle == GL_TRUE) glEnable(GL_DEPTH_TEST);
+    if (blendToggle == GL_TRUE) glEnable(GL_BLEND);
+    if (cullToggle == GL_TRUE) glEnable(GL_CULL_FACE);
 
     // Just in case the error callback throws,
     // post the error after cleanup has been done.

@@ -14,6 +14,8 @@ void etm::State::store() {
     // If alpha blend is true, will give
     // weird results when highlighting text...
     glGetBooleanv(GL_BLEND, &blend);
+    // If back face, won't render
+    glGetBooleanv(GL_CULL_FACE, &cull);
     // Obviously, we set shader programs
     glGetIntegerv(GL_CURRENT_PROGRAM, &program);
     // Glyph widths can vary quite a lot
@@ -29,6 +31,9 @@ void etm::State::set() {
     if (blend == GL_TRUE) {
         glDisable(GL_BLEND);
     }
+    if (cull == GL_TRUE) {
+        glDisable(GL_CULL_FACE);
+    }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     }
@@ -42,6 +47,9 @@ void etm::State::restore() {
     }
     if (blend == GL_TRUE) {
         glEnable(GL_BLEND);
+    }
+    if (cull == GL_TRUE) {
+        glEnable(GL_CULL_FACE);
     }
     if (unpackAlign != 1) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlign);
