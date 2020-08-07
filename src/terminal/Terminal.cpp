@@ -513,6 +513,10 @@ void etm::Terminal::softFlush() {
     invalidate();
 }
 
+bool etm::Terminal::shouldUpdate() {
+    return !framebufValid || cursorBlink.hasEnded();
+}
+
 void etm::Terminal::setX(float x) {
     viewport.x = x;
     updatePosition();

@@ -481,6 +481,13 @@ namespace etm {
         void softFlush() override;
 
         /**
+        * Check if the terminal has changed
+        * appearance and should be rendered again.
+        * @return `true` if yes
+        */
+        bool shouldUpdate();
+
+        /**
         * Set the x coordinate of the top-left corner of the terminal.
         * @param [in] x The x coordinate
         * @see setY(float y)
